@@ -3,7 +3,7 @@ from actor import *
 #creo la finestra di gioco
 schermo = Screen(800, 600)
 
-pico = Actor("risorse/pyco1.png")
+pico = Actor("library/pyco1.png")
 pico.scale(0.2)
 
 presi = 0

@@ -3,10 +3,11 @@ from actor import *
 #creo la finestra di gioco
 schermo = Screen(1280, 720)
 
-dyno = Actor("risorse/dyno.png")
+dyno = Actor("library/dinosaur1.png")
+dyno.scale(0.2)
 dyno.goto(500, 300)
 
-star = Actor("risorse/seastar1.png")
+star = Actor("library/seastar1.png")
 star.scale(100, 200)
 star.goto( 600, 500)
 
@@ -25,7 +26,7 @@ r.goto(400, 250)
 c = Circle(radius=64, line_width=20)
 c.goto(500, 400)
 
-hey = Sound("risorse/hey.wav")
+hey = Sound("library/hey.wav")
 
 while True:
 
@@ -58,12 +59,12 @@ while True:
 
     if dyno.collide(star):
         print(dyno.collide(star))
-        star.load("risorse/seastar2.png")
+        star.load("library/seastar2.png")
         star.scale(100, 200)
         hey.play()
 
     if star.costume == "seastar2" and not star.collide(dyno):
-        star.load("risorse/seastar1.png")
+        star.load("library/seastar1.png")
         star.scale(100, 200)
 
     schermo.fill(white)
