@@ -1,6 +1,7 @@
 import pygame, math, random, time, os
-import thread
-import threading
+from time import sleep
+#import thread
+#import threading
 #, types, inspect
 pygame.init()
 
@@ -180,16 +181,16 @@ class Actor(pygame.sprite.Sprite):
     def rclick(self, option="down"):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
-        if not MOUSE.leftdown:
+        if not MOUSE.rightdown:
             if self.rect.collidepoint(mousepos) and buttons[2] == 1:
-                MOUSE.leftdown = True
+                MOUSE.rightdown = True
                 return True
         else:
             for event in EVENTS.LIST:
                 if event.type == pygame.MOUSEBUTTONUP and \
                        event.button == 1 and \
                        self.rect.collidepoint(mousepos):
-                    MOUSE.leftdown = False
+                    MOUSE.rightdown = False
 
     #Mask collision
     def mcollide(self, target):

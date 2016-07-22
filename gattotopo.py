@@ -3,15 +3,15 @@ from actor import *
 #creo la finestra di gioco
 schermo = Screen(800, 600)
 
-topo = Actor("risorse/mouse.png")
+topo = Actor("library/mouse.png")
 topo.scale(0.1)
 topo.goto(400, 300)
 
-gatto = Actor("risorse/cat.png")
+gatto = Actor("library/cat.png")
 gatto.scale(0.1)
 gatto.goto(200, 100)
 
-sfondo = Actor("risorse/carpet.png")
+sfondo = Actor("library/carpet.png")
 sfondo.scale(800, 600)
 sfondo.goto(400, 300)
 
@@ -39,4 +39,4 @@ while not gameover:
     UPDATE()
 
     #attendo
-    time.sleep(0.01)
+    sleep(0.01)
