@@ -78,4 +78,4 @@ while True:
     UPDATE()
 
     #attendo
-    time.sleep(0.01)
+    sleep(0.01)
