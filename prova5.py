@@ -8,6 +8,7 @@ dyno.scale(0.2)
 dyno.goto(500, 300)
 
 star = Actor("library/seastar1.png")
+star.load("library/seastar2.png", 2)
 star.scale(100, 200)
 star.goto(600, 500)
 
@@ -32,7 +33,7 @@ while True:
     if dyno.click():
         print("funziona")
         hey.play()
-        print(dyno.costume)
+        print(dyno.getcostume())
 
     if keydown(RIGHT):
         print("destra")
@@ -57,13 +58,13 @@ while True:
 
     if dyno.collide(star):
         print(dyno.collide(star))
-        star.load("library/seastar2.png")
-        star.scale(100, 200)
+        star.setcostume(2)
+        #star.scale(100, 200)
         hey.play()
 
-    if star.costume == "seastar2" and not star.collide(dyno):
-        star.load("library/seastar1.png")
-        star.scale(100, 200)
+    if star.costume == 2 and not star.collide(dyno):
+        star.setcostume(1)
+        #star.scale(100, 200)
 
     fill(white)
     a.draw()

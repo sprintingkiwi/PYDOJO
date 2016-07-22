@@ -64,6 +64,9 @@ class Actor(pygame.sprite.Sprite):
         #image orientation
         self.heading = 90
         #load actor image
+        self.costumes = {}
+        self.costume = 1
+        self.original_costumes = {}
         if path is not None:
             self.load(path)
         #rotation style
@@ -72,28 +75,35 @@ class Actor(pygame.sprite.Sprite):
         self.transform = False
 
     #find costume name from image path
-    def costume_name(self, path):
+    def cosname(self, path):
         words = path.split("/")
         lenpath = len(words)
         costume = words[lenpath - 1]
-        self.costume = costume.split(".")[0]
+        return costume.split(".")[0]
 
     #update rect as the image changes
     def update_rect(self):
-        self.rect = self.image.get_rect()
+        self.rect = self.costumes[self.costume].get_rect()
         self.rect.centerx = int(self.x)
         self.rect.centery = int(self.y)
-        self.size = self.image.get_size()
-        self.width = self.image.get_width()
-        self.height = self.image.get_height()
+        self.size = self.costumes[self.costume].get_size()
+        self.width = self.costumes[self.costume].get_width()
+        self.height = self.costumes[self.costume].get_height()
 
     #load Actor's image
-    def load(self, path):
-        self.image = pygame.image.load(path).convert_alpha()
-        self.original_image = self.image
-        self.mask = pygame.mask.from_surface(self.image)
+    def load(self, path, costume=1):
+        self.costumes[costume] = pygame.image.load(path).convert_alpha()
+        self.original_costumes[costume] = self.costumes[costume]
+        self.mask = pygame.mask.from_surface(self.costumes[costume])
         self.update_rect()
-        self.costume_name(path)
+        #self.cosname(path)
+
+    def setcostume(self, costume):
+        self.costume = costume
+        self.update_rect()
+
+    def getcostume(self):
+        return self.costume
 
     def setposition(self, pos):
         self.x = pos[0]
@@ -124,16 +134,16 @@ class Actor(pygame.sprite.Sprite):
         #if the image changed the transform functions apply
         if self.transform is True:
             self.transform = False
-            self.image = pygame.transform.rotate(self.image, -self.heading)
+            self.costumes[self.costume] = pygame.transform.rotate(self.costumes[self.costume], -self.heading)
             self.update_rect()
-            screen_info.screen.blit(self.image,
+            screen_info.screen.blit(self.costumes[self.costume],
                          ((self.x - self.width / 2),
                          (self.y - self.height / 2)),
                          rect)
             #and then the original image is loaded
-            self.image = self.original_image
+            self.costumes[self.costume] = self.original_costumes[self.costume]
         else:
-            screen_info.screen.blit(self.image,
+            screen_info.screen.blit(self.costumes[self.costume],
                         ((self.x - self.width / 2), (self.y - self.height / 2)),
                         rect)
 
@@ -201,15 +211,16 @@ class Actor(pygame.sprite.Sprite):
 
     def flip(self, direction):
         if direction == "horizontal":
-            self.image = pygame.transform.flip(self.image, True, False)
+            self.costumes[self.costume] = pygame.transform.flip(self.costumes[self.costume], True, False)
         if direction == "vertical":
-            self.image = pygame.transform.flip(self.image, False, True)
+            self.costumes[self.costume] = pygame.transform.flip(self.costumes[self.costume], False, True)
         self.update_rect()
 
     def scale(self, w, h=None):
         if h is not None:
-            self.image = pygame.transform.scale(self.image, (w, h))
-            self.original_image = self.image
+            for cos in self.costumes:
+                self.costumes[cos] = pygame.transform.scale(self.costumes[cos], (w, h))
+                self.original_costumes[cos] = self.costumes[cos]
             self.update_rect()
         else:
             width = int(self.width * w)
@@ -274,7 +285,7 @@ class Text(Actor):
                                         self.fontsize,
                                         self.bold,
                                         self.italic)
-        self.image = self.font.render(self.string, True, self.color)
+        self.costumes[self.costume] = self.font.render(self.string, True, self.color)
         self.update_rect()
 
     def write(self, string):
