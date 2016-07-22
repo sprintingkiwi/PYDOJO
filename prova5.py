@@ -1,7 +1,7 @@
 from actor import *
 
-#creo la finestra di gioco
-schermo = Screen(1280, 720)
+#create game display
+SCREEN(1280, 720)
 
 dyno = Actor("library/dinosaur1.png")
 dyno.scale(0.2)
@@ -9,14 +9,13 @@ dyno.goto(500, 300)
 
 star = Actor("library/seastar1.png")
 star.scale(100, 200)
-star.goto( 600, 500)
+star.goto(600, 500)
 
 a = Text("ciao", color=green)
 a.setfontsize(48)
 a.setbold(True)
 a.setitalic(True)
 a.goto(100, 100)
-a.draw(schermo)
 
 #dyno.rotate = False
 
@@ -56,7 +55,6 @@ while True:
     c.forward(20)
     #dyno.gorand()
 
-
     if dyno.collide(star):
         print(dyno.collide(star))
         star.load("library/seastar2.png")
@@ -67,15 +65,15 @@ while True:
         star.load("library/seastar1.png")
         star.scale(100, 200)
 
-    schermo.fill(white)
-    a.draw(schermo)
-    star.draw(schermo)
-    dyno.draw(schermo)
-    r.draw(schermo)
-    c.draw(schermo)
+    fill(white)
+    a.draw()
+    star.draw()
+    dyno.draw()
+    r.draw()
+    c.draw()
 
-    #aggiorno lo schermo
+    #update screen and events queue
     UPDATE()
 
-    #attendo
+    #wait
     sleep(0.01)

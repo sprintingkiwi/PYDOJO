@@ -12,10 +12,47 @@ red = [255, 0, 0]
 green = [0, 255, 0]
 blue = [0, 0, 255]
 
-#some useful variables
+#useful variables
 mouse = "mouse"
+MOUSE = "mouse"
+
+#Objects for saving data
+class EventsStorage():
+    def __init__(self):
+        self.CHECK = False
+        self.LIST = []
+events_storage = EventsStorage()
+
+class MouseState():
+    def __init__(self):
+        self.leftdown = False
+        self.centraldown = False
+        self.rightdown = False
+mouse_state = MouseState()
+
+class ScreenInfo():
+    def __init__(self):
+        self.screen = None
+        self.resolution = []
+screen_info = ScreenInfo()
 
 
+#SCREEN
+def SCREEN(w, h):
+    screen_info.resolution = [w, h]
+    screen_info.screen = pygame.display.set_mode([w, h])
+
+
+def fill(color):
+    screen_info.screen.fill(color)
+
+
+def UPDATE():
+    events_storage.LIST = pygame.event.get()
+    pygame.display.update()
+
+
+#ACTOR CLASS
 class Actor(pygame.sprite.Sprite):
     def __init__(self, path=None):
         pygame.sprite.Sprite.__init__(self)
@@ -24,6 +61,9 @@ class Actor(pygame.sprite.Sprite):
         self.y = 0.0
         #Actor angle direction
         self.direction = 0
+        #image orientation
+        self.heading = 90
+        #load actor image
         if path is not None:
             self.load(path)
         #rotation style
@@ -74,20 +114,26 @@ class Actor(pygame.sprite.Sprite):
     def gety(self):
         return self.y
 
-    def draw(self, surface, rect=None):
+    def setdirection(self, angle):
+        self.direction = angle
+
+    def getdirection(self):
+        return self.direction
+
+    def draw(self, rect=None):
         #if the image changed the transform functions apply
         if self.transform is True:
             self.transform = False
-            self.image = pygame.transform.rotate(self.image, -self.direction)
+            self.image = pygame.transform.rotate(self.image, -self.heading)
             self.update_rect()
-            surface.blit(self.image,
+            screen_info.screen.blit(self.image,
                          ((self.x - self.width / 2),
                          (self.y - self.height / 2)),
                          rect)
             #and then the original image is loaded
             self.image = self.original_image
         else:
-            surface.blit(self.image,
+            screen_info.screen.blit(self.image,
                         ((self.x - self.width / 2), (self.y - self.height / 2)),
                         rect)
 
@@ -115,34 +161,41 @@ class Actor(pygame.sprite.Sprite):
 
     def right(self, angle):
         self.direction = (self.direction + angle) % 360
+        self.heading = self.direction - 90
         if self.rotate:
             self.transform = True
 
     def left(self, angle):
         self.direction = (self.direction - angle) % 360
+        self.heading = self.direction - 90
         if self.rotate:
             self.transform = True
 
     def point(self, target):
         #set heading as angle
         if type(target) is int and type(target) is not str:
-            self.direction = target % 360
+            angle = target % 360
+            self.direction = angle
+            self.heading = angle - 90
         #point at coordinate
         elif type(target) is list and type(target) is not str:
             angle = -math.atan2(self.x - target[0], self.y - target[1])
             angle = angle * (180 / math.pi)
             self.direction = angle
+            self.heading = angle - 90
         #point at mouse pointer
         elif target == "mouse":
             mousepos = pygame.mouse.get_pos()
             angle = -math.atan2(self.x - mousepos[0], self.y - mousepos[1])
             angle = angle * (180 / math.pi)
             self.direction = angle
+            self.heading = angle - 90
         #point at target
         else:
             angle = -math.atan2(self.x - target.x, self.y - target.y)
             angle = angle * (180 / math.pi)
             self.direction = angle
+            self.heading = angle - 90
         if self.rotate:
             self.transform = True
 
@@ -163,34 +216,30 @@ class Actor(pygame.sprite.Sprite):
             height = int(self.height * w)
             self.scale(width, height)
 
-    #check if mouse has clicked the Actor
+    #check if the mouse has clicked the Actor
     def click(self, option="down"):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
-        if not MOUSE.leftdown:
+        if not mouse_state.leftdown:
             if self.rect.collidepoint(mousepos) and buttons[0] == 1:
-                MOUSE.leftdown = True
+                mouse_state.leftdown = True
                 return True
         else:
-            for event in EVENTS.LIST:
-                if event.type == pygame.MOUSEBUTTONUP and \
-                       event.button == 1 and \
-                       self.rect.collidepoint(mousepos):
-                    MOUSE.leftdown = False
+            for event in events_storage.LIST:
+                if event.type == pygame.MOUSEBUTTONUP:
+                    mouse_state.leftdown = False
 
     def rclick(self, option="down"):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
-        if not MOUSE.rightdown:
+        if not mouse_state.rightdown:
             if self.rect.collidepoint(mousepos) and buttons[2] == 1:
-                MOUSE.rightdown = True
+                mouse_state.rightdown = True
                 return True
         else:
-            for event in EVENTS.LIST:
-                if event.type == pygame.MOUSEBUTTONUP and \
-                       event.button == 1 and \
-                       self.rect.collidepoint(mousepos):
-                    MOUSE.rightdown = False
+            for event in events_storage.LIST:
+                if event.type == pygame.MOUSEBUTTONUP:
+                    mouse_state.rightdown = False
 
     #Mask collision
     def mcollide(self, target):
@@ -269,8 +318,8 @@ class Rect(Actor):
         self.rect.centerx = int(self.x)
         self.rect.centery = int(self.y)
 
-    def draw(self, surface):
-        pygame.draw.rect(surface,
+    def draw(self):
+        pygame.draw.rect(screen_info.screen,
                              self.color,
                              self.rect,
                              self.line_width)
@@ -296,8 +345,8 @@ class Circle(Actor):
         self.rect.centerx = int(self.x)
         self.rect.centery = int(self.y)
 
-    def draw(self, surface):
-        pygame.draw.circle(surface,
+    def draw(self):
+        pygame.draw.circle(screen_info.screen,
                            self.color,
                            [self.rect.centerx, self.rect.centery],
                            self.radius,
@@ -318,15 +367,6 @@ def Sound(path):
     return s
 
 
-#SCREEN
-def Screen(w, h):
-    return pygame.display.set_mode([w, h])
-
-def UPDATE():
-    EVENTS.LIST = pygame.event.get()
-    pygame.display.update()
-
-
 #EVENTS:
 
 #KEYBOARD KEYS
@@ -334,26 +374,134 @@ UP = pygame.K_UP
 DOWN = pygame.K_DOWN
 LEFT = pygame.K_LEFT
 RIGHT = pygame.K_RIGHT
+BACKSPACE = pygame.K_BACKSPACE
+TAB = pygame.K_TAB
+CLEAR = pygame.K_CLEAR
+RETURN = pygame.K_RETURN
+PAUSE = pygame.K_PAUSE
+ESCAPE = pygame.K_ESCAPE
+SPACE = pygame.K_SPACE
+EXCLAIM = pygame.K_EXCLAIM
+QUOTEDBL = pygame.K_QUOTEDBL
+HASH = pygame.K_HASH
+DOLLAR = pygame.K_DOLLAR
+AMPERSAND = pygame.K_AMPERSAND
+QUOTE = pygame.K_QUOTE
+LEFTPAREN = pygame.K_LEFTPAREN
+RIGHTPAREN = pygame.K_RIGHTPAREN
+ASTERISK = pygame.K_ASTERISK
+PLUS = pygame.K_PLUS
+COMMA = pygame.K_COMMA
+MINUS = pygame.K_MINUS
+PERIOD = pygame.K_PERIOD
+SLASH = pygame.K_SLASH
+ZERO = pygame.K_0
+ONE = pygame.K_1
+TWO = pygame.K_2
+THREE = pygame.K_3
+FOUR = pygame.K_4
+FIVE = pygame.K_5
+SIX = pygame.K_6
+SEVEN = pygame.K_7
+EIGHT = pygame.K_8
+NINE = pygame.K_9
+COLON = pygame.K_COLON
+SEMICOLON = pygame.K_SEMICOLON
+LESS = pygame.K_LESS
+EQUALS = pygame.K_EQUALS
+GREATER = pygame.K_GREATER
+QUESTION = pygame.K_QUESTION
+AT = pygame.K_AT
+LEFTBRACKET = pygame.K_LEFTBRACKET
+BACKSLASH = pygame.K_BACKSLASH
+RIGHTBRACKET = pygame.K_RIGHTBRACKET
+CARET = pygame.K_CARET
+UNDERSCORE = pygame.K_UNDERSCORE
+BACKQUOTE = pygame.K_BACKQUOTE
+A = pygame.K_a
+B = pygame.K_b
+C = pygame.K_c
+D = pygame.K_d
+E = pygame.K_e
+F = pygame.K_f
+G = pygame.K_g
+H = pygame.K_h
+I = pygame.K_i
+J = pygame.K_j
+K = pygame.K_k
+L = pygame.K_l
+M = pygame.K_m
+N = pygame.K_n
+O = pygame.K_o
+P = pygame.K_p
+Q = pygame.K_q
+R = pygame.K_r
+S = pygame.K_s
+T = pygame.K_t
+U = pygame.K_u
+V = pygame.K_v
+W = pygame.K_w
+X = pygame.K_x
+Y = pygame.K_y
+Z = pygame.K_z
+DELETE = pygame.K_DELETE
+INSERT = pygame.K_INSERT
+HOME = pygame.K_HOME
+END = pygame.K_END
+PAGEUP = pygame.K_PAGEUP
+PAGEDOWN = pygame.K_PAGEDOWN
+F1 = pygame.K_F1
+F2 = pygame.K_F2
+F3 = pygame.K_F3
+F4 = pygame.K_F4
+F5 = pygame.K_F5
+F6 = pygame.K_F6
+F7 = pygame.K_F7
+F8 = pygame.K_F8
+F9 = pygame.K_F9
+F10 = pygame.K_F10
+F11 = pygame.K_F11
+F12 = pygame.K_F12
+F13 = pygame.K_F13
+F14 = pygame.K_F14
+F15 = pygame.K_F15
+NUMLOCK = pygame.K_NUMLOCK
+CAPSLOCK = pygame.K_CAPSLOCK
+SCROLLOCK = pygame.K_SCROLLOCK
+RSHIFT = pygame.K_RSHIFT
+LSHIFT = pygame.K_LSHIFT
+RCTRL = pygame.K_RCTRL
+LCTRL = pygame.K_LCTRL
+RALT = pygame.K_RALT
+LALT = pygame.K_LALT
+RMETA = pygame.K_RMETA
+LMETA = pygame.K_LMETA
+LSUPER = pygame.K_LSUPER
+RSUPER = pygame.K_RSUPER
+PRINT = pygame.K_PRINT
+EURO = pygame.K_EURO
 
-
+#detect the pression of a key
 def keydown(key):
     if pygame.key.get_pressed()[key]:
         return True
 
+#detect the release of a key
+def keyup(key):
+    for event in events_storage:
+        if event.type == pygame.KEYUP:
+            if event.key == key:
+                return True
 
 
-class Events():
-    def __init__(self):
-        self.CHECK = False
-        self.LIST = []
-EVENTS = Events()
 
-class Mouse():
-    def __init__(self):
-        self.leftdown = False
-        self.centraldown = False
-        self.rightdown = False
-MOUSE = Mouse()
+
+
+
+#class KeyStorage():
+    #def __init__(self):
+        #self.dictionary = dict
+#key_storage = KeyStorage()
 
 
 

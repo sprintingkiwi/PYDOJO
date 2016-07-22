@@ -1,12 +1,12 @@
 from actor import *
 
-#creo la finestra di gioco
+#create game display
 schermo = Screen(800, 600)
 
 
 
-#aggiorno lo schermo
+#update screen and events queue
 UPDATE()
 
-#attendo
-time.sleep(1)
+#wait
+sleep(1)

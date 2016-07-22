@@ -1,36 +1,44 @@
 from actor import *
 
-#creo la finestra di gioco
-schermo = Screen(800, 600)
+#create game display
+SCREEN(800, 600)
 
-pico = Actor("library/pyco1.png")
-pico.scale(0.2)
+#CREATE ACTOR
+pyco = Actor("library/pyco1.png")
+pyco.scale(0.2)
 
+#score variable
 presi = 0
 
+#CREATE SCORE TEXT
 punti = Text(presi, color=red)
 punti.goto(100, 100)
 
+#counter variable
 conta = 0
 
+
+#MAIN LOOP
 while True:
 
+    #MOVE RANDOM each 60 cycles
     conta = conta + 1
-
     if conta > 60:
-        pico.gorand()
+        pyco.gorand()
         conta = 0
 
-    if pico.click():
+    #ADD 1 POINT when target actor is clicked
+    if pyco.click():
         presi = presi + 1
         punti.write(presi)
 
-    schermo.fill(black)
-    pico.draw(schermo)
-    punti.draw(schermo)
+    #DRAW IMAGES
+    fill(black)
+    pyco.draw()
+    punti.draw()
 
-    #aggiorno lo schermo
+    #update screen and events queue
     UPDATE()
 
-    #attendo
+    #wait
     sleep(0.01)
