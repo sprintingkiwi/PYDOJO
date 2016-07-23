@@ -14,7 +14,7 @@ blue = [0, 0, 255]
 
 #useful variables
 mouse = "mouse"
-MOUSE = "mouse"
+
 
 #Objects for saving data
 class EventsStorage():
@@ -23,18 +23,29 @@ class EventsStorage():
         self.LIST = []
 events_storage = EventsStorage()
 
-class MouseState():
+
+class Mouse():
     def __init__(self):
         self.leftdown = False
         self.centraldown = False
         self.rightdown = False
-mouse_state = MouseState()
+        self.pos = pygame.mouse.get_pos()
+        self.x = self.pos[0]
+        self.y = self.pos[1]
+MOUSE = Mouse()
+
 
 class ScreenInfo():
     def __init__(self):
         self.screen = None
         self.resolution = []
 screen_info = ScreenInfo()
+
+
+class Counters():
+    def __init__(self):
+        self.counts = []
+counters_list = Counters()
 
 
 #SCREEN
@@ -49,12 +60,17 @@ def fill(color):
 
 def UPDATE():
     events_storage.LIST = pygame.event.get()
+    MOUSE.pos = pygame.mouse.get_pos()
+    MOUSE.x = MOUSE.pos[0]
+    MOUSE.y = MOUSE.pos[1]
+    for c in counters_list.counts:
+        c = c + 1
     pygame.display.update()
 
 
 #ACTOR CLASS
 class Actor(pygame.sprite.Sprite):
-    def __init__(self, path=None):
+    def __init__(self, path=None, cosname=None):
         pygame.sprite.Sprite.__init__(self)
         #Actor coordinates
         self.x = 0.0
@@ -62,44 +78,55 @@ class Actor(pygame.sprite.Sprite):
         #Actor angle direction
         self.direction = 0
         #image orientation
-        self.heading = 90
+        self.heading = 0
+        self.count = 0
         #load actor image
-        self.costumes = {}
-        self.costume = 1
-        self.original_costumes = {}
-        if path is not None:
-            self.load(path)
+        self.costumes = []
+        self.costume = ""
+        self.cosnumber = 0
+        self.original_costumes = []
+        self.coscount = 0
+        #if path is not None:
+        self.load(path, cosname)
         #rotation style
         self.rotate = True
         #needs to transform image?
         self.transform = False
 
     #find costume name from image path
-    def cosname(self, path):
+    def find_cosname(self, path):
         words = path.split("/")
-        lenpath = len(words)
-        costume = words[lenpath - 1]
+        costume = words[-1]
         return costume.split(".")[0]
 
     #update rect as the image changes
     def update_rect(self):
-        self.rect = self.costumes[self.costume].get_rect()
+        self.rect = self.costumes[self.cosnumber][1].get_rect()
         self.rect.centerx = int(self.x)
         self.rect.centery = int(self.y)
-        self.size = self.costumes[self.costume].get_size()
-        self.width = self.costumes[self.costume].get_width()
-        self.height = self.costumes[self.costume].get_height()
+        self.size = self.costumes[self.cosnumber][1].get_size()
+        self.width = self.costumes[self.cosnumber][1].get_width()
+        self.height = self.costumes[self.cosnumber][1].get_height()
 
     #load Actor's image
-    def load(self, path, costume=1):
-        self.costumes[costume] = pygame.image.load(path).convert_alpha()
-        self.original_costumes[costume] = self.costumes[costume]
-        self.mask = pygame.mask.from_surface(self.costumes[costume])
+    def load(self, path, cosname=None):
+        if cosname is None:
+            self.costume = self.find_cosname(path)
+        else:
+            self.costume = cosname
+        img = pygame.image.load(path).convert_alpha()
+        self.costumes.append([self.costume, img])
+        self.original_costumes.append([self.costume, img])
+        self.mask = pygame.mask.from_surface(self.costumes[self.cosnumber][1])
         self.update_rect()
-        #self.cosname(path)
 
-    def setcostume(self, costume):
-        self.costume = costume
+    def setcostume(self, newcostume):
+        if type(newcostume) is int:
+            self.cosnumber = newcostume
+        elif type(newcostume) is str:
+            for cos in self.costumes:
+                if cos[0] == newcostume:
+                    self.cosnumber = self.costumes.index(cos)
         self.update_rect()
 
     def getcostume(self):
@@ -132,20 +159,20 @@ class Actor(pygame.sprite.Sprite):
 
     def draw(self, rect=None):
         #if the image changed the transform functions apply
-        if self.transform is True:
-            self.transform = False
-            self.costumes[self.costume] = pygame.transform.rotate(self.costumes[self.costume], -self.heading)
-            self.update_rect()
-            screen_info.screen.blit(self.costumes[self.costume],
-                         ((self.x - self.width / 2),
-                         (self.y - self.height / 2)),
-                         rect)
-            #and then the original image is loaded
-            self.costumes[self.costume] = self.original_costumes[self.costume]
-        else:
-            screen_info.screen.blit(self.costumes[self.costume],
-                        ((self.x - self.width / 2), (self.y - self.height / 2)),
-                        rect)
+        #if self.transform is True:
+            #self.transform = False
+        self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
+        self.update_rect()
+        screen_info.screen.blit(self.costumes[self.cosnumber][1],
+                     ((self.x - self.width / 2),
+                     (self.y - self.height / 2)),
+                     rect)
+        #and then the original image is loaded
+        self.costumes[self.cosnumber][1] = self.original_costumes[self.cosnumber][1]
+        #else:
+            #screen_info.screen.blit(self.costumes[self.cosnumber][1],
+                        #((self.x - self.width / 2), (self.y - self.height / 2)),
+                        #rect)
 
     def goto(self, x, y=0):
         if type(x) is int:
@@ -156,6 +183,10 @@ class Actor(pygame.sprite.Sprite):
             pos = pygame.mouse.get_pos()
             self.x = pos[0]
             self.y = pos[1]
+
+        else:
+            self.x = x.x
+            self.y = x.y
 
         self.update_rect()
 
@@ -211,16 +242,17 @@ class Actor(pygame.sprite.Sprite):
 
     def flip(self, direction):
         if direction == "horizontal":
-            self.costumes[self.costume] = pygame.transform.flip(self.costumes[self.costume], True, False)
+            self.costumes[self.cosnumber][1] = pygame.transform.flip(self.costumes[self.cosnumber][1], True, False)
         if direction == "vertical":
-            self.costumes[self.costume] = pygame.transform.flip(self.costumes[self.costume], False, True)
+            self.costumes[self.cosnumber][1] = pygame.transform.flip(self.costumes[self.cosnumber][1], False, True)
         self.update_rect()
 
     def scale(self, w, h=None):
         if h is not None:
             for cos in self.costumes:
-                self.costumes[cos] = pygame.transform.scale(self.costumes[cos], (w, h))
-                self.original_costumes[cos] = self.costumes[cos]
+                cos[1] = pygame.transform.scale(cos[1], (w, h))
+            for cos in self.original_costumes:
+                cos[1] = pygame.transform.scale(cos[1], (w, h))
             self.update_rect()
         else:
             width = int(self.width * w)
@@ -231,26 +263,26 @@ class Actor(pygame.sprite.Sprite):
     def click(self, option="down"):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
-        if not mouse_state.leftdown:
+        if not MOUSE.leftdown:
             if self.rect.collidepoint(mousepos) and buttons[0] == 1:
-                mouse_state.leftdown = True
+                MOUSE.leftdown = True
                 return True
         else:
             for event in events_storage.LIST:
                 if event.type == pygame.MOUSEBUTTONUP:
-                    mouse_state.leftdown = False
+                    MOUSE.leftdown = False
 
     def rclick(self, option="down"):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
-        if not mouse_state.rightdown:
+        if not MOUSE.rightdown:
             if self.rect.collidepoint(mousepos) and buttons[2] == 1:
-                mouse_state.rightdown = True
+                MOUSE.rightdown = True
                 return True
         else:
             for event in events_storage.LIST:
                 if event.type == pygame.MOUSEBUTTONUP:
-                    mouse_state.rightdown = False
+                    MOUSE.rightdown = False
 
     #Mask collision
     def mcollide(self, target):
@@ -262,6 +294,25 @@ class Actor(pygame.sprite.Sprite):
     #Rect collision
     def collide(self, target):
         return self.rect.colliderect(target.rect)
+
+    def collidepoint(self, point):
+        if point == MOUSE:
+            return self.rect.collidepoint([MOUSE.x, MOUSE.y])
+        else:
+            return self.rect.collidepoint(point)
+
+    def nextcostume(self, pause):
+        if self.coscount > pause:
+            self.setcostume(self.costume + 1)
+            self.coscount = 0
+        self.coscount += 1
+
+    #pause actor's actions (da completare)
+    def pause(self, t):
+        counters_list.counts.append(self.count)
+        while self.count < t:
+            pass
+        counters_list.counts.remove(self.count)
 
 
 class Text(Actor):
@@ -285,8 +336,14 @@ class Text(Actor):
                                         self.fontsize,
                                         self.bold,
                                         self.italic)
-        self.costumes[self.costume] = self.font.render(self.string, True, self.color)
+        img = self.font.render(self.string, True, self.color)
+        self.costumes[self.cosnumber][1] = img
+        self.original_costumes[self.cosnumber][1] = img
         self.update_rect()
+
+    def load(self, path, cosname):
+        self.costumes.append([self.costume, None])
+        self.original_costumes.append([self.costume, None])
 
     def write(self, string):
         self.string = str(string)
@@ -296,11 +353,11 @@ class Text(Actor):
         self.fontsize = fontsize
         self.update_text()
 
-    def setbold(self, bold):
+    def setbold(self, bold=True):
         self.bold = bold
         self.update_text()
 
-    def setitalic(self, italic):
+    def setitalic(self, italic=True):
         self.italic = italic
         self.update_text()
 

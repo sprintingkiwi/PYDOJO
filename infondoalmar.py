@@ -12,12 +12,13 @@ shark.goto(400, 300)
 fish = Actor("library/fish1.png")
 fish.scale(0.2)
 fish.goto(700, 100)
-fish.point(90)
+fish.point(30)
 
 #CREATE BACKGROUND
 sfondo = Actor("library/sea.png")
 sfondo.scale(800, 600)
 sfondo.goto(400, 300)
+#sfondo.point(90)
 
 
 #MAIN LOOP

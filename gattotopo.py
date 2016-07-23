@@ -23,13 +23,14 @@ sfondo.goto(400, 300)
 gameover = False
 while not gameover:
 
-    #SET ACTORS DIRECTION
-    topo.point(mouse)
+    #CAT MOVEMENT
     gatto.point(topo)
-
-    #SET ACTORS MOVEMENT
-    topo.forward(4)
     gatto.forward(1)
+
+    #MOUSE (the animal) MOVEMENT
+    if not topo.collidepoint(MOUSE):
+        topo.point(MOUSE)
+        topo.forward(4)
 
     #DRAW ACTORS
     sfondo.draw()

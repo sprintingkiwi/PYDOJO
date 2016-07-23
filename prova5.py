@@ -7,15 +7,15 @@ dyno = Actor("library/dinosaur1.png")
 dyno.scale(0.2)
 dyno.goto(500, 300)
 
-star = Actor("library/seastar1.png")
-star.load("library/seastar2.png", 2)
+star = Actor("library/seastar1.png", "felice")
+star.load("library/seastar2.png", "triste")
 star.scale(100, 200)
 star.goto(600, 500)
 
-a = Text("ciao", color=green)
+a = Text("ciao", color=green, italic=True)
+print(a.costumes)
 a.setfontsize(48)
 a.setbold(True)
-a.setitalic(True)
 a.goto(100, 100)
 
 #dyno.rotate = False
@@ -58,13 +58,11 @@ while True:
 
     if dyno.collide(star):
         print(dyno.collide(star))
-        star.setcostume(2)
-        #star.scale(100, 200)
+        star.setcostume(1)
         hey.play()
 
-    if star.costume == 2 and not star.collide(dyno):
-        star.setcostume(1)
-        #star.scale(100, 200)
+    if star.costume == "triste" and not star.collide(dyno):
+        star.setcostume("felice")
 
     fill(white)
     a.draw()
