@@ -132,6 +132,12 @@ class Actor(pygame.sprite.Sprite):
     def getcostume(self):
         return self.costume
 
+    def nextcostume(self, pause):
+        if self.coscount > pause:
+            self.setcostume(self.costume + 1)
+            self.coscount = 0
+        self.coscount += 1
+
     def setposition(self, pos):
         self.x = pos[0]
         self.y = pos[1]
@@ -161,18 +167,19 @@ class Actor(pygame.sprite.Sprite):
         #if the image changed the transform functions apply
         #if self.transform is True:
             #self.transform = False
-        self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
-        self.update_rect()
-        screen_info.screen.blit(self.costumes[self.cosnumber][1],
-                     ((self.x - self.width / 2),
-                     (self.y - self.height / 2)),
-                     rect)
-        #and then the original image is loaded
-        self.costumes[self.cosnumber][1] = self.original_costumes[self.cosnumber][1]
-        #else:
-            #screen_info.screen.blit(self.costumes[self.cosnumber][1],
-                        #((self.x - self.width / 2), (self.y - self.height / 2)),
-                        #rect)
+        if self.rotate is True:
+            self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
+            self.update_rect()
+            screen_info.screen.blit(self.costumes[self.cosnumber][1],
+                         ((self.x - self.width / 2),
+                         (self.y - self.height / 2)),
+                         rect)
+            #and then the original image is loaded
+            self.costumes[self.cosnumber][1] = self.original_costumes[self.cosnumber][1]
+        else:
+            screen_info.screen.blit(self.costumes[self.cosnumber][1],
+                        ((self.x - self.width / 2), (self.y - self.height / 2)),
+                        rect)
 
     def goto(self, x, y=0):
         if type(x) is int:
@@ -301,18 +308,11 @@ class Actor(pygame.sprite.Sprite):
         else:
             return self.rect.collidepoint(point)
 
-    def nextcostume(self, pause):
-        if self.coscount > pause:
-            self.setcostume(self.costume + 1)
-            self.coscount = 0
-        self.coscount += 1
-
     #pause actor's actions (da completare)
     def pause(self, t):
         counters_list.counts.append(self.count)
-        while self.count < t:
-            pass
-        counters_list.counts.remove(self.count)
+        if self.count >= t:
+            counters_list.counts.remove(self.count)
 
 
 class Text(Actor):

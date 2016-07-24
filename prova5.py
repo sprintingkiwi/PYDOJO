@@ -1,4 +1,4 @@
-from actor import *
+from pydojo import *
 
 #create game display
 SCREEN(1280, 720)
@@ -28,6 +28,8 @@ c.goto(500, 400)
 
 hey = Sound("library/hey.wav")
 
+#asize = 1.0
+
 while True:
 
     if dyno.click():
@@ -47,6 +49,7 @@ while True:
 
     #dyno.direction = 90
     #dyno.left(1)
+    a.right(1)
     r.right(10)
     c.left(5)
     dyno.goto(mouse)
@@ -55,6 +58,11 @@ while True:
     r.forward(2)
     c.forward(20)
     #dyno.gorand()
+
+    #if asize > 10:
+        #asize = 0.1
+    #asize += 0.1
+##    a.scale(0.2)
 
     if dyno.collide(star):
         print(dyno.collide(star))

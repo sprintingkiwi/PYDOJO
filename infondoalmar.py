@@ -1,4 +1,4 @@
-from actor import *
+from pydojo import *
 
 #create game display
 SCREEN(800, 600)
