@@ -30,6 +30,8 @@ hey = Sound("library/hey.wav")
 
 #asize = 1.0
 
+print(actorsInfo.actorsList)
+
 while True:
 
     if dyno.click():
@@ -68,6 +70,7 @@ while True:
         print(dyno.collide(star))
         star.setcostume(1)
         hey.play()
+        dyno.pause(3)
 
     if star.costume == "triste" and not star.collide(dyno):
         star.setcostume("felice")

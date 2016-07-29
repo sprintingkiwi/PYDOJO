@@ -21,7 +21,7 @@ class EventsStorage():
     def __init__(self):
         self.CHECK = False
         self.LIST = []
-events_storage = EventsStorage()
+eventsStorage = EventsStorage()
 
 
 class Mouse():
@@ -39,38 +39,52 @@ class ScreenInfo():
     def __init__(self):
         self.screen = None
         self.resolution = []
-screen_info = ScreenInfo()
+screenInfo = ScreenInfo()
 
 
-class Counters():
+class ActorsInfo():
     def __init__(self):
+        self.actorsList = []
         self.counts = []
-counters_list = Counters()
+actorsInfo = ActorsInfo()
 
 
 #SCREEN
 def SCREEN(w, h):
-    screen_info.resolution = [w, h]
-    screen_info.screen = pygame.display.set_mode([w, h])
+    screenInfo.resolution = [w, h]
+    screenInfo.screen = pygame.display.set_mode([w, h])
 
 
 def fill(color):
-    screen_info.screen.fill(color)
+    screenInfo.screen.fill(color)
 
 
 def UPDATE():
-    events_storage.LIST = pygame.event.get()
+    eventsStorage.LIST = pygame.event.get()
     MOUSE.pos = pygame.mouse.get_pos()
     MOUSE.x = MOUSE.pos[0]
     MOUSE.y = MOUSE.pos[1]
-    for c in counters_list.counts:
-        c = c + 1
+    actualTime = pygame.time.get_ticks()
+    for actor in actorsInfo.actorsList:
+        deltaTime = actualTime - actor.startTime
+        if deltaTime >= actor.pauseTime:
+            actor.paused = False
+
     pygame.display.update()
+
+
+def pausable(func):
+    def wrapper(self, *args):
+        if not self.paused:
+            return func(self, *args)
+    return wrapper
+
 
 
 #ACTOR CLASS
 class Actor(pygame.sprite.Sprite):
     def __init__(self, path=None, cosname=None):
+        actorsInfo.actorsList.append(self)
         pygame.sprite.Sprite.__init__(self)
         #Actor coordinates
         self.x = 0.0
@@ -80,11 +94,14 @@ class Actor(pygame.sprite.Sprite):
         #image orientation
         self.heading = 0
         self.count = 0
+        self.paused = False
+        self.pauseTime = 0.0
+        self.startTime = 0.0
         #load actor image
         self.costumes = []
         self.costume = ""
         self.cosnumber = 0
-        self.original_costumes = []
+        self.originalCostumes = []
         self.coscount = 0
         #if path is not None:
         self.load(path, cosname)
@@ -94,13 +111,13 @@ class Actor(pygame.sprite.Sprite):
         self.transform = False
 
     #find costume name from image path
-    def find_cosname(self, path):
+    def findCosname(self, path):
         words = path.split("/")
         costume = words[-1]
         return costume.split(".")[0]
 
     #update rect as the image changes
-    def update_rect(self):
+    def updateRect(self):
         self.rect = self.costumes[self.cosnumber][1].get_rect()
         self.rect.centerx = int(self.x)
         self.rect.centery = int(self.y)
@@ -111,14 +128,14 @@ class Actor(pygame.sprite.Sprite):
     #load Actor's image
     def load(self, path, cosname=None):
         if cosname is None:
-            self.costume = self.find_cosname(path)
+            self.costume = self.findCosname(path)
         else:
             self.costume = cosname
         img = pygame.image.load(path).convert_alpha()
         self.costumes.append([self.costume, img])
-        self.original_costumes.append([self.costume, img])
+        self.originalCostumes.append([self.costume, img])
         self.mask = pygame.mask.from_surface(self.costumes[self.cosnumber][1])
-        self.update_rect()
+        self.updateRect()
 
     def setcostume(self, newcostume):
         if type(newcostume) is int:
@@ -127,7 +144,7 @@ class Actor(pygame.sprite.Sprite):
             for cos in self.costumes:
                 if cos[0] == newcostume:
                     self.cosnumber = self.costumes.index(cos)
-        self.update_rect()
+        self.updateRect()
 
     def getcostume(self):
         return self.costume
@@ -163,21 +180,22 @@ class Actor(pygame.sprite.Sprite):
     def getdirection(self):
         return self.direction
 
+    @pausable
     def draw(self, rect=None):
         #if the image changed the transform functions apply
         #if self.transform is True:
             #self.transform = False
         if self.rotate is True:
             self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
-            self.update_rect()
-            screen_info.screen.blit(self.costumes[self.cosnumber][1],
+            self.updateRect()
+            screenInfo.screen.blit(self.costumes[self.cosnumber][1],
                          ((self.x - self.width / 2),
                          (self.y - self.height / 2)),
                          rect)
             #and then the original image is loaded
-            self.costumes[self.cosnumber][1] = self.original_costumes[self.cosnumber][1]
+            self.costumes[self.cosnumber][1] = self.originalCostumes[self.cosnumber][1]
         else:
-            screen_info.screen.blit(self.costumes[self.cosnumber][1],
+            screenInfo.screen.blit(self.costumes[self.cosnumber][1],
                         ((self.x - self.width / 2), (self.y - self.height / 2)),
                         rect)
 
@@ -195,17 +213,18 @@ class Actor(pygame.sprite.Sprite):
             self.x = x.x
             self.y = x.y
 
-        self.update_rect()
+        self.updateRect()
 
     def gorand(self, rangex=[0, 800], rangey=[0, 600]):
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
-        self.update_rect()
+        self.updateRect()
 
+    #@pausable
     def forward(self, steps):
         self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
-        self.update_rect()
+        self.updateRect()
 
     def right(self, angle):
         self.direction = (self.direction + angle) % 360
@@ -219,6 +238,7 @@ class Actor(pygame.sprite.Sprite):
         if self.rotate:
             self.transform = True
 
+    #@pausable
     def point(self, target):
         #set heading as angle
         if type(target) is int and type(target) is not str:
@@ -252,15 +272,15 @@ class Actor(pygame.sprite.Sprite):
             self.costumes[self.cosnumber][1] = pygame.transform.flip(self.costumes[self.cosnumber][1], True, False)
         if direction == "vertical":
             self.costumes[self.cosnumber][1] = pygame.transform.flip(self.costumes[self.cosnumber][1], False, True)
-        self.update_rect()
+        self.updateRect()
 
     def scale(self, w, h=None):
         if h is not None:
             for cos in self.costumes:
                 cos[1] = pygame.transform.scale(cos[1], (w, h))
-            for cos in self.original_costumes:
+            for cos in self.originalCostumes:
                 cos[1] = pygame.transform.scale(cos[1], (w, h))
-            self.update_rect()
+            self.updateRect()
         else:
             width = int(self.width * w)
             height = int(self.height * w)
@@ -275,7 +295,7 @@ class Actor(pygame.sprite.Sprite):
                 MOUSE.leftdown = True
                 return True
         else:
-            for event in events_storage.LIST:
+            for event in eventsStorage.LIST:
                 if event.type == pygame.MOUSEBUTTONUP:
                     MOUSE.leftdown = False
 
@@ -287,7 +307,7 @@ class Actor(pygame.sprite.Sprite):
                 MOUSE.rightdown = True
                 return True
         else:
-            for event in events_storage.LIST:
+            for event in eventsStorage.LIST:
                 if event.type == pygame.MOUSEBUTTONUP:
                     MOUSE.rightdown = False
 
@@ -310,9 +330,16 @@ class Actor(pygame.sprite.Sprite):
 
     #pause actor's actions (da completare)
     def pause(self, t):
-        counters_list.counts.append(self.count)
-        if self.count >= t:
-            counters_list.counts.remove(self.count)
+        self.paused = True
+        #self.pauseTime = pygame.time.set_pauseTime()
+        self.pauseTime = t * 1000
+        self.startTime = pygame.time.get_ticks()
+        ##counters_list.counts.append(self.count)
+        #if self.count >= t:
+            #self.count = 0
+            #self.paused = False
+            ##counters_list.counts.remove(self.count)
+        #self.count += 1
 
 
 class Text(Actor):
@@ -329,41 +356,41 @@ class Text(Actor):
         self.bold = bold
         self.italic = italic
         self.color = color
-        self.update_text()
+        self.updateText()
 
-    def update_text(self):
+    def updateText(self):
         self.font = pygame.font.SysFont(self.name,
                                         self.fontsize,
                                         self.bold,
                                         self.italic)
         img = self.font.render(self.string, True, self.color)
         self.costumes[self.cosnumber][1] = img
-        self.original_costumes[self.cosnumber][1] = img
-        self.update_rect()
+        self.originalCostumes[self.cosnumber][1] = img
+        self.updateRect()
 
     def load(self, path, cosname):
         self.costumes.append([self.costume, None])
-        self.original_costumes.append([self.costume, None])
+        self.originalCostumes.append([self.costume, None])
 
     def write(self, string):
         self.string = str(string)
-        self.update_text()
+        self.updateText()
 
     def setfontsize(self, fontsize):
         self.fontsize = fontsize
-        self.update_text()
+        self.updateText()
 
     def setbold(self, bold=True):
         self.bold = bold
-        self.update_text()
+        self.updateText()
 
     def setitalic(self, italic=True):
         self.italic = italic
-        self.update_text()
+        self.updateText()
 
     def color(self, color):
         self.color = color
-        self.update_text()
+        self.updateText()
 
 
 class Rect(Actor):
@@ -373,12 +400,12 @@ class Rect(Actor):
         self.size = size
         self.color = color
         self.line_width = line_width
-        self.update_rect()
+        self.updateRect()
         self.direction = 0
         self.transform = False
         self.rotate = False
 
-    def update_rect(self):
+    def updateRect(self):
         self.rect = pygame.Rect(int(self.x),
                                 int(self.y),
                                 self.size[0],
@@ -387,7 +414,7 @@ class Rect(Actor):
         self.rect.centery = int(self.y)
 
     def draw(self):
-        pygame.draw.rect(screen_info.screen,
+        pygame.draw.rect(screenInfo.screen,
                              self.color,
                              self.rect,
                              self.line_width)
@@ -400,12 +427,12 @@ class Circle(Actor):
         self.radius = int(radius)
         self.color = color
         self.line_width = int(line_width)
-        self.update_rect()
+        self.updateRect()
         self.direction = 0
         self.transform = False
         self.rotate = False
 
-    def update_rect(self):
+    def updateRect(self):
         self.rect = pygame.Rect(int(self.x),
                                 int(self.y),
                                 self.radius * 2,
@@ -414,7 +441,7 @@ class Circle(Actor):
         self.rect.centery = int(self.y)
 
     def draw(self):
-        pygame.draw.circle(screen_info.screen,
+        pygame.draw.circle(screenInfo.screen,
                            self.color,
                            [self.rect.centerx, self.rect.centery],
                            self.radius,
@@ -556,7 +583,7 @@ def keydown(key):
 
 #detect the release of a key
 def keyup(key):
-    for event in events_storage:
+    for event in eventsStorage:
         if event.type == pygame.KEYUP:
             if event.key == key:
                 return True
@@ -585,9 +612,9 @@ def keyup(key):
 ########################################
 
 #Multi-Thread recipe
-#class Operation(threading._Timer):
+#class Operation(threading._pauseTime):
     #def __init__(self, *args, **kwargs):
-        #threading._Timer.__init__(self, *args, **kwargs)
+        #threading._pauseTime.__init__(self, *args, **kwargs)
         #self.setDaemon(True)
 
     #def run(self):
@@ -619,8 +646,8 @@ def keyup(key):
     #pygame.event.get()
     #print("sto andando")
 
-#timer = Manager()
-#timer.add_operation(events, 0.01)
+#pauseTime = Manager()
+#pauseTime.add_operation(events, 0.01)
 
 
 
