@@ -70,7 +70,7 @@ while True:
         print(dyno.collide(star))
         star.setcostume(1)
         hey.play()
-        dyno.pause(3)
+        dyno.pause(1)
 
     if star.costume == "triste" and not star.collide(dyno):
         star.setcostume("felice")

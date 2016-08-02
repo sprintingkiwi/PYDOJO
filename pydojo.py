@@ -66,9 +66,12 @@ def UPDATE():
     MOUSE.y = MOUSE.pos[1]
     actualTime = pygame.time.get_ticks()
     for actor in actorsInfo.actorsList:
-        deltaTime = actualTime - actor.startTime
+        deltaTime = actualTime - actor.startPauseTime
         if deltaTime >= actor.pauseTime:
             actor.paused = False
+        deltaTime = actualTime - actor.startHideTime
+        if deltaTime >= actor.hideTime:
+            actor.hidden = False
 
     pygame.display.update()
 
@@ -79,6 +82,12 @@ def pausable(func):
             return func(self, *args)
     return wrapper
 
+
+def hideaway(func):
+    def wrapper(self, *args):
+        if not self.hidden:
+            return func(self, *args)
+    return wrapper
 
 
 #ACTOR CLASS
@@ -95,8 +104,11 @@ class Actor(pygame.sprite.Sprite):
         self.heading = 0
         self.count = 0
         self.paused = False
+        self.hidden = False
         self.pauseTime = 0.0
-        self.startTime = 0.0
+        self.hideTime = 0.0
+        self.startPauseTime = 0.0
+        self.startHideTime = 0.0
         #load actor image
         self.costumes = []
         self.costume = ""
@@ -180,7 +192,7 @@ class Actor(pygame.sprite.Sprite):
     def getdirection(self):
         return self.direction
 
-    @pausable
+    @hideaway
     def draw(self, rect=None):
         #if the image changed the transform functions apply
         #if self.transform is True:
@@ -199,6 +211,7 @@ class Actor(pygame.sprite.Sprite):
                         ((self.x - self.width / 2), (self.y - self.height / 2)),
                         rect)
 
+    @pausable
     def goto(self, x, y=0):
         if type(x) is int:
             self.x = x
@@ -215,30 +228,33 @@ class Actor(pygame.sprite.Sprite):
 
         self.updateRect()
 
+    @pausable
     def gorand(self, rangex=[0, 800], rangey=[0, 600]):
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
         self.updateRect()
 
-    #@pausable
+    @pausable
     def forward(self, steps):
         self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
         self.updateRect()
 
+    @pausable
     def right(self, angle):
         self.direction = (self.direction + angle) % 360
         self.heading = self.direction - 90
         if self.rotate:
             self.transform = True
 
+    @pausable
     def left(self, angle):
         self.direction = (self.direction - angle) % 360
         self.heading = self.direction - 90
         if self.rotate:
             self.transform = True
 
-    #@pausable
+    @pausable
     def point(self, target):
         #set heading as angle
         if type(target) is int and type(target) is not str:
@@ -331,15 +347,17 @@ class Actor(pygame.sprite.Sprite):
     #pause actor's actions (da completare)
     def pause(self, t):
         self.paused = True
-        #self.pauseTime = pygame.time.set_pauseTime()
         self.pauseTime = t * 1000
-        self.startTime = pygame.time.get_ticks()
-        ##counters_list.counts.append(self.count)
-        #if self.count >= t:
-            #self.count = 0
-            #self.paused = False
-            ##counters_list.counts.remove(self.count)
-        #self.count += 1
+        self.startPauseTime = pygame.time.get_ticks()
+
+    def hide(self, t):
+        self.hidden = True
+        self.hideTime = t * 1000
+        self.startHideTime = pygame.time.get_ticks()
+
+    def show(self):
+        self.hidden = False
+
 
 
 class Text(Actor):
@@ -404,6 +422,8 @@ class Rect(Actor):
         self.direction = 0
         self.transform = False
         self.rotate = False
+        self.paused = False
+        self.hidden = False
 
     def updateRect(self):
         self.rect = pygame.Rect(int(self.x),
@@ -413,6 +433,7 @@ class Rect(Actor):
         self.rect.centerx = int(self.x)
         self.rect.centery = int(self.y)
 
+    @hideaway
     def draw(self):
         pygame.draw.rect(screenInfo.screen,
                              self.color,
@@ -431,6 +452,8 @@ class Circle(Actor):
         self.direction = 0
         self.transform = False
         self.rotate = False
+        self.paused = False
+        self.hidden = False
 
     def updateRect(self):
         self.rect = pygame.Rect(int(self.x),
@@ -440,6 +463,7 @@ class Circle(Actor):
         self.rect.centerx = int(self.x)
         self.rect.centery = int(self.y)
 
+    @hideaway
     def draw(self):
         pygame.draw.circle(screenInfo.screen,
                            self.color,
