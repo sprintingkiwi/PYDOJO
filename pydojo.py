@@ -59,11 +59,15 @@ def fill(color):
     screenInfo.screen.fill(color)
 
 
+# one of the most important functions
 def UPDATE():
+    # refresh the event list
     eventsStorage.LIST = pygame.event.get()
+    # refresh mouse position
     MOUSE.pos = pygame.mouse.get_pos()
     MOUSE.x = MOUSE.pos[0]
     MOUSE.y = MOUSE.pos[1]
+    # manage the time for hide and pause methods
     actualTime = pygame.time.get_ticks()
     for actor in actorsInfo.actorsList:
         deltaTime = actualTime - actor.startPauseTime
@@ -72,7 +76,7 @@ def UPDATE():
         deltaTime = actualTime - actor.startHideTime
         if deltaTime >= actor.hideTime:
             actor.hidden = False
-
+    # refresh the pygame screen
     pygame.display.update()
 
 
@@ -149,6 +153,9 @@ class Actor(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.costumes[self.cosnumber][1])
         self.updateRect()
 
+    def loadcostume(self, path, cosname=None):
+        self.load(path, cosname)
+
     def setcostume(self, newcostume):
         if type(newcostume) is int:
             self.cosnumber = newcostume
@@ -167,9 +174,13 @@ class Actor(pygame.sprite.Sprite):
             self.coscount = 0
         self.coscount += 1
 
-    def setposition(self, pos):
-        self.x = pos[0]
-        self.y = pos[1]
+    def setposition(self, pos=0, y=0):
+        if pos is float:
+            self.x = pos
+            self.y = y
+        else:
+            self.x = pos[0]
+            self.y = pos[1]
 
     def setx(self, x):
         self.x = x
