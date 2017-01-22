@@ -1,2 +1,2 @@
 # PYDOJO
-A playful way to learn coding
+A playful way to learn coding with Python
