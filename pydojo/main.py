@@ -1,8 +1,7 @@
-import pygame, math, random, time, os
+import pygame, math, random, time, os, subprocess
+from pyfirmata import *
 from time import sleep
-#import thread
-#import threading
-#, types, inspect
+
 pygame.init()
 
 #COLORS
@@ -206,8 +205,6 @@ class Actor(pygame.sprite.Sprite):
     @hideaway
     def draw(self, rect=None):
         #if the image changed the transform functions apply
-        #if self.transform is True:
-            #self.transform = False
         if self.rotate is True:
             self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
             self.updateRect()
@@ -611,14 +608,21 @@ RSUPER = pygame.K_RSUPER
 PRINT = pygame.K_PRINT
 EURO = pygame.K_EURO
 
-#detect the pression of a key
-def keydown(key):
+# detect the continuous pression of a key
+def key(key):
     if pygame.key.get_pressed()[key]:
         return True
 
-#detect the release of a key
+# detect the single pression of a key
+def keydown(key):
+    for event in eventsStorage.LIST:
+        if event.type == pygame.KEYDOWN:
+            if event.key == key:
+                return True
+
+# detect the release of a key
 def keyup(key):
-    for event in eventsStorage:
+    for event in eventsStorage.LIST:
         if event.type == pygame.KEYUP:
             if event.key == key:
                 return True
