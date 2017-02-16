@@ -21,14 +21,15 @@ except:
 gufo = Actor('example_library/gufo.png')
 gufo.goto(width/2, height/2)
 
-uno = Arduino('COM5')
+uno = Arduino('/dev/rfcomm0')
+#uno = Arduino('/dev/ttyACM0')
 
-rightPwm = uno.get_pin('d:10:p')
-leftPwm = uno.get_pin('d:5:p')
-RF = uno.get_pin('d:9:o')
-RB = uno.get_pin('d:8:o')
-LF = uno.get_pin('d:7:o')
-LB = uno.get_pin('d:6:o')
+rightPwm = uno.get_pin('d:5:p')
+leftPwm = uno.get_pin('d:10:p')
+RF = uno.get_pin('d:7:o')
+RB = uno.get_pin('d:6:o')
+LF = uno.get_pin('d:9:o')
+LB = uno.get_pin('d:8:o')
 
 RF.write(True)
 RB.write(False)
