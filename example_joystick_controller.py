@@ -18,9 +18,10 @@ try:
 except:
     print("no GamePad found...")
 
-gufo = Actor('example_library/gufo.png')
-gufo.goto(width/2, height/2)
+gobo = Actor('example_library/gobo.png')
+gobo.goto(width/2, height/2)
 
+#os.call('sudo rfcomm bind /dev/rfcomm0  00:15:83:35:86:A2 1')
 uno = Arduino('/dev/rfcomm0')
 #uno = Arduino('/dev/ttyACM0')
 
@@ -87,16 +88,17 @@ while True:
 
     # GAMEPAD CONTROL
     if gamepad_control:
+        #print pad.get_numbuttons()
         horizontal = pad.get_axis(0)
+        
+        for event in pygame.event.get():
+            print event
 
         if horizontal > 0.2:
             rightPwm.write(0.9)
-            gufo.x += int(horizontal * 10)
         if horizontal < -0.2:
             leftPwm.write(0.9)
-            gufo.x += int(horizontal * 10)
 
-    fill(bianco)
-    gufo.draw()
+    gobo.draw()
     sleep(0.01)
     UPDATE()
