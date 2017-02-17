@@ -628,7 +628,35 @@ def keyup(key):
                 return True
 
 
-
+# GAMEPAD
+_gamepadControl = False
+try:
+    # creo un oggetto Joystick
+    _pad0 = pygame.joystick.Joystick(0)
+    # inizializzo il joystick
+    _pad0.init()
+    _gamepadControl = True
+except:
+    print('no GamePad found...')
+    
+def buttondown(btn):
+    if _gamepadControl:
+        return _pad0.get_button(btn)
+    else:
+        print('no gamepad found...')
+        pass
+        
+def axis(hand='left', direction='horizontal'):
+    if hand == 'left':
+        if direction == 'horizontal':            
+            return _pad0.get_axis(0)
+        elif direction == 'vertical':
+            return _pad0.get_axis(1)
+    elif hand == 'right':
+        if direction == 'horizontal':            
+            return _pad0.get_axis(3)
+        elif direction == 'vertical':
+            return _pad0.get_axis(4)
 
 
 
