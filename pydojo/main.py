@@ -647,16 +647,20 @@ def buttondown(btn):
         pass
         
 def axis(hand='left', direction='horizontal'):
-    if hand == 'left':
-        if direction == 'horizontal':            
-            return _pad0.get_axis(0)
-        elif direction == 'vertical':
-            return _pad0.get_axis(1)
-    elif hand == 'right':
-        if direction == 'horizontal':            
-            return _pad0.get_axis(3)
-        elif direction == 'vertical':
-            return _pad0.get_axis(4)
+    if _gamepadControl:
+        if hand == 'left':
+            if direction == 'horizontal':
+                return _pad0.get_axis(0)
+            elif direction == 'vertical':
+                return _pad0.get_axis(1)
+        elif hand == 'right':
+            if direction == 'horizontal':
+                return _pad0.get_axis(3)
+            elif direction == 'vertical':
+                return _pad0.get_axis(4)
+    else:
+        print('no gamepad found...')
+        pass
 
 
 

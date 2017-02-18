@@ -6,7 +6,7 @@ width = 800
 height = 600
 SCREEN(width, height)
 
-bianco = [255, 255, 255]
+#bianco = [255, 255, 255]
 
 #gameGAMEPAD0_control = False
 #try:
