@@ -6,24 +6,12 @@ width = 800
 height = 600
 SCREEN(width, height)
 
-#bianco = [255, 255, 255]
-
-#gameGAMEPAD0_control = False
-#try:
-    ## creo un oggetto Joystick
-    #GAMEPAD0 = pygame.joystick.Joystick(0)
-    ## inizializzo il joystick
-    #GAMEPAD0.init()
-    #gameGAMEPAD0_control = True
-#except:
-    #print("no GamePad found...")
-
 gobo = Actor('example_library/gobo.png')
 gobo.goto(width/2, height/2)
 
 os.system('sudo rfcomm bind /dev/rfcomm0  00:15:83:35:86:A2 1')
 uno = Arduino('/dev/rfcomm0')
-#uno = Arduino('/dev/ttyACM0')
+#uno = Arduino('COM6')
 
 rightPwm = uno.get_pin('d:5:p')
 leftPwm = uno.get_pin('d:10:p')
