@@ -25,7 +25,7 @@ RB.write(False)
 LF.write(True)
 LB.write(False)
 
-direction = "forward"
+direction = 'forward'
 
 def shutdown():
     RF.write(False)
@@ -36,19 +36,19 @@ def shutdown():
     leftPwm.write(0)
 
 def power_right_motor(value=1):
-    if direction == "forward":
+    if direction == 'forward':
             RF.write(True)
             RB.write(False)
-    elif direction == "back":
+    elif direction == 'back':
             RF.write(False)
             RB.write(True)
     rightPwm.write(value)
     
 def power_left_motor(value=1):
-    if direction == "forward":
+    if direction == 'forward':
         LF.write(True)
         LB.write(False)
-    elif direction == "back":
+    elif direction == 'back':
         LF.write(False)
         LB.write(True)
     leftPwm.write(value)
@@ -90,19 +90,14 @@ while True:
 
     # GAMEPAD CONTROL
     horizontal = axis('left', 'horizontal')
-
-    if horizontal > 0.2:
-        #rightPwm.write(0.9)
-        pass
-    if horizontal < -0.2:
-        #leftPwm.write(0.9)
-        pass
         
+    # reverse gear
     if buttondown(0):
-        if direction == 'forward':
-            direction = 'back'
-        elif direction == 'back':
-            direction = 'forward'    
+        direction = 'back'
+    else:
+        direction = 'forward'
+    
+    # low-level motor control    
     if buttondown(4):
         power_left_motor()
     if buttondown(5):
@@ -111,6 +106,14 @@ while True:
         shutdown_left_motor()
     if not buttondown(5):
         shutdown_right_motor()
+        
+    # high-level motor control
+    if horizontal > 0.2:
+        #rightPwm.write(0.9)
+        pass
+    if horizontal < -0.2:
+        #leftPwm.write(0.9)
+        pass
 
 
     gobo.draw()
