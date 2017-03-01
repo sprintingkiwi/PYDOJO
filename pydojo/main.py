@@ -54,6 +54,10 @@ def SCREEN(w, h):
     screenInfo.screen = pygame.display.set_mode([w, h])
 
 
+def screen(w, h):
+    SCREEN(w, h)
+
+
 def fill(color):
     screenInfo.screen.fill(color)
 
@@ -79,6 +83,10 @@ def UPDATE():
     pygame.display.update()
 
 
+def update():
+    UPDATE()
+
+
 def pausable(func):
     def wrapper(self, *args):
         if not self.paused:
@@ -91,6 +99,12 @@ def hideaway(func):
         if not self.hidden:
             return func(self, *args)
     return wrapper
+    
+
+def terminate():
+    subprocess.Popen(["python", "/home/pi/PYGB/main.py"], cwd="/home/pi/")
+    pygame.quit()
+    sys.exit()
 
 
 #ACTOR CLASS

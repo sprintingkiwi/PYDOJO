@@ -69,6 +69,9 @@ while True:
     if keydown(ESCAPE):
         shutdown()
         quit()
+    
+    if buttondown(6):
+        terminate()
 
     if keydown(RIGHT):
         power_right_motor()

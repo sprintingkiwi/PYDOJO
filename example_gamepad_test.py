@@ -9,6 +9,5 @@ pad.init()
 
 while True:
     
-    print buttondown(4)
-    
-    UPDATE()
+    for event in pygame.event.get():
+        print(event)
