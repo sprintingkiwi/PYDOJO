@@ -1,5 +1,6 @@
 import pygame, math, random, time, os, subprocess
 from pyfirmata import *
+from serial import *
 from time import sleep
 
 pygame.init()
