@@ -4,18 +4,18 @@ from pydojo import *
 SCREEN(800, 600)
 
 #CREATE SHARK ACTOR
-shark = Actor("example_library/shark1.png")
+shark = Actor('example_library/shark1.png')
 shark.scale(0.2)
 shark.goto(400, 300)
 
 #CREATE FISH
-fish = Actor("example_library/fish1.png")
+fish = Actor('example_library/fish1.png')
 fish.scale(0.2)
 fish.goto(700, 100)
 fish.point(30)
 
 #CREATE BACKGROUND
-sfondo = Actor("example_library/sea.png")
+sfondo = Actor('example_library/sea.png')
 sfondo.scale(800, 600)
 sfondo.goto(400, 300)
 #sfondo.point(90)

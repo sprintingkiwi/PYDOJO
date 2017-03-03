@@ -3,7 +3,7 @@ from pydojo import *
 #create game display
 SCREEN(800, 600)
 
-gobo = Actor("example_library/gobo.png")
+gobo = Actor('example_library/gobo.png')
 gobo.scale(0.2)
 
 

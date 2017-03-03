@@ -4,17 +4,17 @@ from pydojo import *
 SCREEN(800, 600)
 
 #CREATE MOUSE (the animal)
-topo = Actor("example_library/mouse.png")
+topo = Actor('example_library/mouse.png')
 topo.scale(0.1)
 topo.goto(400, 300)
 
 #CREATE CAT
-gatto = Actor("example_library/cat.png")
+gatto = Actor('example_library/cat.png')
 gatto.scale(0.2)
 gatto.goto(200, 100)
 
 #CREATE BACKGROUND
-sfondo = Actor("example_library/carpet.png")
+sfondo = Actor('example_library/carpet.png')
 sfondo.scale(800, 600)
 sfondo.goto(400, 300)
 

@@ -13,7 +13,7 @@ green = [0, 255, 0]
 blue = [0, 0, 255]
 
 #useful variables
-mouse = "mouse"
+mouse = 'mouse'
 
 
 #Objects for saving data
@@ -103,7 +103,7 @@ def hideaway(func):
     
 
 def terminate():
-    subprocess.Popen(["python", "/home/pi/PYGB/main.py"], cwd="/home/pi/")
+    subprocess.Popen(['python', '/home/pi/PYGB/main.py'], cwd='/home/pi/')
     pygame.quit()
     sys.exit()
 
@@ -129,7 +129,7 @@ class Actor(pygame.sprite.Sprite):
         self.startHideTime = 0.0
         #load actor image
         self.costumes = []
-        self.costume = ""
+        self.costume = ''
         self.cosnumber = 0
         self.originalCostumes = []
         self.coscount = 0
@@ -142,9 +142,9 @@ class Actor(pygame.sprite.Sprite):
 
     #find costume name from image path
     def findCosname(self, path):
-        words = path.split("/")
+        words = path.split('/')
         costume = words[-1]
-        return costume.split(".")[0]
+        return costume.split('.')[0]
 
     #update rect as the image changes
     def updateRect(self):
@@ -240,7 +240,7 @@ class Actor(pygame.sprite.Sprite):
             self.x = x
             self.y = y
 
-        elif x == "mouse":
+        elif x == 'mouse':
             pos = pygame.mouse.get_pos()
             self.x = pos[0]
             self.y = pos[1]
@@ -291,7 +291,7 @@ class Actor(pygame.sprite.Sprite):
             self.direction = angle
             self.heading = angle - 90
         #point at mouse pointer
-        elif target == "mouse":
+        elif target == 'mouse':
             mousepos = pygame.mouse.get_pos()
             angle = -math.atan2(self.x - mousepos[0], self.y - mousepos[1])
             angle = angle * (180 / math.pi)
@@ -307,9 +307,9 @@ class Actor(pygame.sprite.Sprite):
             self.transform = True
 
     def flip(self, direction):
-        if direction == "horizontal":
+        if direction == 'horizontal':
             self.costumes[self.cosnumber][1] = pygame.transform.flip(self.costumes[self.cosnumber][1], True, False)
-        if direction == "vertical":
+        if direction == 'vertical':
             self.costumes[self.cosnumber][1] = pygame.transform.flip(self.costumes[self.cosnumber][1], False, True)
         self.updateRect()
 
@@ -326,7 +326,7 @@ class Actor(pygame.sprite.Sprite):
             self.scale(width, height)
 
     #check if the mouse has clicked the Actor
-    def click(self, option="down"):
+    def click(self, option='down'):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
         if not MOUSE.leftdown:
@@ -338,7 +338,7 @@ class Actor(pygame.sprite.Sprite):
                 if event.type == pygame.MOUSEBUTTONUP:
                     MOUSE.leftdown = False
 
-    def rclick(self, option="down"):
+    def rclick(self, option='down'):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
         if not MOUSE.rightdown:
@@ -386,7 +386,7 @@ class Actor(pygame.sprite.Sprite):
 class Text(Actor):
     def __init__(self,
                  string,
-                 name="Liberation Serif",
+                 name='Liberation Serif',
                  fontsize=32, bold=False,
                  italic=False,
                  color=[0, 0, 0]):
@@ -730,7 +730,7 @@ def axis(hand='left', direction='horizontal'):
 
 #def events():
     #pygame.event.get()
-    #print("sto andando")
+    #print('sto andando')
 
 #pauseTime = Manager()
 #pauseTime.add_operation(events, 0.01)

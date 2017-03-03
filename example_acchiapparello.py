@@ -4,7 +4,7 @@ from pydojo import *
 SCREEN(800, 600)
 
 #CREATE ACTOR
-pyco = Actor("example_library/pyco1.png")
+pyco = Actor('example_library/pyco1.png')
 pyco.scale(0.2)
 
 #score variable
