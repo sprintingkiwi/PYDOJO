@@ -644,38 +644,52 @@ def keyup(key):
 
 
 # GAMEPAD
-_gamepadControl = False
-try:
-    # creo un oggetto Joystick
-    _pad0 = pygame.joystick.Joystick(0)
-    # inizializzo il joystick
-    _pad0.init()
-    _gamepadControl = True
-except:
-    print('no GamePad found...')
+_gamepadCount = pygame.joystick.get_count()
+_gamepads = []
+for _gamepadId in range(pygame.joystick.get_count()):
+    # aggiungo i gamepad alla lista
+    _gamepads.append(pygame.joystick.Joystick(_gamepadId))
+    # inizializzo ogni gamepad
+    _gamepads[_gamepadId].init()
+
+# try:
+#     # creo un oggetto Joystick
+#     _pad0 = pygame.joystick.Joystick(0)
+#     # inizializzo il joystick
+#     _pad0.init()
+# except:
+#     print('no GamePad found...')
     
-def buttondown(btn):
-    if _gamepadControl:
-        return _pad0.get_button(btn)
+def buttondown(pad, btn=None):
+    global _gamepadCount, _gamepads
+    if _gamepadCount > 0:
+        if _gamepadCount == 1 and btn is None:
+            btn = pad
+            pad = 0
+        return _gamepads[pad].get_button(btn)
     else:
         print('no gamepad found...')
-        pass
-        
-def axis(hand='left', direction='horizontal'):
-    if _gamepadControl:
+
+
+def axis(pad=0, hand='left', direction=None):
+    global _gamepadCount, _gamepads
+    if _gamepadCount > 0:
+        if _gamepadCount == 1 and direction is None:
+            direction = hand
+            hand = pad
+            pad = 0
         if hand == 'left':
             if direction == 'horizontal':
-                return _pad0.get_axis(0)
+                return _gamepads[pad].get_axis(0)
             elif direction == 'vertical':
-                return _pad0.get_axis(1)
+                return _gamepads[pad].get_axis(1)
         elif hand == 'right':
             if direction == 'horizontal':
-                return _pad0.get_axis(3)
+                return _gamepads[pad].get_axis(3)
             elif direction == 'vertical':
-                return _pad0.get_axis(4)
+                return _gamepads[pad].get_axis(4)
     else:
         print('no gamepad found...')
-        pass
 
 
 

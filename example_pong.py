@@ -66,16 +66,16 @@ while True:
         playerL.draw()
 
         # controls
-        if key(UP) or buttondown(11):
+        if key(UP) or buttondown(0, 4):
             playerR.point(0)
             playerR.forward(5)
-        if key(DOWN) or buttondown(11):
+        if key(DOWN) or buttondown(0, 5):
             playerR.point(180)
             playerR.forward(5)
-        if key(Z) or buttondown(11):
+        if key(Z) or buttondown(0, 0):
             playerL.point(0)
             playerL.forward(5)
-        if key(X) or buttondown(11):
+        if key(X) or buttondown(0, 1):
             playerL.point(180)
             playerL.forward(5)
         if key(ESCAPE):
