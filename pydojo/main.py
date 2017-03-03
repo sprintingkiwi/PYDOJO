@@ -1,8 +1,8 @@
-import pygame, math, random, time, os
+import pygame, math, random, time, os, subprocess
+from pyfirmata import *
+from serial import *
 from time import sleep
-#import thread
-#import threading
-#, types, inspect
+
 pygame.init()
 
 #COLORS
@@ -13,7 +13,7 @@ green = [0, 255, 0]
 blue = [0, 0, 255]
 
 #useful variables
-mouse = "mouse"
+mouse = 'mouse'
 
 
 #Objects for saving data
@@ -55,6 +55,10 @@ def SCREEN(w, h):
     screenInfo.screen = pygame.display.set_mode([w, h])
 
 
+def screen(w, h):
+    SCREEN(w, h)
+
+
 def fill(color):
     screenInfo.screen.fill(color)
 
@@ -80,6 +84,10 @@ def UPDATE():
     pygame.display.update()
 
 
+def update():
+    UPDATE()
+
+
 def pausable(func):
     def wrapper(self, *args):
         if not self.paused:
@@ -92,6 +100,12 @@ def hideaway(func):
         if not self.hidden:
             return func(self, *args)
     return wrapper
+    
+
+def terminate():
+    subprocess.Popen(['python', '/home/pi/PYGB/main.py'], cwd='/home/pi/')
+    pygame.quit()
+    sys.exit()
 
 
 #ACTOR CLASS
@@ -115,7 +129,7 @@ class Actor(pygame.sprite.Sprite):
         self.startHideTime = 0.0
         #load actor image
         self.costumes = []
-        self.costume = ""
+        self.costume = ''
         self.cosnumber = 0
         self.originalCostumes = []
         self.coscount = 0
@@ -128,9 +142,9 @@ class Actor(pygame.sprite.Sprite):
 
     #find costume name from image path
     def findCosname(self, path):
-        words = path.split("/")
+        words = path.split('/')
         costume = words[-1]
-        return costume.split(".")[0]
+        return costume.split('.')[0]
 
     #update rect as the image changes
     def updateRect(self):
@@ -206,8 +220,6 @@ class Actor(pygame.sprite.Sprite):
     @hideaway
     def draw(self, rect=None):
         #if the image changed the transform functions apply
-        #if self.transform is True:
-            #self.transform = False
         if self.rotate is True:
             self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
             self.updateRect()
@@ -228,7 +240,7 @@ class Actor(pygame.sprite.Sprite):
             self.x = x
             self.y = y
 
-        elif x == "mouse":
+        elif x == 'mouse':
             pos = pygame.mouse.get_pos()
             self.x = pos[0]
             self.y = pos[1]
@@ -279,7 +291,7 @@ class Actor(pygame.sprite.Sprite):
             self.direction = angle
             self.heading = angle - 90
         #point at mouse pointer
-        elif target == "mouse":
+        elif target == 'mouse':
             mousepos = pygame.mouse.get_pos()
             angle = -math.atan2(self.x - mousepos[0], self.y - mousepos[1])
             angle = angle * (180 / math.pi)
@@ -295,9 +307,9 @@ class Actor(pygame.sprite.Sprite):
             self.transform = True
 
     def flip(self, direction):
-        if direction == "horizontal":
+        if direction == 'horizontal':
             self.costumes[self.cosnumber][1] = pygame.transform.flip(self.costumes[self.cosnumber][1], True, False)
-        if direction == "vertical":
+        if direction == 'vertical':
             self.costumes[self.cosnumber][1] = pygame.transform.flip(self.costumes[self.cosnumber][1], False, True)
         self.updateRect()
 
@@ -314,7 +326,7 @@ class Actor(pygame.sprite.Sprite):
             self.scale(width, height)
 
     #check if the mouse has clicked the Actor
-    def click(self, option="down"):
+    def click(self, option='down'):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
         if not MOUSE.leftdown:
@@ -326,7 +338,7 @@ class Actor(pygame.sprite.Sprite):
                 if event.type == pygame.MOUSEBUTTONUP:
                     MOUSE.leftdown = False
 
-    def rclick(self, option="down"):
+    def rclick(self, option='down'):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
         if not MOUSE.rightdown:
@@ -374,7 +386,7 @@ class Actor(pygame.sprite.Sprite):
 class Text(Actor):
     def __init__(self,
                  string,
-                 name="Liberation Serif",
+                 name='Liberation Serif',
                  fontsize=32, bold=False,
                  italic=False,
                  color=[0, 0, 0]):
@@ -611,20 +623,73 @@ RSUPER = pygame.K_RSUPER
 PRINT = pygame.K_PRINT
 EURO = pygame.K_EURO
 
-#detect the pression of a key
-def keydown(key):
+# detect the continuous pression of a key
+def key(key):
     if pygame.key.get_pressed()[key]:
         return True
 
-#detect the release of a key
+# detect the single pression of a key
+def keydown(key):
+    for event in eventsStorage.LIST:
+        if event.type == pygame.KEYDOWN:
+            if event.key == key:
+                return True
+
+# detect the release of a key
 def keyup(key):
-    for event in eventsStorage:
+    for event in eventsStorage.LIST:
         if event.type == pygame.KEYUP:
             if event.key == key:
                 return True
 
 
+# GAMEPAD
+_gamepadCount = pygame.joystick.get_count()
+_gamepads = []
+for _gamepadId in range(pygame.joystick.get_count()):
+    # aggiungo i gamepad alla lista
+    _gamepads.append(pygame.joystick.Joystick(_gamepadId))
+    # inizializzo ogni gamepad
+    _gamepads[_gamepadId].init()
 
+# try:
+#     # creo un oggetto Joystick
+#     _pad0 = pygame.joystick.Joystick(0)
+#     # inizializzo il joystick
+#     _pad0.init()
+# except:
+#     print('no GamePad found...')
+    
+def buttondown(pad, btn=None):
+    global _gamepadCount, _gamepads
+    if _gamepadCount > 0:
+        if _gamepadCount == 1 and btn is None:
+            btn = pad
+            pad = 0
+        return _gamepads[pad].get_button(btn)
+    else:
+        print('no gamepad found...')
+
+
+def axis(pad=0, hand='left', direction=None):
+    global _gamepadCount, _gamepads
+    if _gamepadCount > 0:
+        if _gamepadCount == 1 and direction is None:
+            direction = hand
+            hand = pad
+            pad = 0
+        if hand == 'left':
+            if direction == 'horizontal':
+                return _gamepads[pad].get_axis(0)
+            elif direction == 'vertical':
+                return _gamepads[pad].get_axis(1)
+        elif hand == 'right':
+            if direction == 'horizontal':
+                return _gamepads[pad].get_axis(3)
+            elif direction == 'vertical':
+                return _gamepads[pad].get_axis(4)
+    else:
+        print('no gamepad found...')
 
 
 
@@ -679,7 +744,7 @@ def keyup(key):
 
 #def events():
     #pygame.event.get()
-    #print("sto andando")
+    #print('sto andando')
 
 #pauseTime = Manager()
 #pauseTime.add_operation(events, 0.01)
