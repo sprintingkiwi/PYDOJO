@@ -660,24 +660,17 @@ for _gamepadId in range(pygame.joystick.get_count()):
 # except:
 #     print('no GamePad found...')
     
-def buttondown(pad, btn=None):
+def buttondown(btn, pad=0):
     global _gamepadCount, _gamepads
     if _gamepadCount > 0:
-        if _gamepadCount == 1 and btn is None:
-            btn = pad
-            pad = 0
         return _gamepads[pad].get_button(btn)
     else:
         print('no gamepad found...')
 
 
-def axis(pad=0, hand='left', direction=None):
+def axis(hand, direction, pad=0):
     global _gamepadCount, _gamepads
     if _gamepadCount > 0:
-        if _gamepadCount == 1 and direction is None:
-            direction = hand
-            hand = pad
-            pad = 0
         if hand == 'left':
             if direction == 'horizontal':
                 return _gamepads[pad].get_axis(0)
