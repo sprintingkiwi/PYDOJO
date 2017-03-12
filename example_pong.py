@@ -7,10 +7,10 @@ def terminate():
     quit()
 
 
-#create game display
+# create game display
 width = 800
 height = 480
-SCREEN(width, height)
+screen(width, height)
 
 while True:
 
@@ -21,10 +21,10 @@ while True:
     timetext.goto(400, 150)
 
     edge = Actor("example_library/edge.png")
-    edge.goto(width/2, height/2)
+    edge.goto(width / 2, height / 2)
 
     bg = Actor("example_library/sea.png")
-    bg.goto(width/2, height/2)
+    bg.goto(width / 2, height / 2)
 
     playerL = Actor("example_library/fish2.png")
     playerL.point(90)
@@ -42,7 +42,7 @@ while True:
 
     ball = Actor("example_library/seastar1.png")
     ball.scale(0.1)
-    ball.goto(width/2, height/2)
+    ball.goto(width / 2, height / 2)
     roll = random.randint(0, 1)
     if roll == 1:
         ball.point(random.randint(45, 135))
@@ -53,19 +53,8 @@ while True:
     starttime = time.time()
     counttime = time.time()
 
-    gameover = False
-    while not gameover:
 
-        # draw images
-        bg.draw()
-        edge.draw()
-        title.draw()
-        timetext.draw()
-        ball.draw()
-        playerR.draw()
-        playerL.draw()
-
-        # controls
+    def events():
         if key(UP) or buttondown(4, 0):
             playerR.point(0)
             playerR.forward(5)
@@ -80,6 +69,22 @@ while True:
             playerL.forward(5)
         if key(ESCAPE):
             terminate()
+
+
+    gameover = False
+    while not gameover:
+
+        # draw images
+        bg.draw()
+        edge.draw()
+        title.draw()
+        timetext.draw()
+        ball.draw()
+        playerR.draw()
+        playerL.draw()
+
+        # controls
+        events()
 
         # ball movement
         ball.forward(speed)
@@ -107,16 +112,16 @@ while True:
         if ball.x < -ball.rect.width or ball.x > width + ball.rect.width:
             gameover = True
 
-        #update screen and events queue
+        # update screen and events queue
         UPDATE()
 
-        #wait
+        # wait
         sleep(0.01)
 
     # draw end-menu images
     title.write("GAME OVER")
     instructions = Text("press START to play again or press ESCAPE to quit the game")
-    instructions.goto(width/2, height/2)
+    instructions.goto(width / 2, height / 2)
     bg.draw()
     title.draw()
     timetext.draw()
@@ -130,8 +135,8 @@ while True:
         if keydown(RETURN):
             endmenu = False
 
-        #update screen and events queue
-        UPDATE()
+        # update screen and events queue
+        update()
 
-        #wait
+        # wait
         sleep(0.01)
