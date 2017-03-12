@@ -19,6 +19,7 @@ RF = uno.get_pin('d:7:o')
 RB = uno.get_pin('d:6:o')
 LF = uno.get_pin('d:9:o')
 LB = uno.get_pin('d:8:o')
+clacson = uno.get_pin('d:3:p')
 
 RF.write(True)
 RB.write(False)
@@ -27,7 +28,7 @@ LB.write(False)
 
 direction = 'forward'
 
-def shutdown():
+def complete_shutdown():
     RF.write(False)
     RB.write(False)
     LF.write(False)
@@ -62,15 +63,15 @@ def shutdown_left_motor():
     leftPwm.write(0)
     LF.write(False)
     LB.write(False)
+    
+def honk(value=1):
+    clacson.write(value)
 
 while True:
 
     # KEYBOARD CONTROL
-    if keydown(ESCAPE):
-        shutdown()
-        quit()
-    
-    if buttondown(6):
+    if keydown(ESCAPE) or buttondown(6):
+        complete_shutdown()
         terminate()
 
     if keydown(RIGHT):
@@ -118,6 +119,11 @@ while True:
         #leftPwm.write(0.9)
         pass
 
+    #clacson
+    if buttondown(2):
+        honk(1)
+    else:
+        honk(0)
 
     gobo.draw()
     sleep(0.01)
