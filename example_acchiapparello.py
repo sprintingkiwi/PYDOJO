@@ -1,7 +1,7 @@
 from pydojo import *
 
 # create game display
-SCREEN(800, 600)
+screen(800, 600)
 
 # CREATE ACTOR
 pyco = Actor('example_library/pyco1.png')
@@ -15,15 +15,14 @@ punti = Text(presi, color=red)
 punti.goto(100, 100)
 
 # counter variable
-conta = 0
+inizioconta = time()
 
 # MAIN LOOP
 while True:
     # MOVE RANDOM each 60 cycles
-    conta = conta + 1
-    if conta > 60:
+    if time() - inizioconta > 1:
         pyco.gorand()
-        conta = 0
+        inizioconta = time()
 
     # ADD 1 POINT when target actor is clicked
     if pyco.click():
@@ -36,7 +35,7 @@ while True:
     punti.draw()
 
     # update screen and events queue
-    UPDATE()
+    update()
 
     # wait
-    sleep(0.01)
+    wait(100)

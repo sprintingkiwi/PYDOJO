@@ -12,6 +12,24 @@ width = 800
 height = 480
 screen(width, height)
 
+
+def events():
+    if key(UP) or buttondown(4, 0):
+        playerR.point(0)
+        playerR.forward(5)
+    if key(DOWN) or buttondown(5, 0):
+        playerR.point(180)
+        playerR.forward(5)
+    if key(Z) or buttondown(0, 0):
+        playerL.point(0)
+        playerL.forward(5)
+    if key(X) or buttondown(1, 0):
+        playerL.point(180)
+        playerL.forward(5)
+    if key(ESCAPE):
+        terminate()
+
+
 while True:
 
     title = Text("Pong", name="MV Boli", fontsize=96, color=[0, 255, 0])
@@ -50,28 +68,11 @@ while True:
         ball.point(random.randint(-135, -45))
 
     speed = 2
-    starttime = time.time()
-    counttime = time.time()
-
-
-    def events():
-        if key(UP) or buttondown(4, 0):
-            playerR.point(0)
-            playerR.forward(5)
-        if key(DOWN) or buttondown(5, 0):
-            playerR.point(180)
-            playerR.forward(5)
-        if key(Z) or buttondown(0, 0):
-            playerL.point(0)
-            playerL.forward(5)
-        if key(X) or buttondown(1, 0):
-            playerL.point(180)
-            playerL.forward(5)
-        if key(ESCAPE):
-            terminate()
-
+    starttime = time()
+    counttime = time()
 
     gameover = False
+
     while not gameover:
 
         # draw images
@@ -91,12 +92,12 @@ while True:
         ball.heading += 1
 
         # time management
-        actualtime = time.time() - starttime
+        actualtime = time() - starttime
         timetext.write(str(int(actualtime)))
-        deltatime = time.time() - counttime
+        deltatime = time() - counttime
         if deltatime > 3:
             speed += 1
-            counttime = time.time()
+            counttime = time()
 
         # collisions
         if ball.collide(playerL):
@@ -113,7 +114,7 @@ while True:
             gameover = True
 
         # update screen and events queue
-        UPDATE()
+        update()
 
         # wait
         sleep(0.01)
@@ -139,4 +140,4 @@ while True:
         update()
 
         # wait
-        sleep(0.01)
+        wait(10)

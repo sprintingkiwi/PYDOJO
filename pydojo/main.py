@@ -1,7 +1,7 @@
-import pygame, math, random, time, os, subprocess
+import pygame, math, random, os, subprocess
 from pyfirmata import *
 from serial import *
-from time import sleep
+from time import sleep, time
 
 pygame.init()
 
@@ -58,7 +58,7 @@ actorsInfo = ActorsInfo()
 
 
 # SCREEN
-def SCREEN(w, h, fullscreen=False):
+def screen(w, h, fullscreen=False):
     screenInfo.resolution = [w, h]
     if fullscreen:
         screenInfo.screen = pygame.display.set_mode([w, h], pygame.FULLSCREEN)
@@ -66,8 +66,8 @@ def SCREEN(w, h, fullscreen=False):
         screenInfo.screen = pygame.display.set_mode([w, h])
 
 
-def screen(*args):
-    SCREEN(*args)
+def SCREEN(*args):
+    screen(*args)
 
 
 def fill(color):
@@ -75,7 +75,7 @@ def fill(color):
 
 
 # one of the most important functions
-def UPDATE():
+def update():
     # refresh the event list
     eventsStorage.LIST = pygame.event.get()
     # refresh mouse position
@@ -95,8 +95,16 @@ def UPDATE():
     pygame.display.update()
 
 
-def update():
-    UPDATE()
+def UPDATE():
+    update()
+
+
+def Clock():
+    return pygame.time.Clock()
+
+
+def wait(ms):
+    pygame.time.wait(ms)
 
 
 def pausable(func):
