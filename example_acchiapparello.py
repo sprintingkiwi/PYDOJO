@@ -11,7 +11,7 @@ pyco.scale(0.2)
 presi = 0
 
 # CREATE SCORE TEXT
-punti = Text(presi, color=red)
+punti = Text(presi, color=RED)
 punti.goto(100, 100)
 
 # counter variable
@@ -30,7 +30,7 @@ while True:
         punti.write(presi)
 
     # DRAW IMAGES
-    fill(black)
+    fill(BLACK)
     pyco.draw()
     punti.draw()
 

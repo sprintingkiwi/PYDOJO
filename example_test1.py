@@ -12,7 +12,7 @@ star.load('example_library/seastar2.png', 'triste')
 star.scale(100, 200)
 star.goto(600, 500)
 
-a = Text('ciao', color=green, italic=True)
+a = Text('ciao', color=GREEN, italic=True)
 print(a.costumes)
 a.setfontsize(48)
 a.setbold(True)
@@ -20,7 +20,7 @@ a.goto(100, 100)
 
 # dyno.rotate = False
 
-r = Rect(size=[32, 32], color=blue)
+r = Rect(size=[32, 32], color=BLUE)
 r.goto(400, 250)
 
 c = Circle(radius=64, line_width=20)
@@ -52,7 +52,7 @@ while True:
     a.right(1)
     r.right(10)
     c.left(5)
-    dyno.goto(mouse)
+    dyno.goto(MOUSE)
     r.point('mouse')
     dyno.forward(10)
     r.forward(2)
@@ -73,7 +73,7 @@ while True:
     if star.costume == 'triste' and not star.collide(dyno):
         star.setcostume('felice')
 
-    fill(white)
+    fill(WHITE)
     a.draw()
     star.draw()
     dyno.draw()

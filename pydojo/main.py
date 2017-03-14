@@ -5,18 +5,24 @@ from time import sleep, time
 
 pygame.init()
 
-# COLORS
-black = [0, 0, 0]
-white = [255, 255, 255]
-red = [255, 0, 0]
-green = [0, 255, 0]
-blue = [0, 0, 255]
+# CONSTANTS
+LIBRARY_VERSION = 0.3
 
-# other constants
-mouse = 'mouse'
+# Colors
+BLACK = [0, 0, 0]
+WHITE = [255, 255, 255]
+RED = [255, 0, 0]
+GREEN = [0, 255, 0]
+BLUE = [0, 0, 255]
+YELLOW = [255, 255, 0]
+# black = [0, 0, 0]
+# white = [255, 255, 255]
+# red = [255, 0, 0]
+# green = [0, 255, 0]
+# blue = [0, 0, 255]
+# yellow = [255, 255, 0]
 
-
-# Objects for saving data
+# OBJECTS FOR DATA STORAGE
 class EventsStorage():
     def __init__(self):
         self.CHECK = False
@@ -26,7 +32,7 @@ class EventsStorage():
 eventsStorage = EventsStorage()
 
 
-class Mouse():
+class MouseState():
     def __init__(self):
         self.leftdown = False
         self.centraldown = False
@@ -36,7 +42,7 @@ class Mouse():
         self.y = self.pos[1]
 
 
-MOUSE = Mouse()
+MOUSE = MouseState()
 
 
 class ScreenInfo():
@@ -105,6 +111,10 @@ def Clock():
 
 def wait(ms):
     pygame.time.wait(ms)
+
+
+def ticks():
+    return pygame.time.get_ticks()
 
 
 def pausable(func):

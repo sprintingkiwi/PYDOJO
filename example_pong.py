@@ -117,7 +117,7 @@ while True:
         update()
 
         # wait
-        sleep(0.01)
+        wait(10)
 
     # draw end-menu images
     title.write("GAME OVER")
