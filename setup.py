@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
   name = 'pydojo',
   packages = ['pydojo'], # this must be the same as the name above
-  version = '0.6',
+  version = '0.7',
   description = 'A playful way to learn coding with Python',
   author = 'Alessandro Norfo',
   author_email = 'sprintingkiwi@gmail.com',
