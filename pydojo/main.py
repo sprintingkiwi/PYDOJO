@@ -1,30 +1,38 @@
-import pygame, math, random, time, os, subprocess
+import pygame, math, random, os, subprocess
 from pyfirmata import *
 from serial import *
-from time import sleep
+from time import sleep, time
 
 pygame.init()
 
-#COLORS
-black = [0, 0, 0]
-white = [255, 255, 255]
-red = [255, 0, 0]
-green = [0, 255, 0]
-blue = [0, 0, 255]
+# CONSTANTS
+LIBRARY_VERSION = 0.3
 
-#useful variables
-mouse = 'mouse'
+# Colors
+BLACK = [0, 0, 0]
+WHITE = [255, 255, 255]
+RED = [255, 0, 0]
+GREEN = [0, 255, 0]
+BLUE = [0, 0, 255]
+YELLOW = [255, 255, 0]
+# black = [0, 0, 0]
+# white = [255, 255, 255]
+# red = [255, 0, 0]
+# green = [0, 255, 0]
+# blue = [0, 0, 255]
+# yellow = [255, 255, 0]
 
-
-#Objects for saving data
+# OBJECTS FOR DATA STORAGE
 class EventsStorage():
     def __init__(self):
         self.CHECK = False
         self.LIST = []
+
+
 eventsStorage = EventsStorage()
 
 
-class Mouse():
+class MouseState():
     def __init__(self):
         self.leftdown = False
         self.centraldown = False
@@ -32,13 +40,17 @@ class Mouse():
         self.pos = pygame.mouse.get_pos()
         self.x = self.pos[0]
         self.y = self.pos[1]
-MOUSE = Mouse()
+
+
+MOUSE = MouseState()
 
 
 class ScreenInfo():
     def __init__(self):
         self.screen = None
         self.resolution = []
+
+
 screenInfo = ScreenInfo()
 
 
@@ -46,17 +58,22 @@ class ActorsInfo():
     def __init__(self):
         self.actorsList = []
         self.counts = []
+
+
 actorsInfo = ActorsInfo()
 
 
-#SCREEN
-def SCREEN(w, h):
+# SCREEN
+def screen(w, h, fullscreen=False):
     screenInfo.resolution = [w, h]
-    screenInfo.screen = pygame.display.set_mode([w, h])
+    if fullscreen:
+        screenInfo.screen = pygame.display.set_mode([w, h], pygame.FULLSCREEN)
+    else:
+        screenInfo.screen = pygame.display.set_mode([w, h])
 
 
-def screen(w, h):
-    SCREEN(w, h)
+def SCREEN(*args):
+    screen(*args)
 
 
 def fill(color):
@@ -64,7 +81,7 @@ def fill(color):
 
 
 # one of the most important functions
-def UPDATE():
+def update():
     # refresh the event list
     eventsStorage.LIST = pygame.event.get()
     # refresh mouse position
@@ -84,14 +101,27 @@ def UPDATE():
     pygame.display.update()
 
 
-def update():
-    UPDATE()
+def UPDATE():
+    update()
+
+
+def Clock():
+    return pygame.time.Clock()
+
+
+def wait(ms):
+    pygame.time.wait(ms)
+
+
+def ticks():
+    return pygame.time.get_ticks()
 
 
 def pausable(func):
     def wrapper(self, *args):
         if not self.paused:
             return func(self, *args)
+
     return wrapper
 
 
@@ -99,8 +129,9 @@ def hideaway(func):
     def wrapper(self, *args):
         if not self.hidden:
             return func(self, *args)
+
     return wrapper
-    
+
 
 def terminate():
     subprocess.Popen(['python', '/home/pi/PYGB/main.py'], cwd='/home/pi/')
@@ -108,17 +139,17 @@ def terminate():
     sys.exit()
 
 
-#ACTOR CLASS
+# ACTOR CLASS
 class Actor(pygame.sprite.Sprite):
     def __init__(self, path=None, cosname=None):
         actorsInfo.actorsList.append(self)
         pygame.sprite.Sprite.__init__(self)
-        #Actor coordinates
+        # Actor coordinates
         self.x = 0.0
         self.y = 0.0
-        #Actor angle direction
+        # Actor angle direction
         self.direction = 0
-        #image orientation
+        # image orientation
         self.heading = 0
         self.count = 0
         self.paused = False
@@ -127,26 +158,26 @@ class Actor(pygame.sprite.Sprite):
         self.hideTime = 0.0
         self.startPauseTime = 0.0
         self.startHideTime = 0.0
-        #load actor image
+        # load actor image
         self.costumes = []
         self.costume = ''
         self.cosnumber = 0
         self.originalCostumes = []
         self.coscount = 0
-        #if path is not None:
+        # if path is not None:
         self.load(path, cosname)
-        #rotation style
+        # rotation style
         self.rotate = True
-        #needs to transform image?
+        # needs to transform image?
         self.transform = False
 
-    #find costume name from image path
-    def findCosname(self, path):
+    # find costume name from image path
+    def findCostumeName(self, path):
         words = path.split('/')
         costume = words[-1]
         return costume.split('.')[0]
 
-    #update rect as the image changes
+    # update rect as the image changes
     def updateRect(self):
         self.rect = self.costumes[self.cosnumber][1].get_rect()
         self.rect.centerx = int(self.x)
@@ -155,10 +186,10 @@ class Actor(pygame.sprite.Sprite):
         self.width = self.costumes[self.cosnumber][1].get_width()
         self.height = self.costumes[self.cosnumber][1].get_height()
 
-    #load Actor's image
+    # load Actor's image
     def load(self, path, cosname=None):
         if cosname is None:
-            self.costume = self.findCosname(path)
+            self.costume = self.findCostumeName(path)
         else:
             self.costume = cosname
         img = pygame.image.load(path).convert_alpha()
@@ -219,20 +250,20 @@ class Actor(pygame.sprite.Sprite):
 
     @hideaway
     def draw(self, rect=None):
-        #if the image changed the transform functions apply
+        # if the image changed the transform functions apply
         if self.rotate is True:
             self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
             self.updateRect()
             screenInfo.screen.blit(self.costumes[self.cosnumber][1],
-                         ((self.x - self.width / 2),
-                         (self.y - self.height / 2)),
-                         rect)
-            #and then the original image is loaded
+                                   ((self.x - self.width / 2),
+                                    (self.y - self.height / 2)),
+                                   rect)
+            # and then the original image is loaded
             self.costumes[self.cosnumber][1] = self.originalCostumes[self.cosnumber][1]
         else:
             screenInfo.screen.blit(self.costumes[self.cosnumber][1],
-                        ((self.x - self.width / 2), (self.y - self.height / 2)),
-                        rect)
+                                   ((self.x - self.width / 2), (self.y - self.height / 2)),
+                                   rect)
 
     @pausable
     def goto(self, x, y=0):
@@ -279,25 +310,25 @@ class Actor(pygame.sprite.Sprite):
 
     @pausable
     def point(self, target):
-        #set heading as angle
+        # set heading as angle
         if type(target) is int and type(target) is not str:
             angle = target % 360
             self.direction = angle
             self.heading = angle - 90
-        #point at coordinate
+        # point at coordinate
         elif type(target) is list and type(target) is not str:
             angle = -math.atan2(self.x - target[0], self.y - target[1])
             angle = angle * (180 / math.pi)
             self.direction = angle
             self.heading = angle - 90
-        #point at mouse pointer
+        # point at mouse pointer
         elif target == 'mouse':
             mousepos = pygame.mouse.get_pos()
             angle = -math.atan2(self.x - mousepos[0], self.y - mousepos[1])
             angle = angle * (180 / math.pi)
             self.direction = angle
             self.heading = angle - 90
-        #point at target
+        # point at target
         else:
             angle = -math.atan2(self.x - target.x, self.y - target.y)
             angle = angle * (180 / math.pi)
@@ -325,7 +356,7 @@ class Actor(pygame.sprite.Sprite):
             height = int(self.height * w)
             self.scale(width, height)
 
-    #check if the mouse has clicked the Actor
+    # check if the mouse has clicked the Actor
     def click(self, option='down'):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
@@ -350,14 +381,14 @@ class Actor(pygame.sprite.Sprite):
                 if event.type == pygame.MOUSEBUTTONUP:
                     MOUSE.rightdown = False
 
-    #Mask collision
+    # Mask collision
     def mcollide(self, target):
         result = pygame.sprite.collide_mask(self, target)
         if result is not None:
             return True
-        #print(result)
+            # print(result)
 
-    #Rect collision
+    # Rect collision
     def collide(self, target):
         return self.rect.colliderect(target.rect)
 
@@ -367,7 +398,7 @@ class Actor(pygame.sprite.Sprite):
         else:
             return self.rect.collidepoint(point)
 
-    #pause actor's actions (da completare)
+    # pause actor's actions (da completare)
     def pause(self, t):
         self.paused = True
         self.pauseTime = t * 1000
@@ -380,7 +411,6 @@ class Actor(pygame.sprite.Sprite):
 
     def show(self):
         self.hidden = False
-
 
 
 class Text(Actor):
@@ -459,9 +489,9 @@ class Rect(Actor):
     @hideaway
     def draw(self):
         pygame.draw.rect(screenInfo.screen,
-                             self.color,
-                             self.rect,
-                             self.line_width)
+                         self.color,
+                         self.rect,
+                         self.line_width)
 
 
 class Circle(Actor):
@@ -495,7 +525,7 @@ class Circle(Actor):
                            self.line_width)
 
 
-#SUONI
+# SUONI
 def load(path):
     pygame.mixer.music.load(path)
 
@@ -509,9 +539,9 @@ def Sound(path):
     return s
 
 
-#EVENTS:
+# EVENTS:
 
-#KEYBOARD KEYS
+# KEYBOARD KEYS
 UP = pygame.K_UP
 DOWN = pygame.K_DOWN
 LEFT = pygame.K_LEFT
@@ -623,10 +653,12 @@ RSUPER = pygame.K_RSUPER
 PRINT = pygame.K_PRINT
 EURO = pygame.K_EURO
 
+
 # detect the continuous pression of a key
 def key(key):
     if pygame.key.get_pressed()[key]:
         return True
+
 
 # detect the single pression of a key
 def keydown(key):
@@ -634,6 +666,7 @@ def keydown(key):
         if event.type == pygame.KEYDOWN:
             if event.key == key:
                 return True
+
 
 # detect the release of a key
 def keyup(key):
@@ -644,13 +677,14 @@ def keyup(key):
 
 
 # GAMEPAD
-_gamepadCount = pygame.joystick.get_count()
-_gamepads = []
-for _gamepadId in range(pygame.joystick.get_count()):
-    # aggiungo i gamepad alla lista
-    _gamepads.append(pygame.joystick.Joystick(_gamepadId))
-    # inizializzo ogni gamepad
-    _gamepads[_gamepadId].init()
+gamepadCount = pygame.joystick.get_count()
+gamepads = []
+for gamepadID in range(pygame.joystick.get_count()):
+    # add gamepad to list
+    gamepads.append(pygame.joystick.Joystick(gamepadID))
+    # initialize gamepad
+    gamepads[gamepadID].init()
+
 
 # try:
 #     # creo un oggetto Joystick
@@ -659,143 +693,134 @@ for _gamepadId in range(pygame.joystick.get_count()):
 #     _pad0.init()
 # except:
 #     print('no GamePad found...')
-    
-def buttondown(pad, btn=None):
-    global _gamepadCount, _gamepads
-    if _gamepadCount > 0:
-        if _gamepadCount == 1 and btn is None:
-            btn = pad
-            pad = 0
-        return _gamepads[pad].get_button(btn)
+
+def buttondown(btn, pad=0):
+    global gamepadCount, gamepads
+    if gamepadCount > 0:
+        return gamepads[pad].get_button(btn)
     else:
         print('no gamepad found...')
 
 
-def axis(pad=0, hand='left', direction=None):
-    global _gamepadCount, _gamepads
-    if _gamepadCount > 0:
-        if _gamepadCount == 1 and direction is None:
-            direction = hand
-            hand = pad
-            pad = 0
+def axis(hand, direction, pad=0):
+    global gamepadCount, gamepads
+    if gamepadCount > 0:
         if hand == 'left':
             if direction == 'horizontal':
-                return _gamepads[pad].get_axis(0)
+                return gamepads[pad].get_axis(0)
             elif direction == 'vertical':
-                return _gamepads[pad].get_axis(1)
+                return gamepads[pad].get_axis(1)
         elif hand == 'right':
             if direction == 'horizontal':
-                return _gamepads[pad].get_axis(3)
+                return gamepads[pad].get_axis(3)
             elif direction == 'vertical':
-                return _gamepads[pad].get_axis(4)
+                return gamepads[pad].get_axis(4)
     else:
         print('no gamepad found...')
 
 
 
-#class KeyStorage():
-    #def __init__(self):
-        #self.dictionary = dict
-#key_storage = KeyStorage()
+    # class KeyStorage():
+    # def __init__(self):
+    # self.dictionary = dict
+    # key_storage = KeyStorage()
 
 
 
 
-#def keydown(key):
-    #for event in pygame.event.get():
-        #if event.type == pygame.KEYDOWN:
-            #if event.key == key:
-                #return True
+    # def keydown(key):
+    # for event in pygame.event.get():
+    # if event.type == pygame.KEYDOWN:
+    # if event.key == key:
+    # return True
 
 
 
-########################################
+    ########################################
 
-#Multi-Thread recipe
-#class Operation(threading._pauseTime):
-    #def __init__(self, *args, **kwargs):
-        #threading._pauseTime.__init__(self, *args, **kwargs)
-        #self.setDaemon(True)
+    # Multi-Thread recipe
+    # class Operation(threading._pauseTime):
+    # def __init__(self, *args, **kwargs):
+    # threading._pauseTime.__init__(self, *args, **kwargs)
+    # self.setDaemon(True)
 
-    #def run(self):
-        #while True:
-            #self.finished.clear()
-            #self.finished.wait(self.interval)
-            #if not self.finished.isSet():
-                #self.function(*self.args, **self.kwargs)
-            #else:
-                #return
-            #self.finished.set()
+    # def run(self):
+    # while True:
+    # self.finished.clear()
+    # self.finished.wait(self.interval)
+    # if not self.finished.isSet():
+    # self.function(*self.args, **self.kwargs)
+    # else:
+    # return
+    # self.finished.set()
 
-#class Manager(object):
+    # class Manager(object):
 
-    #ops = []
+    # ops = []
 
-    #def add_operation(self, operation, interval, args=[], kwargs={}):
-        #op = Operation(interval, operation, args, kwargs)
-        #self.ops.append(op)
-        #thread.start_new_thread(op.run, ())
+    # def add_operation(self, operation, interval, args=[], kwargs={}):
+    # op = Operation(interval, operation, args, kwargs)
+    # self.ops.append(op)
+    # thread.start_new_thread(op.run, ())
 
-    #def stop(self):
-        #for op in self.ops:
-            #op.cancel()
-        #self._event.set()
-
-
-#def events():
-    #pygame.event.get()
-    #print('sto andando')
-
-#pauseTime = Manager()
-#pauseTime.add_operation(events, 0.01)
+    # def stop(self):
+    # for op in self.ops:
+    # op.cancel()
+    # self._event.set()
 
 
+    # def events():
+    # pygame.event.get()
+    # print('sto andando')
 
-#######################################
-
-#class Screen():
-
-    #def __init__(self, w, h):
-        #self.s = pygame.display.set_mode([w, h])
-
-    #def update(self):
-        #pygame.display.update()
-
-    #def __getattr__(self, name):
-        #print(self.s)
-        #if hasattr(self[0], name):
-            #def fn(*args):
-                #getattr(self.s, name)(*args)
-            #return fn
-        #else:
-            #raise AttributeError
+    # pauseTime = Manager()
+    # pauseTime.add_operation(events, 0.01)
 
 
-#def Screen(w, h):
 
-    #class MySurf(pygame.Surface):
+    #######################################
 
-        #def __init__(self):
-            #super(MySurf, self).__init__((w, h))
+    # class Screen():
 
-        #def update(self):
-            #pygame.display.update()
+    # def __init__(self, w, h):
+    # self.s = pygame.display.set_mode([w, h])
 
-        ##@classmethod
-        ##def convert_to_MySurf(cls, obj):
-            ##obj.__class__ = MySurf
+    # def update(self):
+    # pygame.display.update()
 
-    #s = pygame.display.set_mode([w, h])
-    #print(s)
+    # def __getattr__(self, name):
+    # print(self.s)
+    # if hasattr(self[0], name):
+    # def fn(*args):
+    # getattr(self.s, name)(*args)
+    # return fn
+    # else:
+    # raise AttributeError
 
-    #myS = MySurf()
-    #for n, v in inspect.getmembers(s):
-        #setattr(myS, n, v);
+
+    # def Screen(w, h):
+
+    # class MySurf(pygame.Surface):
+
+    # def __init__(self):
+    # super(MySurf, self).__init__((w, h))
+
+    # def update(self):
+    # pygame.display.update()
+
+    ##@classmethod
+    ##def convert_to_MySurf(cls, obj):
+    ##obj.__class__ = MySurf
+
+    # s = pygame.display.set_mode([w, h])
+    # print(s)
+
+    # myS = MySurf()
+    # for n, v in inspect.getmembers(s):
+    # setattr(myS, n, v);
 
 
     ##MySurf.convert_to_MySurf(s)
     ##print(s)
 
-    #return myS
-
-
+    # return myS
