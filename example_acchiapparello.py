@@ -1,43 +1,41 @@
 from pydojo import *
 
-#create game display
-SCREEN(800, 600)
+# create game display
+screen(800, 600)
 
-#CREATE ACTOR
+# CREATE ACTOR
 pyco = Actor('example_library/pyco1.png')
 pyco.scale(0.2)
 
-#score variable
+# score variable
 presi = 0
 
-#CREATE SCORE TEXT
-punti = Text(presi, color=red)
+# CREATE SCORE TEXT
+punti = Text(presi, color=RED)
 punti.goto(100, 100)
 
-#counter variable
-conta = 0
+# counter variable
+inizioconta = time()
 
-
-#MAIN LOOP
+# MAIN LOOP
 while True:
-    #MOVE RANDOM each 60 cycles
-    conta = conta + 1
-    if conta > 60:
+    # MOVE RANDOM each 60 cycles
+    if time() - inizioconta > 1:
         pyco.gorand()
-        conta = 0
+        inizioconta = time()
 
-    #ADD 1 POINT when target actor is clicked
+    # ADD 1 POINT when target actor is clicked
     if pyco.click():
         presi = presi + 1
         punti.write(presi)
 
-    #DRAW IMAGES
-    fill(black)
+    # DRAW IMAGES
+    fill(BLACK)
     pyco.draw()
     punti.draw()
 
-    #update screen and events queue
-    UPDATE()
+    # update screen and events queue
+    update()
 
-    #wait
-    sleep(0.01)
+    # wait
+    wait(100)

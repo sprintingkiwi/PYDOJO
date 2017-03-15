@@ -16,7 +16,7 @@ while True:
     gobo.draw()
 
     if keydown(C):
-        fill(black)
+        fill(BLACK)
 
     #update screen and events queue
     UPDATE()

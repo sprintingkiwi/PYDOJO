@@ -7,10 +7,28 @@ def terminate():
     quit()
 
 
-#create game display
+# create game display
 width = 800
 height = 480
-SCREEN(width, height)
+screen(width, height)
+
+
+def events():
+    if key(UP) or buttondown(4, 0):
+        playerR.point(0)
+        playerR.forward(5)
+    if key(DOWN) or buttondown(5, 0):
+        playerR.point(180)
+        playerR.forward(5)
+    if key(Z) or buttondown(0, 0):
+        playerL.point(0)
+        playerL.forward(5)
+    if key(X) or buttondown(1, 0):
+        playerL.point(180)
+        playerL.forward(5)
+    if key(ESCAPE):
+        terminate()
+
 
 while True:
 
@@ -21,10 +39,10 @@ while True:
     timetext.goto(400, 150)
 
     edge = Actor("example_library/edge.png")
-    edge.goto(width/2, height/2)
+    edge.goto(width / 2, height / 2)
 
     bg = Actor("example_library/sea.png")
-    bg.goto(width/2, height/2)
+    bg.goto(width / 2, height / 2)
 
     playerL = Actor("example_library/fish2.png")
     playerL.point(90)
@@ -42,7 +60,7 @@ while True:
 
     ball = Actor("example_library/seastar1.png")
     ball.scale(0.1)
-    ball.goto(width/2, height/2)
+    ball.goto(width / 2, height / 2)
     roll = random.randint(0, 1)
     if roll == 1:
         ball.point(random.randint(45, 135))
@@ -50,10 +68,11 @@ while True:
         ball.point(random.randint(-135, -45))
 
     speed = 2
-    starttime = time.time()
-    counttime = time.time()
+    starttime = time()
+    counttime = time()
 
     gameover = False
+
     while not gameover:
 
         # draw images
@@ -66,32 +85,19 @@ while True:
         playerL.draw()
 
         # controls
-        if key(UP) or buttondown(4, 0):
-            playerR.point(0)
-            playerR.forward(5)
-        if key(DOWN) or buttondown(5, 0):
-            playerR.point(180)
-            playerR.forward(5)
-        if key(Z) or buttondown(0, 0):
-            playerL.point(0)
-            playerL.forward(5)
-        if key(X) or buttondown(1, 0):
-            playerL.point(180)
-            playerL.forward(5)
-        if key(ESCAPE):
-            terminate()
+        events()
 
         # ball movement
         ball.forward(speed)
         ball.heading += 1
 
         # time management
-        actualtime = time.time() - starttime
+        actualtime = time() - starttime
         timetext.write(str(int(actualtime)))
-        deltatime = time.time() - counttime
+        deltatime = time() - counttime
         if deltatime > 3:
             speed += 1
-            counttime = time.time()
+            counttime = time()
 
         # collisions
         if ball.collide(playerL):
@@ -107,16 +113,16 @@ while True:
         if ball.x < -ball.rect.width or ball.x > width + ball.rect.width:
             gameover = True
 
-        #update screen and events queue
-        UPDATE()
+        # update screen and events queue
+        update()
 
-        #wait
-        sleep(0.01)
+        # wait
+        wait(10)
 
     # draw end-menu images
     title.write("GAME OVER")
     instructions = Text("press START to play again or press ESCAPE to quit the game")
-    instructions.goto(width/2, height/2)
+    instructions.goto(width / 2, height / 2)
     bg.draw()
     title.draw()
     timetext.draw()
@@ -130,8 +136,8 @@ while True:
         if keydown(RETURN):
             endmenu = False
 
-        #update screen and events queue
-        UPDATE()
+        # update screen and events queue
+        update()
 
-        #wait
-        sleep(0.01)
+        # wait
+        wait(10)
