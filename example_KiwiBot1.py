@@ -114,7 +114,7 @@ while True:
     # high-level motor control
     if horizontal > 0.2:
         #rightPwm.write(0.9)
-        pass
+        power_right_motor(horizontal)
     if horizontal < -0.2:
         #leftPwm.write(0.9)
         pass
