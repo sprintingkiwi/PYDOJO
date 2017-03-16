@@ -719,6 +719,18 @@ def axis(hand, direction, pad=0):
         print('no gamepad found...')
 
 
+def trigger(hand, pad=0):
+    global gamepadCount, gamepads
+    if gamepadCount > 0:
+        if hand == 'left':
+            raw = gamepads[pad].get_axis(2)
+            value = (raw + 1) / 2
+            return value
+        if hand == 'right':
+            raw = gamepads[pad].get_axis(5)
+            value = (raw + 1) / 2
+            return value
+
 
     # class KeyStorage():
     # def __init__(self):

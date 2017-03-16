@@ -36,6 +36,7 @@ def complete_shutdown():
     rightPwm.write(0)
     leftPwm.write(0)
 
+
 def power_right_motor(value=1):
     if direction == 'forward':
             RF.write(True)
@@ -44,7 +45,8 @@ def power_right_motor(value=1):
             RF.write(False)
             RB.write(True)
     rightPwm.write(value)
-    
+
+
 def power_left_motor(value=1):
     if direction == 'forward':
         LF.write(True)
@@ -53,19 +55,26 @@ def power_left_motor(value=1):
         LF.write(False)
         LB.write(True)
     leftPwm.write(value)
-    
+
+
 def shutdown_right_motor():
     rightPwm.write(0)
     RF.write(False)
     RB.write(False)
-    
+
+
 def shutdown_left_motor():
     leftPwm.write(0)
     LF.write(False)
     LB.write(False)
-    
+
+
 def honk(value=1):
     clacson.write(value)
+
+
+high_level_control = False
+counter = 0
 
 while True:
 
@@ -76,7 +85,7 @@ while True:
 
     if keydown(RIGHT):
         power_right_motor()
-        
+
     if keyup(RIGHT):
         shutdown_right_motor()
 
@@ -91,17 +100,18 @@ while True:
     if keydown(DOWN):
         direction = 'back'
 
-
     # GAMEPAD CONTROL
     horizontal = axis('left', 'horizontal')
-        
+    left_trigger = trigger('left')
+    right_trigger = trigger('right')
+
     # reverse gear
     if buttondown(0):
         direction = 'back'
     else:
         direction = 'forward'
-    
-    # low-level motor control    
+
+    # low-level motor control
     if buttondown(4):
         power_left_motor()
     if buttondown(5):
@@ -110,14 +120,41 @@ while True:
         shutdown_left_motor()
     if not buttondown(5):
         shutdown_right_motor()
-        
+    #if buttondown(1):
+        #if  left_trigger > 0.2:
+            #power_left_motor(left_trigger)
+            #print left_trigger
+        #if  right_trigger > 0.2:
+            #power_right_motor(right_trigger)
+            #print right_trigger
+
+    # button B pressed
+    if buttondown(1):
+        high_level_control = True
+        counter += 1
+
     # high-level motor control
-    if horizontal > 0.2:
-        #rightPwm.write(0.9)
-        power_right_motor(horizontal)
-    if horizontal < -0.2:
-        #leftPwm.write(0.9)
-        pass
+    if high_level_control and (counter % 10 == 0):
+        if  right_trigger > 0.2:
+            right_power = right_trigger
+            left_power = right_trigger
+            if horizontal > 0.2:
+                right_power *= (1 - abs(horizontal))
+            elif horizontal < 0.2:
+                left_power *= (1 - abs(horizontal))
+
+            if right_power > 1:
+                right_power = 1
+            elif right_power < 0.1:
+                right_power = 0
+            if left_power > 1:
+                left_power = 1
+            elif left_power < 0.1:
+                left_power = 0
+
+            power_left_motor(left_power)
+            power_right_motor((right_power) * 0.8)
+            print(left_power, right_power)
 
     #clacson
     if buttondown(2):
