@@ -20,11 +20,11 @@ a.goto(100, 100)
 
 # dyno.rotate = False
 
-r = Rect(size=[32, 32], color=BLUE)
-r.goto(400, 250)
-
-c = Circle(radius=64, line_width=20)
-c.goto(500, 400)
+# r = Rect(size=[32, 32], color=BLUE)
+# r.goto(400, 250)
+#
+# c = Circle(radius=64, line_width=20)
+# c.goto(500, 400)
 
 hey = Sound('example_library/hey.wav')
 
@@ -50,13 +50,13 @@ while True:
     # dyno.direction = 90
     # dyno.left(1)
     a.right(1)
-    r.right(10)
-    c.left(5)
+    # r.right(10)
+    # c.left(5)
     dyno.goto(MOUSE)
-    r.point('mouse')
+    # r.point('mouse')
     dyno.forward(10)
-    r.forward(2)
-    c.forward(20)
+    # r.forward(2)
+    # c.forward(20)
     # dyno.gorand()
 
     # if asize > 10:
@@ -77,8 +77,8 @@ while True:
     a.draw()
     star.draw()
     dyno.draw()
-    r.draw()
-    c.draw()
+    # r.draw()
+    # c.draw()
 
     # update screen and events queue
     UPDATE()

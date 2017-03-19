@@ -1,4 +1,4 @@
-import pygame, math, random, os, subprocess
+import pygame, math, random, os, subprocess, sys
 from pyfirmata import *
 from serial import *
 from time import sleep, time
@@ -21,6 +21,8 @@ YELLOW = [255, 255, 0]
 # green = [0, 255, 0]
 # blue = [0, 0, 255]
 # yellow = [255, 255, 0]
+COLORS = [RED, GREEN, BLUE, YELLOW, BLACK, WHITE]
+
 
 # OBJECTS FOR DATA STORAGE
 class EventsStorage():
@@ -48,7 +50,8 @@ MOUSE = MouseState()
 class ScreenInfo():
     def __init__(self):
         self.screen = None
-        self.resolution = []
+        self.resolution = [800, 600]
+        self.penSurface = pygame.Surface([32, 32])
 
 
 screenInfo = ScreenInfo()
@@ -62,6 +65,9 @@ class ActorsInfo():
 
 actorsInfo = ActorsInfo()
 
+# Screen Center Constant
+CENTER = pygame.sprite.Sprite()
+
 
 # SCREEN
 def screen(w, h, fullscreen=False):
@@ -70,6 +76,13 @@ def screen(w, h, fullscreen=False):
         screenInfo.screen = pygame.display.set_mode([w, h], pygame.FULLSCREEN)
     else:
         screenInfo.screen = pygame.display.set_mode([w, h])
+    # Create surface for turtle drawings
+    path = (os.path.dirname(sys.modules[__name__].__file__))
+    path = os.path.join(path, 'pensurface.png')
+    screenInfo.penSurface = pygame.image.load(path).convert_alpha()
+    screenInfo.penSurface = pygame.transform.scale(screenInfo.penSurface, screenInfo.resolution)
+    CENTER.x = screenInfo.resolution[0] / 2
+    CENTER.y = screenInfo.resolution[1] / 2
 
 
 def SCREEN(*args):
@@ -97,6 +110,8 @@ def update():
         deltaTime = actualTime - actor.startHideTime
         if deltaTime >= actor.hideTime:
             actor.hidden = False
+    # Draw the turtle drawings surface
+    screenInfo.screen.blit(screenInfo.penSurface, [0, 0])
     # refresh the pygame screen
     pygame.display.update()
 
@@ -142,13 +157,17 @@ def terminate():
 # ACTOR CLASS
 class Actor(pygame.sprite.Sprite):
     def __init__(self, path=None, cosname=None):
+        if path is None:
+            path = (os.path.dirname(sys.modules[__name__].__file__))
+            path = os.path.join(path, 'turtle.png')
+            print path
         actorsInfo.actorsList.append(self)
         pygame.sprite.Sprite.__init__(self)
         # Actor coordinates
         self.x = 0.0
         self.y = 0.0
         # Actor angle direction
-        self.direction = 0
+        self.direction = 90
         # image orientation
         self.heading = 0
         self.count = 0
@@ -170,6 +189,9 @@ class Actor(pygame.sprite.Sprite):
         self.rotate = True
         # needs to transform image?
         self.transform = False
+        self.pen = 'up'
+        self.pencolor = RED
+        self.pensize = 1
 
     # find costume name from image path
     def findCostumeName(self, path):
@@ -288,11 +310,29 @@ class Actor(pygame.sprite.Sprite):
         self.y = random.randint(rangey[0], rangey[1])
         self.updateRect()
 
+    def pendown(self):
+        self.pen = 'down'
+
+    def penup(self):
+        self.pen = 'up'
+
     @pausable
     def forward(self, steps):
+        if self.pen == 'down':
+            startX = self.x
+            startY = self.y
+            for i in range(steps):
+                pygame.draw.circle(screenInfo.penSurface,
+                                   self.pencolor,
+                                   [int(startX), int(startY)],
+                                   self.pensize)
+                # pygame.display.update()
+                startX = self.x + i * math.sin(math.radians(self.direction))
+                startY = self.y + i * -math.cos(math.radians(self.direction))
         self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
         self.updateRect()
+
 
     @pausable
     def right(self, angle):
@@ -464,65 +504,65 @@ class Text(Actor):
         self.updateText()
 
 
-class Rect(Actor):
-    def __init__(self, size=[32, 32], color=[255, 0, 0], line_width=0):
-        self.x = 0.0
-        self.y = 0.0
-        self.size = size
-        self.color = color
-        self.line_width = line_width
-        self.updateRect()
-        self.direction = 0
-        self.transform = False
-        self.rotate = False
-        self.paused = False
-        self.hidden = False
-
-    def updateRect(self):
-        self.rect = pygame.Rect(int(self.x),
-                                int(self.y),
-                                self.size[0],
-                                self.size[1])
-        self.rect.centerx = int(self.x)
-        self.rect.centery = int(self.y)
-
-    @hideaway
-    def draw(self):
-        pygame.draw.rect(screenInfo.screen,
-                         self.color,
-                         self.rect,
-                         self.line_width)
-
-
-class Circle(Actor):
-    def __init__(self, color=[255, 0, 0], radius=32, line_width=0):
-        self.x = 0.0
-        self.y = 0.0
-        self.radius = int(radius)
-        self.color = color
-        self.line_width = int(line_width)
-        self.updateRect()
-        self.direction = 0
-        self.transform = False
-        self.rotate = False
-        self.paused = False
-        self.hidden = False
-
-    def updateRect(self):
-        self.rect = pygame.Rect(int(self.x),
-                                int(self.y),
-                                self.radius * 2,
-                                self.radius * 2)
-        self.rect.centerx = int(self.x)
-        self.rect.centery = int(self.y)
-
-    @hideaway
-    def draw(self):
-        pygame.draw.circle(screenInfo.screen,
-                           self.color,
-                           [self.rect.centerx, self.rect.centery],
-                           self.radius,
-                           self.line_width)
+# class Rect(Actor):
+#     def __init__(self, color=[255, 0, 0], size=[32, 32], line_width=0):
+#         self.x = 0.0
+#         self.y = 0.0
+#         self.size = size
+#         self.color = color
+#         self.line_width = line_width
+#         self.updateRect()
+#         self.direction = 0
+#         self.transform = False
+#         self.rotate = False
+#         self.paused = False
+#         self.hidden = False
+#
+#     def updateRect(self):
+#         self.rect = pygame.Rect(int(self.x),
+#                                 int(self.y),
+#                                 self.size[0],
+#                                 self.size[1])
+#         self.rect.centerx = int(self.x)
+#         self.rect.centery = int(self.y)
+#
+#     @hideaway
+#     def draw(self):
+#         pygame.draw.rect(screenInfo.screen,
+#                          self.color,
+#                          self.rect,
+#                          self.line_width)
+#
+#
+# class Circle(Actor):
+#     def __init__(self, color=[255, 0, 0], radius=32, line_width=0):
+#         self.x = 0.0
+#         self.y = 0.0
+#         self.radius = int(radius)
+#         self.color = color
+#         self.line_width = int(line_width)
+#         self.updateRect()
+#         self.direction = 0
+#         self.transform = False
+#         self.rotate = False
+#         self.paused = False
+#         self.hidden = False
+#
+#     def updateRect(self):
+#         self.rect = pygame.Rect(int(self.x),
+#                                 int(self.y),
+#                                 self.radius * 2,
+#                                 self.radius * 2)
+#         self.rect.centerx = int(self.x)
+#         self.rect.centery = int(self.y)
+#
+#     @hideaway
+#     def draw(self):
+#         pygame.draw.circle(screenInfo.screen,
+#                            self.color,
+#                            [self.rect.centerx, self.rect.centery],
+#                            self.radius,
+#                            self.line_width)
 
 
 # SUONI

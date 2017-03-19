@@ -1,12 +1,13 @@
 from pydojo import *
 
-#create game display
-SCREEN(800, 600)
+# CREATE GAME DISPLAY
+screen(800, 600)
 
+# MAIN LOOP
+while True:
 
+    # UPDATE SCREEN
+    update()
 
-#update screen and events queue
-UPDATE()
-
-#wait
-sleep(1)
+    # WAIT
+    wait(10)
