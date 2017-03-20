@@ -14,15 +14,39 @@ WHITE = [255, 255, 255]
 RED = [255, 0, 0]
 GREEN = [0, 255, 0]
 BLUE = [0, 0, 255]
+CYAN = [0, 255, 255]
 YELLOW = [255, 255, 0]
-# black = [0, 0, 0]
-# white = [255, 255, 255]
-# red = [255, 0, 0]
-# green = [0, 255, 0]
-# blue = [0, 0, 255]
-# yellow = [255, 255, 0]
-COLORS = [RED, GREEN, BLUE, YELLOW, BLACK, WHITE]
+MAGENTA = [255, 0, 255]
+PINK = [255, 192, 203]
+TURQUOISE = [64, 224, 208]
+ORANGE = [255, 165, 0]
+SILVER = [192, 192, 192]
+GREY = [128, 128, 128]
+VIOLET = [238, 130, 238]
+PURPLE = [128, 0, 128]
+TOMATO = [255, 99, 71]
+BEIGE = [245, 245, 220]
+LAVENDER = [230, 230, 250]
 
+COLORS = [RED,
+          GREEN,
+          BLUE,
+          YELLOW,
+          BLACK,
+          WHITE,
+          CYAN,
+          YELLOW,
+          MAGENTA,
+          PINK,
+          TURQUOISE,
+          ORANGE,
+          SILVER,
+          GREY,
+          VIOLET,
+          PURPLE,
+          TOMATO,
+          BEIGE,
+          LAVENDER]
 
 # OBJECTS FOR DATA STORAGE
 class EventsStorage():
@@ -60,6 +84,8 @@ screenInfo = ScreenInfo()
 class ActorsInfo():
     def __init__(self):
         self.actorsList = []
+        self.pausedActorsList = []
+        self.hiddenActorsList = []
         self.counts = []
 
 
@@ -103,10 +129,11 @@ def update():
     MOUSE.y = MOUSE.pos[1]
     # manage the time for hide and pause methods
     actualTime = pygame.time.get_ticks()
-    for actor in actorsInfo.actorsList:
+    for actor in actorsInfo.pausedActorsList:
         deltaTime = actualTime - actor.startPauseTime
         if deltaTime >= actor.pauseTime:
             actor.paused = False
+    for actor in actorsInfo.hiddenActorsList:
         deltaTime = actualTime - actor.startHideTime
         if deltaTime >= actor.hideTime:
             actor.hidden = False
@@ -165,7 +192,9 @@ class Actor(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         # Actor coordinates
         self.x = 0.0
+        self.x = screenInfo.resolution[0] / 2
         self.y = 0.0
+        self.y = screenInfo.resolution[1] / 2
         # Actor angle direction
         self.direction = 90
         # image orientation
@@ -189,7 +218,7 @@ class Actor(pygame.sprite.Sprite):
         self.rotate = True
         # needs to transform image?
         self.transform = False
-        self.pen = 'up'
+        self.penState = 'up'
         self.pencolor = RED
         self.pensize = 1
 
@@ -235,9 +264,12 @@ class Actor(pygame.sprite.Sprite):
     def getcostume(self):
         return self.costume
 
-    def nextcostume(self, pause):
+    def nextcostume(self, pause=1):
         if self.coscount > pause:
-            self.setcostume(self.costume + 1)
+            if self.cosnumber < len(self.costumes) - 1:
+                self.setcostume(self.cosnumber + 1)
+            else:
+                self.setcostume(0)
             self.coscount = 0
         self.coscount += 1
 
@@ -292,33 +324,35 @@ class Actor(pygame.sprite.Sprite):
         if type(x) is int:
             self.x = x
             self.y = y
-
+        elif type(x) is list or type(x) is tuple:
+            self.x = x[0]
+            self.y = x[1]
         elif x == 'mouse':
             pos = pygame.mouse.get_pos()
             self.x = pos[0]
             self.y = pos[1]
-
         else:
             self.x = x.x
             self.y = x.y
-
         self.updateRect()
 
     @pausable
-    def gorand(self, rangex=[0, 800], rangey=[0, 600]):
+    def gorand(self,
+               rangex=[0, screenInfo.resolution[0]],
+               rangey=[0, screenInfo.resolution[1]]):
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
         self.updateRect()
 
     def pendown(self):
-        self.pen = 'down'
+        self.penState = 'down'
 
     def penup(self):
-        self.pen = 'up'
+        self.penState = 'up'
 
     @pausable
     def forward(self, steps):
-        if self.pen == 'down':
+        if self.penState == 'down':
             startX = self.x
             startY = self.y
             for i in range(steps):
@@ -332,7 +366,6 @@ class Actor(pygame.sprite.Sprite):
         self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
         self.updateRect()
-
 
     @pausable
     def right(self, angle):
@@ -439,15 +472,22 @@ class Actor(pygame.sprite.Sprite):
             return self.rect.collidepoint(point)
 
     # pause actor's actions (da completare)
-    def pause(self, t):
+    def pause(self, t=-1):
         self.paused = True
-        self.pauseTime = t * 1000
-        self.startPauseTime = pygame.time.get_ticks()
+        if t >= 0:
+            actorsInfo.pausedActorsList.append(self)
+            self.pauseTime = t * 1000
+            self.startPauseTime = pygame.time.get_ticks()
 
-    def hide(self, t):
+    def unpause(self):
+        self.paused = False
+
+    def hide(self, t=-1):
         self.hidden = True
-        self.hideTime = t * 1000
-        self.startHideTime = pygame.time.get_ticks()
+        if t >= 0:
+            actorsInfo.hiddenActorsList.append(self)
+            self.hideTime = t * 1000
+            self.startHideTime = pygame.time.get_ticks()
 
     def show(self):
         self.hidden = False

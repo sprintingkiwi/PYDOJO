@@ -4,9 +4,9 @@ from pydojo import *
 screen(1920, 1080)
 
 uga = Actor()
-uga.goto(CENTER)
 uga.pendown()
-uga.pencolor = WHITE
+uga.pencolor = ORANGE
+uga.pensize = 10
 
 p = 10
 
@@ -16,14 +16,9 @@ while True:
     # MOVE THE TURTLE
     uga.forward(p)
     uga.right(88)
-    p = p + 5
-
-    # DRAW IMAGES
-    fill(BLACK)
-    uga.draw()
+    p = p + 20
 
     # UPDATE SCREEN
     update()
-
     # WAIT
     wait(10)

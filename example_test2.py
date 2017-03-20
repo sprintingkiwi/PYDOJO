@@ -1,17 +1,15 @@
 from pydojo import *
 
 # CREATE GAME DISPLAY
-screen(800, 600)
+screen(1280, 720)
 
 uga = Actor()
-uga.goto(400, 300)
 uga.pendown()
 
 pyco = Actor('example_library/pyco2.png')
 pyco.load('example_library/pyco4.png')
 pyco.load('example_library/pyco5.png')
 pyco.load('example_library/pyco6.png')
-pyco.goto(400, 300)
 
 passi = 1
 
@@ -24,8 +22,9 @@ while True:
         uga.right(10)
         uga.pensize += 1
         passi += 1
-        uga.pencolor = (colore)
+        uga.pencolor = colore
 
+    pyco.nextcostume()
 
     # Draw images
     fill(BLACK)

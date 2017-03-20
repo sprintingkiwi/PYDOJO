@@ -1,7 +1,7 @@
 from pydojo import *
 
 # create game display
-SCREEN(1280, 720)
+screen(1280, 720)
 
 dyno = Actor('example_library/dinosaur1.png')
 dyno.scale(0.2)
@@ -67,13 +67,16 @@ while True:
     if dyno.collide(star):
         print(dyno.collide(star))
         star.setcostume(1)
-        hey.play()
+        # hey.play()
         dyno.hide(2)
 
     if star.costume == 'triste' and not star.collide(dyno):
         star.setcostume('felice')
 
-    fill(WHITE)
+    if keydown(D):
+        dyno.show()
+
+    fill(PINK)
     a.draw()
     star.draw()
     dyno.draw()
@@ -81,7 +84,7 @@ while True:
     # c.draw()
 
     # update screen and events queue
-    UPDATE()
+    update()
 
     # wait
     sleep(0.01)
