@@ -20,17 +20,13 @@ a.goto(100, 100)
 
 # dyno.rotate = False
 
-# r = Rect(size=[32, 32], color=BLUE)
-# r.goto(400, 250)
-#
-# c = Circle(radius=64, line_width=20)
-# c.goto(500, 400)
-
 hey = Sound('example_library/hey.wav')
 
 print(actorsInfo.actorsList)
 
 while True:
+
+    print(actorsInfo.drawList)
 
     if dyno.click():
         print('funziona')
@@ -50,19 +46,8 @@ while True:
     # dyno.direction = 90
     # dyno.left(1)
     a.right(1)
-    # r.right(10)
-    # c.left(5)
     dyno.goto(MOUSE)
-    # r.point('mouse')
     dyno.forward(10)
-    # r.forward(2)
-    # c.forward(20)
-    # dyno.gorand()
-
-    # if asize > 10:
-    # asize = 0.1
-    # asize += 0.1
-    ##    a.scale(0.2)
 
     if dyno.collide(star):
         print(dyno.collide(star))
@@ -77,11 +62,6 @@ while True:
         dyno.show()
 
     fill(PINK)
-    a.draw()
-    star.draw()
-    dyno.draw()
-    # r.draw()
-    # c.draw()
 
     # update screen and events queue
     update()

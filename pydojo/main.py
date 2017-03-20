@@ -76,6 +76,13 @@ class ScreenInfo():
         self.screen = None
         self.resolution = [800, 600]
         self.penSurface = pygame.Surface([32, 32])
+        self.hasBackground = False
+
+    def setBackground(self, *args):
+        self.background = Actor(*args)
+        self.background.layer = -1
+        self.background.scale(self.resolution[0], self.resolution[1])
+        self.hasBackground = True
 
 
 screenInfo = ScreenInfo()
@@ -84,6 +91,7 @@ screenInfo = ScreenInfo()
 class ActorsInfo():
     def __init__(self):
         self.actorsList = []
+        self.drawList = []
         self.pausedActorsList = []
         self.hiddenActorsList = []
         self.counts = []
@@ -119,6 +127,14 @@ def fill(color):
     screenInfo.screen.fill(color)
 
 
+def background(*args):
+    if not screenInfo.hasBackground:
+        screenInfo.setBackground(*args)
+    else:
+        screenInfo.background.load(*args)
+        screenInfo.background.setcostume(screenInfo.background.cosnumber + 1)
+
+
 # one of the most important functions
 def update():
     # refresh the event list
@@ -133,10 +149,16 @@ def update():
         deltaTime = actualTime - actor.startPauseTime
         if deltaTime >= actor.pauseTime:
             actor.paused = False
+            actorsInfo.pausedActorsList.remove(actor)
     for actor in actorsInfo.hiddenActorsList:
         deltaTime = actualTime - actor.startHideTime
         if deltaTime >= actor.hideTime:
             actor.hidden = False
+            actorsInfo.hiddenActorsList.remove(actor)
+            actorsInfo.drawList.append(actor)
+    actorsInfo.drawList.sort(key=lambda x: x.layer)
+    for actor in actorsInfo.drawList:
+        actor.draw()
     # Draw the turtle drawings surface
     screenInfo.screen.blit(screenInfo.penSurface, [0, 0])
     # refresh the pygame screen
@@ -163,7 +185,6 @@ def pausable(func):
     def wrapper(self, *args):
         if not self.paused:
             return func(self, *args)
-
     return wrapper
 
 
@@ -171,7 +192,6 @@ def hideaway(func):
     def wrapper(self, *args):
         if not self.hidden:
             return func(self, *args)
-
     return wrapper
 
 
@@ -189,6 +209,7 @@ class Actor(pygame.sprite.Sprite):
             path = os.path.join(path, 'turtle.png')
             print path
         actorsInfo.actorsList.append(self)
+        actorsInfo.drawList.append(self)
         pygame.sprite.Sprite.__init__(self)
         # Actor coordinates
         self.x = 0.0
@@ -199,6 +220,7 @@ class Actor(pygame.sprite.Sprite):
         self.direction = 90
         # image orientation
         self.heading = 0
+        self.layer = 0
         self.count = 0
         self.paused = False
         self.hidden = False
@@ -302,7 +324,7 @@ class Actor(pygame.sprite.Sprite):
     def getdirection(self):
         return self.direction
 
-    @hideaway
+    # @hideaway
     def draw(self, rect=None):
         # if the image changed the transform functions apply
         if self.rotate is True:
@@ -462,9 +484,12 @@ class Actor(pygame.sprite.Sprite):
             # print(result)
 
     # Rect collision
+    @hideaway
     def collide(self, target):
-        return self.rect.colliderect(target.rect)
+        if not target.hidden:
+            return self.rect.colliderect(target.rect)
 
+    @hideaway
     def collidepoint(self, point):
         if point == MOUSE:
             return self.rect.collidepoint([MOUSE.x, MOUSE.y])
@@ -481,16 +506,27 @@ class Actor(pygame.sprite.Sprite):
 
     def unpause(self):
         self.paused = False
+        actorsInfo.pausedActorsList.remove(self)
 
+    @hideaway
     def hide(self, t=-1):
         self.hidden = True
+        actorsInfo.drawList.remove(self)
         if t >= 0:
             actorsInfo.hiddenActorsList.append(self)
             self.hideTime = t * 1000
             self.startHideTime = pygame.time.get_ticks()
 
     def show(self):
-        self.hidden = False
+        if self.hidden:
+            self.hidden = False
+            try:
+                actorsInfo.hiddenActorsList.remove(self)
+            except:
+                print(actorsInfo.hiddenActorsList)
+            actorsInfo.drawList.append(self)
+        else:
+            pass
 
 
 class Text(Actor):
