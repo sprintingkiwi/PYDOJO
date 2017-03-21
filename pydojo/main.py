@@ -78,11 +78,10 @@ class ScreenInfo():
         self.penSurface = pygame.Surface([32, 32])
         self.hasBackground = False
 
-    def setBackground(self, *args):
+    def createBackground(self, *args):
         self.background = Actor(*args)
-        self.background.layer = -1
+        self.background.layer = -100
         self.background.scale(self.resolution[0], self.resolution[1])
-        self.hasBackground = True
 
 
 screenInfo = ScreenInfo()
@@ -129,11 +128,10 @@ def fill(color):
 
 def background(*args):
     if not screenInfo.hasBackground:
-        screenInfo.setBackground(*args)
+        screenInfo.createBackground(*args)
     else:
         screenInfo.background.load(*args)
         screenInfo.background.setcostume(screenInfo.background.cosnumber + 1)
-
 
 # one of the most important functions
 def update():
@@ -221,6 +219,7 @@ class Actor(pygame.sprite.Sprite):
         # image orientation
         self.heading = 0
         self.layer = 0
+        self.actualScale = 1
         self.count = 0
         self.paused = False
         self.hidden = False
@@ -258,6 +257,7 @@ class Actor(pygame.sprite.Sprite):
         self.size = self.costumes[self.cosnumber][1].get_size()
         self.width = self.costumes[self.cosnumber][1].get_width()
         self.height = self.costumes[self.cosnumber][1].get_height()
+        self.actualScale = [self.width, self.height]
 
     # load Actor's image
     def load(self, path, cosname=None):
@@ -266,6 +266,8 @@ class Actor(pygame.sprite.Sprite):
         else:
             self.costume = cosname
         img = pygame.image.load(path).convert_alpha()
+        if len(self.costumes) > 0:
+            img = pygame.transform.scale(img, self.actualScale)
         self.costumes.append([self.costume, img])
         self.originalCostumes.append([self.costume, img])
         self.mask = pygame.mask.from_surface(self.costumes[self.cosnumber][1])
@@ -273,6 +275,9 @@ class Actor(pygame.sprite.Sprite):
 
     def loadcostume(self, path, cosname=None):
         self.load(path, cosname)
+
+    def loadfolder(self, path):
+        pass
 
     def setcostume(self, newcostume):
         if type(newcostume) is int:
@@ -445,6 +450,7 @@ class Actor(pygame.sprite.Sprite):
                 cos[1] = pygame.transform.scale(cos[1], (w, h))
             for cos in self.originalCostumes:
                 cos[1] = pygame.transform.scale(cos[1], (w, h))
+            self.actualScale = [w, h]
             self.updateRect()
         else:
             width = int(self.width * w)
