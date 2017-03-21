@@ -28,13 +28,5 @@ while not gameover:
     if gatto.collide(topo):
         quit()
 
-    #DRAW ACTORS
-    # sfondo.draw()
-    # topo.draw()
-    # gatto.draw()
-
     #update screen and events queue
     update()
-
-    #wait
-    sleep(0.01)

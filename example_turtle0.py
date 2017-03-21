@@ -1,18 +1,23 @@
 from pydojo import *
 
 screen(1280, 720)
-fill(LAVENDER)
+fill(WHITE)
 
 uga = Actor()
 uga.pendown()
-uga.pensize = 10
+
+dimensione = 1
+passi = 1
 
 while True:
-    uga.forward(10)
+    uga.pensize = dimensione
+    uga.forward(passi)
     uga.right(10)
+
+    dimensione = dimensione + 1
+    passi = passi + 1
 
     if keydown(ESCAPE):
         quit()
 
     update()
-    wait(10)

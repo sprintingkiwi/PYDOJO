@@ -29,13 +29,5 @@ while True:
         presi = presi + 1
         punti.write(presi)
 
-    # DRAW IMAGES
-    # fill(BLACK)
-    pyco.draw()
-    punti.draw()
-
     # update screen and events queue
     update()
-
-    # wait
-    # wait(100)

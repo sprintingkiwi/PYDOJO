@@ -55,7 +55,7 @@ while True:
         # hey.play()
         dyno.hide(2)
 
-    if star.costume == 'triste' and not star.collide(dyno):
+    if keydown(F):
         star.setcostume('felice')
 
     if keydown(D):
@@ -65,6 +65,3 @@ while True:
 
     # update screen and events queue
     update()
-
-    # wait
-    sleep(0.01)

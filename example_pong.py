@@ -84,15 +84,6 @@ while True:
 
         print(actorsInfo.drawList)
 
-        # draw images
-        # bg.draw()
-        # edge.draw()
-        # title.draw()
-        # timetext.draw()
-        # ball.draw()
-        # playerR.draw()
-        # playerL.draw()
-
         # controls
         events()
 
@@ -132,11 +123,6 @@ while True:
     title.write("GAME OVER")
     instructions.show()
 
-    # bg.draw()
-    # title.draw()
-    # timetext.draw()
-    # instructions.draw()
-
     endmenu = True
     while endmenu:
 
@@ -147,6 +133,3 @@ while True:
 
         # update screen and events queue
         update()
-
-        # wait
-        wait(10)
