@@ -8,7 +8,7 @@ background('example_library/sea.png')
 #CREATE SHARK ACTOR
 shark = Actor('example_library/shark1.png')
 shark.scale(0.2)
-shark.rotate = False
+shark.rotation = 'flip'
 
 #CREATE FISH
 fish = Actor('example_library/fish1.png')
@@ -18,6 +18,8 @@ fish.point(30)
 
 #MAIN LOOP
 while True:
+
+    print(shark.direction)
 
     #SHARK MOVEMENT
     if key(RIGHT):

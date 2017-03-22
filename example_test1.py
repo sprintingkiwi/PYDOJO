@@ -6,6 +6,7 @@ screen(1280, 720)
 dyno = Actor('example_library/dinosaur1.png')
 dyno.scale(0.2)
 dyno.goto(500, 300)
+dyno.rotation = 'flip'
 
 star = Actor('example_library/seastar1.png', 'felice')
 star.load('example_library/seastar2.png', 'triste')
@@ -26,7 +27,7 @@ print(actorsInfo.actorsList)
 
 while True:
 
-    print(actorsInfo.drawList)
+    # print(actorsInfo.drawList)
 
     if dyno.click():
         print('funziona')
@@ -46,11 +47,12 @@ while True:
     # dyno.direction = 90
     # dyno.left(1)
     a.right(1)
-    dyno.goto(MOUSE)
-    dyno.forward(10)
+    dyno.point(MOUSE)
+    dyno.forward(3)
+    print(dyno.direction)
 
     if dyno.collide(star):
-        print(dyno.collide(star))
+        # print(dyno.collide(star))
         star.setcostume(1)
         # hey.play()
         dyno.hide(2)

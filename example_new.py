@@ -8,5 +8,3 @@ while True:
 
     # UPDATE SCREEN
     update()
-    # WAIT
-    wait(10)

@@ -274,12 +274,14 @@ class Actor(pygame.sprite.Sprite):
         self.load(path, cosname)
         # rotation style
         self.rotate = True
+        self.rotation = 360
+        self.needToFlip = 'left'
         # needs to transform image?
         self.transform = False
         self.penState = 'up'
         self.pencolor = RED
         self.pensize = 1
-        self.stamp = False
+        self.needToStamp = False
 
     # find costume name from image path
     def findCostumeName(self, path):
@@ -369,21 +371,37 @@ class Actor(pygame.sprite.Sprite):
 
     # @hideaway
     def draw(self, rect=None):
-        # if the image changed the transform functions apply
-        if self.rotate is True:
-            self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
-            self.updateRect()
-            screenInfo.screen.blit(self.costumes[self.cosnumber][1],
-                                   ((self.x - self.width / 2),
-                                    (self.y - self.height / 2)),
-                                   rect)
-            # and then the original image is loaded
+        # If the image changed the transform functions apply
+        if self.rotate:
+            # Full 360 rotation style
+            if self.rotation == 360:
+                self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
+                self.updateRect()
+            # Horizontal Flip rotation style
+            elif self.rotation == 'flip':
+                if self.direction < 0 or self.direction > 180:
+                    if self.needToFlip == 'left':
+                        self.flip('horizontal')
+                        self.needToFlip = 'right'
+                if self.direction > 0 and self.direction < 180:
+                    if self.needToFlip == 'right':
+                        self.flip('horizontal')
+                        self.needToFlip = 'left'
+        # Blit the image to the screen
+        screenInfo.screen.blit(self.costumes[self.cosnumber][1],
+                               ((self.x - self.width / 2),
+                                (self.y - self.height / 2)),
+                               rect)
+        # Stamp in the turtle drawing surface
+        if self.needToStamp:
+            screenInfo.penSurface.blit(self.costumes[self.cosnumber][1],
+                                       ((self.x - self.width / 2),
+                                        (self.y - self.height / 2)),
+                                       rect)
+            self.needToStamp = False
+        # And then the original image is loaded
+        if self.rotate:
             self.costumes[self.cosnumber][1] = self.originalCostumes[self.cosnumber][1]
-        else:
-            screenInfo.screen.blit(self.costumes[self.cosnumber][1],
-                                   ((self.x - self.width / 2),
-                                    (self.y - self.height / 2)),
-                                   rect)
 
     @pausable
     def goto(self, x, y=0):
@@ -446,6 +464,11 @@ class Actor(pygame.sprite.Sprite):
         self.heading = self.direction - 90
         if self.rotate:
             self.transform = True
+
+    @pausable
+    def stamp(self):
+        if not self.needToStamp:
+            self.needToStamp = True
 
     @pausable
     def point(self, target):

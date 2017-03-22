@@ -9,7 +9,7 @@ gobo.scale(0.2)
 while True:
 
     gobo.goto(MOUSE)
-
+    gobo.stamp()
     gobo.right(5)
 
     if keydown(C):
