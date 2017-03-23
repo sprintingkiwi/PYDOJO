@@ -1,11 +1,12 @@
 from pydojo import *
 
 # create game display
-SCREEN(1280, 720)
+screen(1280, 720)
 
 dyno = Actor('example_library/dinosaur1.png')
 dyno.scale(0.2)
 dyno.goto(500, 300)
+dyno.rotation = 'flip'
 
 star = Actor('example_library/seastar1.png', 'felice')
 star.load('example_library/seastar2.png', 'triste')
@@ -20,17 +21,13 @@ a.goto(100, 100)
 
 # dyno.rotate = False
 
-r = Rect(size=[32, 32], color=BLUE)
-r.goto(400, 250)
-
-c = Circle(radius=64, line_width=20)
-c.goto(500, 400)
-
 hey = Sound('example_library/hey.wav')
 
 print(actorsInfo.actorsList)
 
 while True:
+
+    # print(actorsInfo.drawList)
 
     if dyno.click():
         print('funziona')
@@ -50,38 +47,23 @@ while True:
     # dyno.direction = 90
     # dyno.left(1)
     a.right(1)
-    r.right(10)
-    c.left(5)
-    dyno.goto(MOUSE)
-    r.point('mouse')
-    dyno.forward(10)
-    r.forward(2)
-    c.forward(20)
-    # dyno.gorand()
-
-    # if asize > 10:
-    # asize = 0.1
-    # asize += 0.1
-    ##    a.scale(0.2)
+    dyno.point(MOUSE)
+    dyno.forward(3)
+    print(dyno.direction)
 
     if dyno.collide(star):
-        print(dyno.collide(star))
+        # print(dyno.collide(star))
         star.setcostume(1)
-        hey.play()
+        # hey.play()
         dyno.hide(2)
 
-    if star.costume == 'triste' and not star.collide(dyno):
+    if keydown(F):
         star.setcostume('felice')
 
-    fill(WHITE)
-    a.draw()
-    star.draw()
-    dyno.draw()
-    r.draw()
-    c.draw()
+    if keydown(D):
+        dyno.show()
+
+    fill(PINK)
 
     # update screen and events queue
-    UPDATE()
-
-    # wait
-    sleep(0.01)
+    update()

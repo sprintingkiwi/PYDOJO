@@ -1,4 +1,4 @@
-import pygame, math, random, os, subprocess
+import pygame, math, random, os, subprocess, sys
 from pyfirmata import *
 from serial import *
 from time import sleep, time
@@ -6,7 +6,7 @@ from time import sleep, time
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 0.7
+LIBRARY_VERSION = 0.8
 
 # Colors
 BLACK = [0, 0, 0]
@@ -14,13 +14,39 @@ WHITE = [255, 255, 255]
 RED = [255, 0, 0]
 GREEN = [0, 255, 0]
 BLUE = [0, 0, 255]
+CYAN = [0, 255, 255]
 YELLOW = [255, 255, 0]
-# black = [0, 0, 0]
-# white = [255, 255, 255]
-# red = [255, 0, 0]
-# green = [0, 255, 0]
-# blue = [0, 0, 255]
-# yellow = [255, 255, 0]
+MAGENTA = [255, 0, 255]
+PINK = [255, 192, 203]
+TURQUOISE = [64, 224, 208]
+ORANGE = [255, 165, 0]
+SILVER = [192, 192, 192]
+GREY = [128, 128, 128]
+VIOLET = [238, 130, 238]
+PURPLE = [128, 0, 128]
+TOMATO = [255, 99, 71]
+BEIGE = [245, 245, 220]
+LAVENDER = [230, 230, 250]
+
+COLORS = [RED,
+          GREEN,
+          BLUE,
+          YELLOW,
+          BLACK,
+          WHITE,
+          CYAN,
+          YELLOW,
+          MAGENTA,
+          PINK,
+          TURQUOISE,
+          ORANGE,
+          SILVER,
+          GREY,
+          VIOLET,
+          PURPLE,
+          TOMATO,
+          BEIGE,
+          LAVENDER]
 
 # OBJECTS FOR DATA STORAGE
 class EventsStorage():
@@ -48,7 +74,17 @@ MOUSE = MouseState()
 class ScreenInfo():
     def __init__(self):
         self.screen = None
-        self.resolution = []
+        self.resolution = [800, 600]
+        self.penSurface = pygame.Surface([32, 32])
+        self.hasBackground = False
+        self.bgColor = BLACK
+        self.colorFilled = False
+
+    def createBackground(self, *args):
+        self.background = Actor(*args)
+        self.background.layer = -100
+        self.background.scale(self.resolution[0], self.resolution[1])
+        self.hasBackground = True
 
 
 screenInfo = ScreenInfo()
@@ -57,10 +93,16 @@ screenInfo = ScreenInfo()
 class ActorsInfo():
     def __init__(self):
         self.actorsList = []
+        self.drawList = []
+        self.pausedActorsList = []
+        self.hiddenActorsList = []
         self.counts = []
 
 
 actorsInfo = ActorsInfo()
+
+# Screen Center Constant
+CENTER = pygame.sprite.Sprite()
 
 
 # SCREEN
@@ -70,35 +112,92 @@ def screen(w, h, fullscreen=False):
         screenInfo.screen = pygame.display.set_mode([w, h], pygame.FULLSCREEN)
     else:
         screenInfo.screen = pygame.display.set_mode([w, h])
+    # Create surface for turtle drawings
+    path = (os.path.dirname(sys.modules[__name__].__file__))
+    path = os.path.join(path, 'pensurface.png')
+    screenInfo.penSurface = pygame.image.load(path).convert_alpha()
+    screenInfo.penSurface = pygame.transform.scale(screenInfo.penSurface, screenInfo.resolution)
+    CENTER.x = screenInfo.resolution[0] / 2
+    CENTER.y = screenInfo.resolution[1] / 2
 
 
 def SCREEN(*args):
     screen(*args)
 
 
+def enableBackground():
+    if screenInfo.colorFilled:
+        actorsInfo.actorsList.append(screenInfo.background)
+        screenInfo.colorFilled = False
+
+
+def disableBackground():
+    if not screenInfo.colorFilled and screenInfo.hasBackground:
+        actorsInfo.actorsList.remove(screenInfo.background)
+        screenInfo.colorFilled = True
+
+
 def fill(color):
-    screenInfo.screen.fill(color)
+    screenInfo.bgColor = color
+    disableBackground()
 
 
-# one of the most important functions
+def background(*args):
+    screenInfo.createBackground(*args)
+    enableBackground()
+
+
+def loadbackground(*args):
+    if not screenInfo.hasBackground:
+        screenInfo.createBackground(*args)
+    else:
+        screenInfo.background.load(*args)
+        # screenInfo.background.setcostume(screenInfo.background.cosnumber + 1)
+
+
+def setbackground(*args):
+    screenInfo.background.setcostume(*args)
+    enableBackground()
+
+
+defaultClock = pygame.time.Clock()
+
+
+# One of the most important functions
 def update():
-    # refresh the event list
+    # Refresh the event list
     eventsStorage.LIST = pygame.event.get()
-    # refresh mouse position
+    # Refresh mouse position
     MOUSE.pos = pygame.mouse.get_pos()
     MOUSE.x = MOUSE.pos[0]
     MOUSE.y = MOUSE.pos[1]
-    # manage the time for hide and pause methods
+    # Manage the time for hide and pause methods
     actualTime = pygame.time.get_ticks()
-    for actor in actorsInfo.actorsList:
+    # Compute actors pauses
+    for actor in actorsInfo.pausedActorsList:
         deltaTime = actualTime - actor.startPauseTime
         if deltaTime >= actor.pauseTime:
             actor.paused = False
+            actorsInfo.pausedActorsList.remove(actor)
+    # Compute actors hide time
+    for actor in actorsInfo.hiddenActorsList:
         deltaTime = actualTime - actor.startHideTime
         if deltaTime >= actor.hideTime:
             actor.hidden = False
+            actorsInfo.hiddenActorsList.remove(actor)
+            actorsInfo.drawList.append(actor)
+    # Order Actor's list by layer
+    actorsInfo.drawList.sort(key=lambda x: x.layer)
+    # Draw screen base color
+    screenInfo.screen.fill(screenInfo.bgColor)
+    # Draw Actors (and Background)
+    for actor in actorsInfo.drawList:
+        actor.draw()
+    # Draw the turtle drawings surface
+    screenInfo.screen.blit(screenInfo.penSurface, [0, 0])
     # refresh the pygame screen
     pygame.display.update()
+    defaultClock.tick(60)
 
 
 def UPDATE():
@@ -121,7 +220,6 @@ def pausable(func):
     def wrapper(self, *args):
         if not self.paused:
             return func(self, *args)
-
     return wrapper
 
 
@@ -129,7 +227,6 @@ def hideaway(func):
     def wrapper(self, *args):
         if not self.hidden:
             return func(self, *args)
-
     return wrapper
 
 
@@ -142,15 +239,24 @@ def terminate():
 # ACTOR CLASS
 class Actor(pygame.sprite.Sprite):
     def __init__(self, path=None, cosname=None):
+        if path is None:
+            path = (os.path.dirname(sys.modules[__name__].__file__))
+            path = os.path.join(path, 'turtle.png')
+            print path
         actorsInfo.actorsList.append(self)
+        actorsInfo.drawList.append(self)
         pygame.sprite.Sprite.__init__(self)
         # Actor coordinates
         self.x = 0.0
+        self.x = screenInfo.resolution[0] / 2
         self.y = 0.0
+        self.y = screenInfo.resolution[1] / 2
         # Actor angle direction
-        self.direction = 0
+        self.direction = 90
         # image orientation
         self.heading = 0
+        self.layer = 0
+        self.actualScale = 1
         self.count = 0
         self.paused = False
         self.hidden = False
@@ -168,8 +274,14 @@ class Actor(pygame.sprite.Sprite):
         self.load(path, cosname)
         # rotation style
         self.rotate = True
+        self.rotation = 360
+        self.needToFlip = 'left'
         # needs to transform image?
         self.transform = False
+        self.penState = 'up'
+        self.pencolor = RED
+        self.pensize = 1
+        self.needToStamp = False
 
     # find costume name from image path
     def findCostumeName(self, path):
@@ -185,6 +297,7 @@ class Actor(pygame.sprite.Sprite):
         self.size = self.costumes[self.cosnumber][1].get_size()
         self.width = self.costumes[self.cosnumber][1].get_width()
         self.height = self.costumes[self.cosnumber][1].get_height()
+        self.actualScale = [self.width, self.height]
 
     # load Actor's image
     def load(self, path, cosname=None):
@@ -193,6 +306,8 @@ class Actor(pygame.sprite.Sprite):
         else:
             self.costume = cosname
         img = pygame.image.load(path).convert_alpha()
+        if len(self.costumes) > 0:
+            img = pygame.transform.scale(img, self.actualScale)
         self.costumes.append([self.costume, img])
         self.originalCostumes.append([self.costume, img])
         self.mask = pygame.mask.from_surface(self.costumes[self.cosnumber][1])
@@ -200,6 +315,9 @@ class Actor(pygame.sprite.Sprite):
 
     def loadcostume(self, path, cosname=None):
         self.load(path, cosname)
+
+    def loadfolder(self, path):
+        pass
 
     def setcostume(self, newcostume):
         if type(newcostume) is int:
@@ -213,9 +331,12 @@ class Actor(pygame.sprite.Sprite):
     def getcostume(self):
         return self.costume
 
-    def nextcostume(self, pause):
+    def nextcostume(self, pause=1):
         if self.coscount > pause:
-            self.setcostume(self.costume + 1)
+            if self.cosnumber < len(self.costumes) - 1:
+                self.setcostume(self.cosnumber + 1)
+            else:
+                self.setcostume(0)
             self.coscount = 0
         self.coscount += 1
 
@@ -248,48 +369,84 @@ class Actor(pygame.sprite.Sprite):
     def getdirection(self):
         return self.direction
 
-    @hideaway
+    # @hideaway
     def draw(self, rect=None):
-        # if the image changed the transform functions apply
-        if self.rotate is True:
-            self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
-            self.updateRect()
-            screenInfo.screen.blit(self.costumes[self.cosnumber][1],
-                                   ((self.x - self.width / 2),
-                                    (self.y - self.height / 2)),
-                                   rect)
-            # and then the original image is loaded
+        # If the image changed the transform functions apply
+        if self.rotate:
+            # Full 360 rotation style
+            if self.rotation == 360:
+                self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
+                self.updateRect()
+            # Horizontal Flip rotation style
+            elif self.rotation == 'flip':
+                if self.direction < 0 or self.direction > 180:
+                    if self.needToFlip == 'left':
+                        self.flip('horizontal')
+                        self.needToFlip = 'right'
+                if self.direction > 0 and self.direction < 180:
+                    if self.needToFlip == 'right':
+                        self.flip('horizontal')
+                        self.needToFlip = 'left'
+        # Blit the image to the screen
+        screenInfo.screen.blit(self.costumes[self.cosnumber][1],
+                               ((self.x - self.width / 2),
+                                (self.y - self.height / 2)),
+                               rect)
+        # Stamp in the turtle drawing surface
+        if self.needToStamp:
+            screenInfo.penSurface.blit(self.costumes[self.cosnumber][1],
+                                       ((self.x - self.width / 2),
+                                        (self.y - self.height / 2)),
+                                       rect)
+            self.needToStamp = False
+        # And then the original image is loaded
+        if self.rotate:
             self.costumes[self.cosnumber][1] = self.originalCostumes[self.cosnumber][1]
-        else:
-            screenInfo.screen.blit(self.costumes[self.cosnumber][1],
-                                   ((self.x - self.width / 2), (self.y - self.height / 2)),
-                                   rect)
 
     @pausable
     def goto(self, x, y=0):
         if type(x) is int:
             self.x = x
             self.y = y
-
+        elif type(x) is list or type(x) is tuple:
+            self.x = x[0]
+            self.y = x[1]
         elif x == 'mouse':
             pos = pygame.mouse.get_pos()
             self.x = pos[0]
             self.y = pos[1]
-
         else:
             self.x = x.x
             self.y = x.y
-
         self.updateRect()
 
     @pausable
-    def gorand(self, rangex=[0, 800], rangey=[0, 600]):
+    def gorand(self,
+               rangex=[0, screenInfo.resolution[0]],
+               rangey=[0, screenInfo.resolution[1]]):
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
         self.updateRect()
 
+    def pendown(self):
+        self.penState = 'down'
+
+    def penup(self):
+        self.penState = 'up'
+
     @pausable
     def forward(self, steps):
+        if self.penState == 'down':
+            startX = self.x
+            startY = self.y
+            for i in range(steps):
+                pygame.draw.circle(screenInfo.penSurface,
+                                   self.pencolor,
+                                   [int(startX), int(startY)],
+                                   self.pensize)
+                # pygame.display.update()
+                startX = self.x + i * math.sin(math.radians(self.direction))
+                startY = self.y + i * -math.cos(math.radians(self.direction))
         self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
         self.updateRect()
@@ -307,6 +464,11 @@ class Actor(pygame.sprite.Sprite):
         self.heading = self.direction - 90
         if self.rotate:
             self.transform = True
+
+    @pausable
+    def stamp(self):
+        if not self.needToStamp:
+            self.needToStamp = True
 
     @pausable
     def point(self, target):
@@ -339,9 +501,15 @@ class Actor(pygame.sprite.Sprite):
 
     def flip(self, direction):
         if direction == 'horizontal':
-            self.costumes[self.cosnumber][1] = pygame.transform.flip(self.costumes[self.cosnumber][1], True, False)
+            for cos in self.costumes:
+                cos[1] = pygame.transform.flip(cos[1], True, False)
+            for cos in self.originalCostumes:
+                cos[1] = pygame.transform.flip(cos[1], True, False)
         if direction == 'vertical':
-            self.costumes[self.cosnumber][1] = pygame.transform.flip(self.costumes[self.cosnumber][1], False, True)
+            for cos in self.costumes:
+                cos[1] = pygame.transform.flip(cos[1], False, True)
+            for cos in self.originalCostumes:
+                cos[1] = pygame.transform.flip(cos[1], False, True)
         self.updateRect()
 
     def scale(self, w, h=None):
@@ -350,6 +518,7 @@ class Actor(pygame.sprite.Sprite):
                 cos[1] = pygame.transform.scale(cos[1], (w, h))
             for cos in self.originalCostumes:
                 cos[1] = pygame.transform.scale(cos[1], (w, h))
+            self.actualScale = [w, h]
             self.updateRect()
         else:
             width = int(self.width * w)
@@ -382,6 +551,7 @@ class Actor(pygame.sprite.Sprite):
                     MOUSE.rightdown = False
 
     # Mask collision
+    @hideaway
     def mcollide(self, target):
         result = pygame.sprite.collide_mask(self, target)
         if result is not None:
@@ -389,9 +559,12 @@ class Actor(pygame.sprite.Sprite):
             # print(result)
 
     # Rect collision
+    @hideaway
     def collide(self, target):
-        return self.rect.colliderect(target.rect)
+        if not target.hidden:
+            return self.rect.colliderect(target.rect)
 
+    @hideaway
     def collidepoint(self, point):
         if point == MOUSE:
             return self.rect.collidepoint([MOUSE.x, MOUSE.y])
@@ -399,18 +572,36 @@ class Actor(pygame.sprite.Sprite):
             return self.rect.collidepoint(point)
 
     # pause actor's actions (da completare)
-    def pause(self, t):
+    def pause(self, t=-1):
         self.paused = True
-        self.pauseTime = t * 1000
-        self.startPauseTime = pygame.time.get_ticks()
+        if t >= 0:
+            actorsInfo.pausedActorsList.append(self)
+            self.pauseTime = t * 1000
+            self.startPauseTime = pygame.time.get_ticks()
 
-    def hide(self, t):
+    def unpause(self):
+        self.paused = False
+        actorsInfo.pausedActorsList.remove(self)
+
+    @hideaway
+    def hide(self, t=-1):
         self.hidden = True
-        self.hideTime = t * 1000
-        self.startHideTime = pygame.time.get_ticks()
+        actorsInfo.drawList.remove(self)
+        if t >= 0:
+            actorsInfo.hiddenActorsList.append(self)
+            self.hideTime = t * 1000
+            self.startHideTime = pygame.time.get_ticks()
 
     def show(self):
-        self.hidden = False
+        if self.hidden:
+            self.hidden = False
+            try:
+                actorsInfo.hiddenActorsList.remove(self)
+            except:
+                print(actorsInfo.hiddenActorsList)
+            actorsInfo.drawList.append(self)
+        else:
+            pass
 
 
 class Text(Actor):
@@ -462,67 +653,6 @@ class Text(Actor):
     def color(self, color):
         self.color = color
         self.updateText()
-
-
-class Rect(Actor):
-    def __init__(self, size=[32, 32], color=[255, 0, 0], line_width=0):
-        self.x = 0.0
-        self.y = 0.0
-        self.size = size
-        self.color = color
-        self.line_width = line_width
-        self.updateRect()
-        self.direction = 0
-        self.transform = False
-        self.rotate = False
-        self.paused = False
-        self.hidden = False
-
-    def updateRect(self):
-        self.rect = pygame.Rect(int(self.x),
-                                int(self.y),
-                                self.size[0],
-                                self.size[1])
-        self.rect.centerx = int(self.x)
-        self.rect.centery = int(self.y)
-
-    @hideaway
-    def draw(self):
-        pygame.draw.rect(screenInfo.screen,
-                         self.color,
-                         self.rect,
-                         self.line_width)
-
-
-class Circle(Actor):
-    def __init__(self, color=[255, 0, 0], radius=32, line_width=0):
-        self.x = 0.0
-        self.y = 0.0
-        self.radius = int(radius)
-        self.color = color
-        self.line_width = int(line_width)
-        self.updateRect()
-        self.direction = 0
-        self.transform = False
-        self.rotate = False
-        self.paused = False
-        self.hidden = False
-
-    def updateRect(self):
-        self.rect = pygame.Rect(int(self.x),
-                                int(self.y),
-                                self.radius * 2,
-                                self.radius * 2)
-        self.rect.centerx = int(self.x)
-        self.rect.centery = int(self.y)
-
-    @hideaway
-    def draw(self):
-        pygame.draw.circle(screenInfo.screen,
-                           self.color,
-                           [self.rect.centerx, self.rect.centery],
-                           self.radius,
-                           self.line_width)
 
 
 # SUONI
@@ -719,108 +849,14 @@ def axis(hand, direction, pad=0):
         print('no gamepad found...')
 
 
-
-    # class KeyStorage():
-    # def __init__(self):
-    # self.dictionary = dict
-    # key_storage = KeyStorage()
-
-
-
-
-    # def keydown(key):
-    # for event in pygame.event.get():
-    # if event.type == pygame.KEYDOWN:
-    # if event.key == key:
-    # return True
-
-
-
-    ########################################
-
-    # Multi-Thread recipe
-    # class Operation(threading._pauseTime):
-    # def __init__(self, *args, **kwargs):
-    # threading._pauseTime.__init__(self, *args, **kwargs)
-    # self.setDaemon(True)
-
-    # def run(self):
-    # while True:
-    # self.finished.clear()
-    # self.finished.wait(self.interval)
-    # if not self.finished.isSet():
-    # self.function(*self.args, **self.kwargs)
-    # else:
-    # return
-    # self.finished.set()
-
-    # class Manager(object):
-
-    # ops = []
-
-    # def add_operation(self, operation, interval, args=[], kwargs={}):
-    # op = Operation(interval, operation, args, kwargs)
-    # self.ops.append(op)
-    # thread.start_new_thread(op.run, ())
-
-    # def stop(self):
-    # for op in self.ops:
-    # op.cancel()
-    # self._event.set()
-
-
-    # def events():
-    # pygame.event.get()
-    # print('sto andando')
-
-    # pauseTime = Manager()
-    # pauseTime.add_operation(events, 0.01)
-
-
-
-    #######################################
-
-    # class Screen():
-
-    # def __init__(self, w, h):
-    # self.s = pygame.display.set_mode([w, h])
-
-    # def update(self):
-    # pygame.display.update()
-
-    # def __getattr__(self, name):
-    # print(self.s)
-    # if hasattr(self[0], name):
-    # def fn(*args):
-    # getattr(self.s, name)(*args)
-    # return fn
-    # else:
-    # raise AttributeError
-
-
-    # def Screen(w, h):
-
-    # class MySurf(pygame.Surface):
-
-    # def __init__(self):
-    # super(MySurf, self).__init__((w, h))
-
-    # def update(self):
-    # pygame.display.update()
-
-    ##@classmethod
-    ##def convert_to_MySurf(cls, obj):
-    ##obj.__class__ = MySurf
-
-    # s = pygame.display.set_mode([w, h])
-    # print(s)
-
-    # myS = MySurf()
-    # for n, v in inspect.getmembers(s):
-    # setattr(myS, n, v);
-
-
-    ##MySurf.convert_to_MySurf(s)
-    ##print(s)
-
-    # return myS
+def trigger(hand, pad=0):
+    global gamepadCount, gamepads
+    if gamepadCount > 0:
+        if hand == 'left':
+            raw = gamepads[pad].get_axis(2)
+            value = (raw + 1) / 2
+            return value
+        if hand == 'right':
+            raw = gamepads[pad].get_axis(5)
+            value = (raw + 1) / 2
+            return value

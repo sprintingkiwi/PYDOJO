@@ -1,25 +1,19 @@
 from pydojo import *
 
 #create game display
-SCREEN(800, 600)
+screen(800, 600)
 
 gobo = Actor('example_library/gobo.png')
 gobo.scale(0.2)
 
-
 while True:
 
     gobo.goto(MOUSE)
-
+    gobo.stamp()
     gobo.right(5)
-
-    gobo.draw()
 
     if keydown(C):
         fill(BLACK)
 
     #update screen and events queue
-    UPDATE()
-
-    #wait
-    sleep(0.01)
+    update()
