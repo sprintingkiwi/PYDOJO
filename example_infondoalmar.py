@@ -1,27 +1,26 @@
 from pydojo import *
 
-#create game display
+# Create game display
 screen(800, 600)
 
 background('example_library/sea.png')
 
-#CREATE SHARK ACTOR
+# CREATE SHARK ACTOR
 shark = Actor('example_library/shark1.png')
 shark.scale(0.2)
 shark.rotation = 'flip'
 
-#CREATE FISH
+# CREATE FISH
 fish = Actor('example_library/fish1.png')
 fish.scale(0.2)
 fish.point(30)
 
-
-#MAIN LOOP
+# MAIN LOOP
 while True:
 
     print(shark.direction)
 
-    #SHARK MOVEMENT
+    # SHARK MOVEMENT
     if key(RIGHT):
         shark.point(90)
         shark.forward(3)
@@ -35,16 +34,16 @@ while True:
         shark.point(180)
         shark.forward(3)
 
-    #FISH MOVEMENT
+    # FISH MOVEMENT
     if fish.x > 800:
-        fish.point(fish.direction +180)
+        fish.point(fish.direction + 180)
     elif fish.x < 0:
-        fish.point(fish.direction +180)
+        fish.point(fish.direction + 180)
     elif fish.y > 600:
         fish.point(180 - fish.direction)
     elif fish.y < 0:
         fish.point(180 - fish.direction)
     fish.forward(5)
 
-    #update screen and events queue
+    # update screen and events queue
     update()
