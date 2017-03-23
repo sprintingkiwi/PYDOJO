@@ -6,7 +6,7 @@ from time import sleep, time
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 0.9
+LIBRARY_VERSION = 1.0
 
 # Colors
 BLACK = [0, 0, 0]
