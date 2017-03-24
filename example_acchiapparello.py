@@ -20,7 +20,7 @@ inizioconta = time()
 # MAIN LOOP
 while True:
     # MOVE RANDOM
-    if time() - inizioconta > 0:
+    if time() - inizioconta > 1:
         pyco.gorand()
         inizioconta = time()
 

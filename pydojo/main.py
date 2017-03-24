@@ -291,6 +291,7 @@ class Actor(pygame.sprite.Sprite):
         self.pencolor = RED
         self.pensize = 1
         self.needToStamp = False
+        self.bounce = False
 
     # find costume name from image path
     def findCostumeName(self, path):
@@ -443,6 +444,18 @@ class Actor(pygame.sprite.Sprite):
     def penup(self):
         self.penState = 'up'
 
+    def BounceOnEdge(self):
+        if self.y > screenInfo.resolution[1] or self.y < 0:
+            self.direction = 180 - self.direction
+            self.heading = self.direction - 90
+            if self.rotate:
+                self.transform = True
+        if self.x > screenInfo.resolution[0] or self.x < 0:
+            self.direction = 0 - self.direction
+            self.heading = self.direction - 90
+            if self.rotate:
+                self.transform = True
+
     @pausable
     def forward(self, steps):
         if self.penState == 'down':
@@ -458,6 +471,8 @@ class Actor(pygame.sprite.Sprite):
                 startY = self.y + i * -math.cos(math.radians(self.direction))
         self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
+        if self.bounce:
+            self.BounceOnEdge()
         self.updateRect()
 
     @pausable
