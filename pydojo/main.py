@@ -6,7 +6,7 @@ from time import sleep, time
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 1.3
+LIBRARY_VERSION = 1.4
 
 # Colors
 BLACK = [0, 0, 0]
@@ -105,6 +105,13 @@ actorsInfo = ActorsInfo()
 CENTER = pygame.sprite.Sprite()
 
 
+def CreatePenSurface():
+    path = (os.path.dirname(sys.modules[__name__].__file__))
+    path = os.path.join(path, 'pensurface.png')
+    screenInfo.penSurface = pygame.image.load(path).convert_alpha()
+    screenInfo.penSurface = pygame.transform.scale(screenInfo.penSurface, screenInfo.resolution)
+
+
 # SCREEN
 def screen(w, h, fullscreen=False):
     screenInfo.resolution = [w, h]
@@ -113,10 +120,8 @@ def screen(w, h, fullscreen=False):
     else:
         screenInfo.screen = pygame.display.set_mode([w, h])
     # Create surface for turtle drawings
-    path = (os.path.dirname(sys.modules[__name__].__file__))
-    path = os.path.join(path, 'pensurface.png')
-    screenInfo.penSurface = pygame.image.load(path).convert_alpha()
-    screenInfo.penSurface = pygame.transform.scale(screenInfo.penSurface, screenInfo.resolution)
+    CreatePenSurface()
+    # Get screen center
     CENTER.x = screenInfo.resolution[0] / 2
     CENTER.y = screenInfo.resolution[1] / 2
 
@@ -127,19 +132,23 @@ def SCREEN(*args):
 
 def enableBackground():
     if screenInfo.colorFilled:
-        actorsInfo.actorsList.append(screenInfo.background)
+        actorsInfo.drawList.append(screenInfo.background)
         screenInfo.colorFilled = False
 
 
 def disableBackground():
     if not screenInfo.colorFilled and screenInfo.hasBackground:
-        actorsInfo.actorsList.remove(screenInfo.background)
+        actorsInfo.drawList.remove(screenInfo.background)
         screenInfo.colorFilled = True
 
 
 def fill(color):
     screenInfo.bgColor = color
     disableBackground()
+
+
+def clear():
+    CreatePenSurface()
 
 
 def background(*args):

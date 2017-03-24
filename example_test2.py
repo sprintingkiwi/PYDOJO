@@ -21,6 +21,8 @@ passi = 1
 
 print(pyco.costumes)
 
+print(pyco.getposition())
+
 # MAIN LOOP
 while True:
 
@@ -41,6 +43,8 @@ while True:
         print(screenInfo.background.costumes)
     if keydown(C):
         setbackground('citynight')
+    if keydown(F):
+        fill(TOMATO)
 
     if keydown(H):
         pyco.flip('horizontal')

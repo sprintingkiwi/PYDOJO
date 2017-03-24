@@ -19,5 +19,10 @@ while True:
 
     if keydown(ESCAPE):
         quit()
+    if keydown(C):
+        clear()
+        dimensione = 1
+        passi = 1
+        uga.goto(CENTER)
 
     update()
