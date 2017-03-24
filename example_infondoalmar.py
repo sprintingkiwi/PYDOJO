@@ -1,7 +1,7 @@
 from pydojo import *
 
 # CREATE GAME DISPLAY
-screen(800, 600)
+screen(1280, 720)
 
 background('example_library/sea.png')
 
@@ -13,9 +13,9 @@ shark.rotation = 'flip'
 # CREATE FISH
 fish = Actor('example_library/fish1.png')
 fish.scale(0.2)
-fish.point(35)
+fish.point(60)
 fish.bounce = True
-fish.rotation = 'flip'
+# fish.rotation = 'flip'
 
 print(CENTER.x, CENTER.y)
 print(screenInfo.resolution)

@@ -432,8 +432,13 @@ class Actor(pygame.sprite.Sprite):
 
     @pausable
     def gorand(self,
-               rangex=[0, screenInfo.resolution[0]],
-               rangey=[0, screenInfo.resolution[1]]):
+               rangex=None,
+               rangey=None):
+        if rangex is None:
+            rangex = [0, screenInfo.resolution[0]]
+        if rangey is None:
+            rangey = [0, screenInfo.resolution[1]]
+        print(rangex, rangey)
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
         self.updateRect()

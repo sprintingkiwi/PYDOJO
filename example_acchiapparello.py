@@ -20,7 +20,9 @@ inizioconta = time()
 # MAIN LOOP
 while True:
     # MOVE RANDOM
-    if time() - inizioconta > 1:
+    if time() - inizioconta > 0.1:
+        print(screenInfo.resolution)
+        pyco.stamp()
         pyco.gorand()
         inizioconta = time()
 
