@@ -107,7 +107,7 @@ while True:
         # if ball.mcollide(edge):
         #     ball.point(random.randint(-180, 180))
         if ball.y > height or ball.y < 0:
-            ball.direction -= 90
+            ball.direction -= random.randint(45, 135)
 
         # game over
         if ball.x < -ball.rect.width or ball.x > width + ball.rect.width:

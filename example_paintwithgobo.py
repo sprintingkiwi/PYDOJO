@@ -13,7 +13,11 @@ while True:
     gobo.right(5)
 
     if keydown(C):
-        fill(BLACK)
+        clear()
+    if keydown(L):
+        fill(LAVENDER)
+    if keydown(P):
+        fill(PINK)
 
     #update screen and events queue
     update()

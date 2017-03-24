@@ -1,7 +1,7 @@
 from pydojo import *
 
 # create game display
-screen(1920, 1080)
+screen(1280, 720)
 
 # CREATE ACTOR
 pyco = Actor('example_library/pyco1.png')
@@ -20,7 +20,7 @@ inizioconta = time()
 # MAIN LOOP
 while True:
     # MOVE RANDOM
-    if time() - inizioconta > 0:
+    if time() - inizioconta > 1:
         pyco.gorand()
         inizioconta = time()
 
