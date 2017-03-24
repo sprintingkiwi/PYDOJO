@@ -438,7 +438,6 @@ class Actor(pygame.sprite.Sprite):
             rangex = [0, screenInfo.resolution[0]]
         if rangey is None:
             rangey = [0, screenInfo.resolution[1]]
-        print(rangex, rangey)
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
         self.updateRect()
@@ -451,12 +450,12 @@ class Actor(pygame.sprite.Sprite):
 
     def BounceOnEdge(self):
         if self.y > screenInfo.resolution[1] or self.y < 0:
-            self.direction = 180 - self.direction
+            self.direction = (180 - self.direction) % 360
             self.heading = self.direction - 90
             if self.rotate:
                 self.transform = True
         if self.x > screenInfo.resolution[0] or self.x < 0:
-            self.direction = 0 - self.direction
+            self.direction = (0 - self.direction) % 360
             self.heading = self.direction - 90
             if self.rotate:
                 self.transform = True
