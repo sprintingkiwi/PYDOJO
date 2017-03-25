@@ -25,9 +25,8 @@ while not gameover:
         topo.point(MOUSE)
         topo.forward(4)
 
-    if gatto.mcollide(topo):
-        print('preso')
-        # quit()
+    if gatto.collide(topo):
+        quit()
 
     #update screen and events queue
     update()

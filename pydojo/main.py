@@ -1,4 +1,4 @@
-import pygame, math, random, os, subprocess, sys, types
+import pygame, math, random, os, subprocess, sys
 from pyfirmata import *
 from serial import *
 from time import sleep, time
@@ -239,16 +239,6 @@ def hideaway(func):
     return wrapper
 
 
-def stackable(func):
-    def wrapper(self, *args):
-        if isinstance(self, Group):
-            for a in self.actors:
-                func(a, *args)
-        else:
-            return func(self, *args)
-    return wrapper
-
-
 def terminate():
     subprocess.Popen(['python', '/home/pi/PYGB/main.py'], cwd='/home/pi/')
     pygame.quit()
@@ -257,7 +247,7 @@ def terminate():
 
 # ACTOR CLASS
 class Actor(pygame.sprite.Sprite):
-    def __init__(self, path=None, cosname=None, group=None):
+    def __init__(self, path=None, cosname=None):
         if path is None:
             path = (os.path.dirname(sys.modules[__name__].__file__))
             path = os.path.join(path, 'turtle.png')
@@ -302,10 +292,6 @@ class Actor(pygame.sprite.Sprite):
         self.pensize = 1
         self.needToStamp = False
         self.bounce = False
-        self.group = group
-        if self.group is not None:
-            self.group.actors.append(self)
-            self.group.updateGroup()
 
     # find costume name from image path
     def findCostumeName(self, path):
@@ -324,7 +310,6 @@ class Actor(pygame.sprite.Sprite):
         self.actualScale = [self.width, self.height]
 
     # load Actor's image
-    @stackable
     def load(self, path, cosname=None):
         if cosname is None:
             self.costume = self.findCostumeName(path)
@@ -344,7 +329,6 @@ class Actor(pygame.sprite.Sprite):
     def loadfolder(self, path):
         pass
 
-    @stackable
     def setcostume(self, newcostume):
         if type(newcostume) is int:
             self.cosnumber = newcostume
@@ -357,7 +341,6 @@ class Actor(pygame.sprite.Sprite):
     def getcostume(self):
         return self.costume
 
-    @stackable
     def nextcostume(self, pause=1):
         if self.coscount > pause:
             if self.cosnumber < len(self.costumes) - 1:
@@ -366,6 +349,14 @@ class Actor(pygame.sprite.Sprite):
                 self.setcostume(0)
             self.coscount = 0
         self.coscount += 1
+
+    def setposition(self, pos=0, y=0):
+        if pos is float:
+            self.x = pos
+            self.y = y
+        else:
+            self.x = pos[0]
+            self.y = pos[1]
 
     def setx(self, x):
         self.x = x
@@ -422,7 +413,6 @@ class Actor(pygame.sprite.Sprite):
         if self.rotate:
             self.costumes[self.cosnumber][1] = self.originalCostumes[self.cosnumber][1]
 
-    @stackable
     @pausable
     def goto(self, x, y=0):
         if type(x) is int:
@@ -440,10 +430,6 @@ class Actor(pygame.sprite.Sprite):
             self.y = x.y
         self.updateRect()
 
-    def setposition(self, *args):
-        self.goto(*args)
-
-    @stackable
     @pausable
     def gorand(self,
                rangex=None,
@@ -456,11 +442,9 @@ class Actor(pygame.sprite.Sprite):
         self.y = random.randint(rangey[0], rangey[1])
         self.updateRect()
 
-    @stackable
     def pendown(self):
         self.penState = 'down'
 
-    @stackable
     def penup(self):
         self.penState = 'up'
 
@@ -476,7 +460,6 @@ class Actor(pygame.sprite.Sprite):
             if self.rotate:
                 self.transform = True
 
-    @stackable
     @pausable
     def forward(self, steps):
         if self.penState == 'down':
@@ -496,7 +479,6 @@ class Actor(pygame.sprite.Sprite):
             self.BounceOnEdge()
         self.updateRect()
 
-    @stackable
     @pausable
     def right(self, angle):
         self.direction = (self.direction + angle) % 360
@@ -504,7 +486,6 @@ class Actor(pygame.sprite.Sprite):
         if self.rotate:
             self.transform = True
 
-    @stackable
     @pausable
     def left(self, angle):
         self.direction = (self.direction - angle) % 360
@@ -512,13 +493,11 @@ class Actor(pygame.sprite.Sprite):
         if self.rotate:
             self.transform = True
 
-    @stackable
     @pausable
     def stamp(self):
         if not self.needToStamp:
             self.needToStamp = True
 
-    @stackable
     @pausable
     def point(self, target):
         # set heading as angle
@@ -548,7 +527,6 @@ class Actor(pygame.sprite.Sprite):
         if self.rotate:
             self.transform = True
 
-    @stackable
     def flip(self, direction):
         if direction == 'horizontal':
             for cos in self.costumes:
@@ -562,7 +540,6 @@ class Actor(pygame.sprite.Sprite):
                 cos[1] = pygame.transform.flip(cos[1], False, True)
         self.updateRect()
 
-    @stackable
     def scale(self, w, h=None):
         if h is not None:
             for cos in self.costumes:
@@ -577,7 +554,6 @@ class Actor(pygame.sprite.Sprite):
             self.scale(width, height)
 
     # check if the mouse has clicked the Actor
-    @stackable
     def click(self, option='down'):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
@@ -590,7 +566,6 @@ class Actor(pygame.sprite.Sprite):
                 if event.type == pygame.MOUSEBUTTONUP:
                     MOUSE.leftdown = False
 
-    @stackable
     def rclick(self, option='down'):
         mousepos = pygame.mouse.get_pos()
         buttons = pygame.mouse.get_pressed()
@@ -604,26 +579,19 @@ class Actor(pygame.sprite.Sprite):
                     MOUSE.rightdown = False
 
     # Mask collision
-    @stackable
     @hideaway
     def mcollide(self, target):
         result = pygame.sprite.collide_mask(self, target)
-        print(result)
-        # if result is not None:
-        #     return True
+        if result is not None:
+            return True
             # print(result)
 
     # Rect collision
-    @stackable
     @hideaway
     def collide(self, target):
         if not target.hidden:
-            if isinstance(target, Group):
-                return target.collide(self)
-            else:
-                return self.rect.colliderect(target.rect)
+            return self.rect.colliderect(target.rect)
 
-    @stackable
     @hideaway
     def collidepoint(self, point):
         if point == MOUSE:
@@ -631,8 +599,7 @@ class Actor(pygame.sprite.Sprite):
         else:
             return self.rect.collidepoint(point)
 
-    # pause actor's actions (work in progress)
-    @stackable
+    # pause actor's actions (da completare)
     def pause(self, t=-1):
         self.paused = True
         if t >= 0:
@@ -640,12 +607,10 @@ class Actor(pygame.sprite.Sprite):
             self.pauseTime = t * 1000
             self.startPauseTime = pygame.time.get_ticks()
 
-    @stackable
     def unpause(self):
         self.paused = False
         actorsInfo.pausedActorsList.remove(self)
 
-    @stackable
     @hideaway
     def hide(self, t=-1):
         self.hidden = True
@@ -655,7 +620,6 @@ class Actor(pygame.sprite.Sprite):
             self.hideTime = t * 1000
             self.startHideTime = pygame.time.get_ticks()
 
-    @stackable
     def show(self):
         if self.hidden:
             self.hidden = False
@@ -717,47 +681,6 @@ class Text(Actor):
     def color(self, color):
         self.color = color
         self.updateText()
-
-
-class Group(Actor):
-    def __init__(self, actors=[]):
-        self.actors = actors
-        self.actorsGroup = pygame.sprite.Group()
-        self.hidden = False
-        self.paused = False
-
-    # def __getattribute__(self, attr):
-    #     method = object.__getattribute__(self, attr)
-    #     if hasattr(Actor, str(method)):
-    #         if not method:
-    #             raise Exception("Method %s not implemented" % attr)
-    #         if type(method) == types.MethodType:
-    #             for a in self.actors:
-    #                 a.method
-
-    def updateGroup(self):
-        for a in self.actors:
-            self.actorsGroup.add(a)
-
-    def add(self, target):
-        self.actors.append(target)
-        self.updateGroup()
-
-    def getactors(self):
-        return self.actors
-
-    def printactors(self):
-        for a in self.actors:
-            print a.costume
-
-    def tagall(self, t):
-        for a in self.actors:
-            a.tag = t
-
-    def setlayer(self, layer):
-        for a in self.actors:
-            a.layer = layer
-
 
 
 # SUONI
