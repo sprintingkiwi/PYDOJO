@@ -251,7 +251,6 @@ class Actor(pygame.sprite.Sprite):
         if path is None:
             path = (os.path.dirname(sys.modules[__name__].__file__))
             path = os.path.join(path, 'turtle.png')
-            print path
         actorsInfo.actorsList.append(self)
         actorsInfo.drawList.append(self)
         pygame.sprite.Sprite.__init__(self)
@@ -350,14 +349,6 @@ class Actor(pygame.sprite.Sprite):
             self.coscount = 0
         self.coscount += 1
 
-    def setposition(self, pos=0, y=0):
-        if pos is float:
-            self.x = pos
-            self.y = y
-        else:
-            self.x = pos[0]
-            self.y = pos[1]
-
     def setx(self, x):
         self.x = x
 
@@ -413,7 +404,7 @@ class Actor(pygame.sprite.Sprite):
         if self.rotate:
             self.costumes[self.cosnumber][1] = self.originalCostumes[self.cosnumber][1]
 
-    @pausable
+    # @pausable
     def goto(self, x, y=0):
         if type(x) is int:
             self.x = x
@@ -430,7 +421,10 @@ class Actor(pygame.sprite.Sprite):
             self.y = x.y
         self.updateRect()
 
-    @pausable
+    def setposition(self, *args):
+        self.goto(*args)
+
+    # @pausable
     def gorand(self,
                rangex=None,
                rangey=None):
@@ -460,7 +454,7 @@ class Actor(pygame.sprite.Sprite):
             if self.rotate:
                 self.transform = True
 
-    @pausable
+    # @pausable
     def forward(self, steps):
         if self.penState == 'down':
             startX = self.x
@@ -479,26 +473,26 @@ class Actor(pygame.sprite.Sprite):
             self.BounceOnEdge()
         self.updateRect()
 
-    @pausable
+    # @pausable
     def right(self, angle):
         self.direction = (self.direction + angle) % 360
         self.heading = self.direction - 90
         if self.rotate:
             self.transform = True
 
-    @pausable
+    # @pausable
     def left(self, angle):
         self.direction = (self.direction - angle) % 360
         self.heading = self.direction - 90
         if self.rotate:
             self.transform = True
 
-    @pausable
+    # @pausable
     def stamp(self):
         if not self.needToStamp:
             self.needToStamp = True
 
-    @pausable
+    # @pausable
     def point(self, target):
         # set heading as angle
         if type(target) is int and type(target) is not str:
@@ -582,9 +576,9 @@ class Actor(pygame.sprite.Sprite):
     @hideaway
     def mcollide(self, target):
         result = pygame.sprite.collide_mask(self, target)
-        if result is not None:
-            return True
-            # print(result)
+        # if result is not None:
+            # return True
+        print(result)
 
     # Rect collision
     @hideaway
