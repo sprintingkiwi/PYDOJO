@@ -11,6 +11,7 @@ topo.goto(400, 300)
 gatto = Actor('example_library/cat.png')
 gatto.scale(0.2)
 gatto.goto(200, 100)
+gatto.rotation = 'flip'
 
 #MAIN LOOP
 gameover = False
@@ -25,7 +26,7 @@ while not gameover:
         topo.point(MOUSE)
         topo.forward(4)
 
-    if gatto.mcollide(topo):
+    if gatto.collide(topo):
         print('preso')
         # quit()
 

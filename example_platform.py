@@ -7,7 +7,7 @@ pyco = Actor('example_library/pyco1.png', 'idle')
 pyco.scale(0.2)
 pyco.goto(100, 600)
 pyco.speed = 5
-pyco.rotation = 'flip'
+# pyco.rotation = 'flip'
 
 platforms = []
 
@@ -22,6 +22,8 @@ terrain.scale(1280, 50)
 
 print(platforms)
 
+pyco.jumping = False
+
 while True:
 
     if key(RIGHT):
@@ -31,15 +33,19 @@ while True:
         pyco.point(-90)
         pyco.forward(pyco.speed)
     if key(UP):
-        pyco.point(0)
-        pyco.forward(pyco.speed)
+        if not pyco.jumping:
+            t = ticks()
+            if ticks() - t < 1000:
+                pyco.y -= 20
+            else:
+                pyco.jumping = False
+
     if key(DOWN):
         pyco.point(180)
         pyco.forward(pyco.speed)
     if not pyco.collide(terrain):
-        pyco.y = pyco.y + 1
-        print('falling')
-    print(terrain.collide(pyco))
+        # print('falling')
+        pyco.y += 10
 
     for p in platforms:
         p.forward(1)

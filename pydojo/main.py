@@ -280,6 +280,9 @@ class Actor(pygame.sprite.Sprite):
         self.coscount = 0
         # if path is not None:
         self.load(path, cosname)
+        self.actualScale = [self.width, self.height]
+        self.spriteGroup = pygame.sprite.Group()
+        self.spriteGroup.add(self)
         # rotation style
         self.rotate = True
         self.rotation = 360
@@ -306,7 +309,19 @@ class Actor(pygame.sprite.Sprite):
         self.size = self.costumes[self.cosnumber][1].get_size()
         self.width = self.costumes[self.cosnumber][1].get_width()
         self.height = self.costumes[self.cosnumber][1].get_height()
-        self.actualScale = [self.width, self.height]
+        # self.actualScale = [self.width, self.height]
+        # image for pygame sprite/group methods
+        self.image = self.costumes[self.cosnumber][1]
+        self.mask = pygame.mask.from_surface(self.image)
+
+    # def updateMask(self):
+    #     # self.mask = pygame.mask.from_surface(self.costumes[self.cosnumber][1])
+    #     for c in self.costumes:
+    #         mask = pygame.mask.from_surface(c[1])
+    #         if len(c) > 2:
+    #             # print c
+    #             del(c[2])
+    #         c.append(mask)
 
     # load Actor's image
     def load(self, path, cosname=None):
@@ -314,12 +329,11 @@ class Actor(pygame.sprite.Sprite):
             self.costume = self.findCostumeName(path)
         else:
             self.costume = cosname
-        img = pygame.image.load(path).convert_alpha()
+        self.rawImg = pygame.image.load(path).convert_alpha()
         if len(self.costumes) > 0:
-            img = pygame.transform.scale(img, self.actualScale)
-        self.costumes.append([self.costume, img])
-        self.originalCostumes.append([self.costume, img])
-        self.mask = pygame.mask.from_surface(self.costumes[self.cosnumber][1])
+            self.rawImg = pygame.transform.scale(self.rawImg, self.actualScale)
+        self.costumes.append([self.costume, self.rawImg])
+        self.originalCostumes.append([self.costume, self.rawImg])
         self.updateRect()
 
     def loadcostume(self, path, cosname=None):
@@ -442,7 +456,7 @@ class Actor(pygame.sprite.Sprite):
     def penup(self):
         self.penState = 'up'
 
-    def BounceOnEdge(self):
+    def bounceOnEdge(self):
         if self.y > screenInfo.resolution[1] or self.y < 0:
             self.direction = (180 - self.direction) % 360
             self.heading = self.direction - 90
@@ -470,7 +484,7 @@ class Actor(pygame.sprite.Sprite):
         self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
         if self.bounce:
-            self.BounceOnEdge()
+            self.bounceOnEdge()
         self.updateRect()
 
     # @pausable
@@ -574,15 +588,18 @@ class Actor(pygame.sprite.Sprite):
 
     # Mask collision
     @hideaway
-    def mcollide(self, target):
-        result = pygame.sprite.collide_mask(self, target)
-        # if result is not None:
-            # return True
-        print(result)
+    def collide(self, target):
+        result = pygame.sprite.groupcollide(self.spriteGroup,
+                                            target.spriteGroup,
+                                            False,
+                                            False,
+                                            pygame.sprite.collide_mask)
+        if len(result) > 0:
+            return True
 
     # Rect collision
     @hideaway
-    def collide(self, target):
+    def rectcollide(self, target):
         if not target.hidden:
             return self.rect.colliderect(target.rect)
 
@@ -633,14 +650,13 @@ class Text(Actor):
                  fontsize=32, bold=False,
                  italic=False,
                  color=[0, 0, 0]):
-        Actor.__init__(self)
         self.string = str(string)
         self.name = name
         self.fontsize = fontsize
         self.bold = bold
         self.italic = italic
         self.color = color
-        self.updateText()
+        Actor.__init__(self)
 
     def updateText(self):
         self.font = pygame.font.SysFont(self.name,
@@ -655,6 +671,7 @@ class Text(Actor):
     def load(self, path, cosname):
         self.costumes.append([self.costume, None])
         self.originalCostumes.append([self.costume, None])
+        self.updateText()
 
     def write(self, string):
         self.string = str(string)

@@ -36,6 +36,7 @@ while True:
 
     # Loop Pyco's costumes
     pyco.nextcostume()
+    pyco.right(10)
 
     if keydown(B):
         setbackground('bedroom')

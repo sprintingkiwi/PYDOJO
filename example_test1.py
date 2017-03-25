@@ -10,14 +10,14 @@ dyno.rotation = 'flip'
 
 star = Actor('example_library/seastar1.png', 'felice')
 star.load('example_library/seastar2.png', 'triste')
-star.scale(100, 200)
+star.scale(200, 200)
 star.goto(600, 500)
 
-a = Text('ciao', color=GREEN, italic=True)
-print(a.costumes)
-a.setfontsize(48)
-a.setbold(True)
-a.goto(100, 100)
+testo = Text('ciao', color=GREEN, italic=True)
+print(testo.costumes)
+testo.setfontsize(48)
+testo.setbold(True)
+testo.goto(100, 100)
 
 # dyno.rotate = False
 
@@ -46,16 +46,20 @@ while True:
 
     # dyno.direction = 90
     # dyno.left(1)
-    a.right(1)
+    testo.right(1)
     dyno.point(MOUSE)
     dyno.forward(3)
-    print(dyno.direction)
+    star.left(1)
+    # print(dyno.direction)
 
     if dyno.collide(star):
         # print(dyno.collide(star))
         star.setcostume(1)
         # hey.play()
         dyno.hide(2)
+
+    if dyno.collide(testo):
+        testo.write('toccato')
 
     if keydown(F):
         star.setcostume('felice')
