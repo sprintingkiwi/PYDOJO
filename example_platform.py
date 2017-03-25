@@ -7,7 +7,8 @@ pyco = Actor('example_library/pyco1.png', 'idle')
 pyco.scale(0.2)
 pyco.goto(100, 600)
 pyco.speed = 5
-# pyco.rotation = 'flip'
+# pyco.rotate = False
+pyco.rotation = 'flip'
 
 platforms = []
 
@@ -32,13 +33,14 @@ while True:
     if key(LEFT):
         pyco.point(-90)
         pyco.forward(pyco.speed)
-    if key(UP):
-        if not pyco.jumping:
-            t = ticks()
-            if ticks() - t < 1000:
-                pyco.y -= 20
-            else:
-                pyco.jumping = False
+    if keydown(UP):
+        pyco.jumping = True
+        t = 0
+
+    if pyco.jumping:
+        if t < 20:
+            pyco.y -= 20
+            t = t + 1
 
     if key(DOWN):
         pyco.point(180)

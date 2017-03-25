@@ -195,6 +195,9 @@ def update():
             actor.hidden = False
             actorsInfo.hiddenActorsList.remove(actor)
             actorsInfo.drawList.append(actor)
+    # Update actors position
+    for actor in actorsInfo.actorsList:
+        actor.updatePosition()
     # Order Actor's list by layer
     actorsInfo.drawList.sort(key=lambda x: x.layer)
     # Draw screen base color
@@ -304,24 +307,16 @@ class Actor(pygame.sprite.Sprite):
     # update rect as the image changes
     def updateRect(self):
         self.rect = self.costumes[self.cosnumber][1].get_rect()
-        self.rect.centerx = int(self.x)
-        self.rect.centery = int(self.y)
+        self.updatePosition()
         self.size = self.costumes[self.cosnumber][1].get_size()
         self.width = self.costumes[self.cosnumber][1].get_width()
         self.height = self.costumes[self.cosnumber][1].get_height()
-        # self.actualScale = [self.width, self.height]
-        # image for pygame sprite/group methods
         self.image = self.costumes[self.cosnumber][1]
         self.mask = pygame.mask.from_surface(self.image)
 
-    # def updateMask(self):
-    #     # self.mask = pygame.mask.from_surface(self.costumes[self.cosnumber][1])
-    #     for c in self.costumes:
-    #         mask = pygame.mask.from_surface(c[1])
-    #         if len(c) > 2:
-    #             # print c
-    #             del(c[2])
-    #         c.append(mask)
+    def updatePosition(self):
+        self.rect.centerx = int(self.x)
+        self.rect.centery = int(self.y)
 
     # load Actor's image
     def load(self, path, cosname=None):
@@ -334,7 +329,16 @@ class Actor(pygame.sprite.Sprite):
             self.rawImg = pygame.transform.scale(self.rawImg, self.actualScale)
         self.costumes.append([self.costume, self.rawImg])
         self.originalCostumes.append([self.costume, self.rawImg])
-        self.updateRect()
+        # Generate Rect and other stuff
+        self.rect = self.costumes[self.cosnumber][1].get_rect()
+        self.rect.centerx = int(self.x)
+        self.rect.centery = int(self.y)
+        self.size = self.costumes[self.cosnumber][1].get_size()
+        self.width = self.costumes[self.cosnumber][1].get_width()
+        self.height = self.costumes[self.cosnumber][1].get_height()
+        # image and mask for pygame sprite/group methods
+        self.image = self.costumes[self.cosnumber][1]
+        self.mask = pygame.mask.from_surface(self.image)
 
     def loadcostume(self, path, cosname=None):
         self.load(path, cosname)
@@ -389,7 +393,7 @@ class Actor(pygame.sprite.Sprite):
         # If the image changed the transform functions apply
         if self.rotate:
             # Full 360 rotation style
-            if self.rotation == 360:
+            if self.rotation == 360 and self.transform:
                 self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
                 self.updateRect()
             # Horizontal Flip rotation style

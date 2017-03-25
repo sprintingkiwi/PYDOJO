@@ -7,11 +7,12 @@ background('example_library/carpet.png')
 topo = Actor('example_library/mouse.png')
 topo.scale(0.1)
 topo.goto(400, 300)
+# topo.rotation = 'flip'
 
 gatto = Actor('example_library/cat.png')
 gatto.scale(0.2)
 gatto.goto(200, 100)
-gatto.rotation = 'flip'
+# gatto.rotation = 'flip'
 
 #MAIN LOOP
 gameover = False
