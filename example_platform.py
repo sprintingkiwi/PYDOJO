@@ -27,18 +27,10 @@ for p in platforms:
     p.gorand()
 
 pyco.jumping = False
-pyco.onfloor = False
+
+gravity = 10
 
 while True:
-
-    if pyco.collide(terrain):
-        pyco.onfloor = True
-    elif not pyco.onfloor:
-        for p in platforms:
-            if pyco.collide(p):
-                pyco.onfloor = True
-    else:
-        pyco.onfloor = False
 
     if key(RIGHT):
         pyco.point(90)
@@ -47,23 +39,20 @@ while True:
         pyco.point(-90)
         pyco.forward(pyco.speed)
     if keydown(UP):
-        if pyco.onfloor:
+        if pyco.collide(terrain) or pyco.collide(platforms):
             pyco.jumping = True
             t = 0
 
     if pyco.jumping:
-        if t < 20:
-            pyco.y -= 20
+        if t < 15:
+            pyco.y -= (2 * gravity)
             t = t + 1
 
     if key(DOWN):
         pyco.point(180)
         pyco.forward(pyco.speed)
-    if not pyco.onfloor:
+    if not pyco.collide(terrain) and not pyco.collide(platforms):
         # print('falling')
-        pyco.y += 10
-
-    # for p in platforms:
-    #     p.forward(1)
+        pyco.y += gravity
 
     update()

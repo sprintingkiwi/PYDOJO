@@ -599,15 +599,21 @@ class Actor(pygame.sprite.Sprite):
     # Mask collision
     @hideaway
     def collide(self, target):
-        self.updatePosition()
-        target.updatePosition()
-        result = pygame.sprite.groupcollide(self.spriteGroup,
-                                            target.spriteGroup,
-                                            False,
-                                            False,
-                                            pygame.sprite.collide_mask)
-        if len(result) > 0:
-            return True
+        if isinstance(target, Actor):
+            self.updatePosition()
+            target.updatePosition()
+            result = pygame.sprite.groupcollide(self.spriteGroup,
+                                                target.spriteGroup,
+                                                False,
+                                                False,
+                                                pygame.sprite.collide_mask)
+            if len(result) > 0:
+                # print(target.costume)
+                return True
+        elif type(target) is list:
+            for a in target:
+                if self.collide(a):
+                    return True
 
     # Rect collision
     @hideaway
