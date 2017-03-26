@@ -196,8 +196,8 @@ def update():
             actorsInfo.hiddenActorsList.remove(actor)
             actorsInfo.drawList.append(actor)
     # Update actors position
-    for actor in actorsInfo.actorsList:
-        actor.updatePosition()
+    # for actor in actorsInfo.actorsList:
+    #     actor.updatePosition()
     # Order Actor's list by layer
     actorsInfo.drawList.sort(key=lambda x: x.layer)
     # Draw screen base color
@@ -369,9 +369,11 @@ class Actor(pygame.sprite.Sprite):
 
     def setx(self, x):
         self.x = x
+        self.updatePosition()
 
     def sety(self, y):
         self.y = y
+        self.updatePosition()
 
     def getposition(self):
         return [self.x, self.y]
@@ -423,8 +425,12 @@ class Actor(pygame.sprite.Sprite):
             self.costumes[self.cosnumber][1] = self.originalCostumes[self.cosnumber][1]
 
     # @pausable
-    def goto(self, x, y=0):
+    def goto(self, x=None, y=None):
         if type(x) is int:
+            if x is None:
+                x = self.x
+            if y is None:
+                y = self.y
             self.x = x
             self.y = y
         elif type(x) is list or type(x) is tuple:
@@ -437,7 +443,7 @@ class Actor(pygame.sprite.Sprite):
         else:
             self.x = x.x
             self.y = x.y
-        self.updateRect()
+        self.updatePosition()
 
     def setposition(self, *args):
         self.goto(*args)
@@ -452,7 +458,7 @@ class Actor(pygame.sprite.Sprite):
             rangey = [0, screenInfo.resolution[1]]
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
-        self.updateRect()
+        self.updatePosition()
 
     def pendown(self):
         self.penState = 'down'
@@ -489,7 +495,7 @@ class Actor(pygame.sprite.Sprite):
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
         if self.bounce:
             self.bounceOnEdge()
-        self.updateRect()
+        self.updatePosition()
 
     # @pausable
     def right(self, angle):
@@ -593,6 +599,8 @@ class Actor(pygame.sprite.Sprite):
     # Mask collision
     @hideaway
     def collide(self, target):
+        self.updatePosition()
+        target.updatePosition()
         result = pygame.sprite.groupcollide(self.spriteGroup,
                                             target.spriteGroup,
                                             False,
@@ -604,11 +612,14 @@ class Actor(pygame.sprite.Sprite):
     # Rect collision
     @hideaway
     def rectcollide(self, target):
+        self.updatePosition()
+        target.updatePosition()
         if not target.hidden:
             return self.rect.colliderect(target.rect)
 
     @hideaway
     def collidepoint(self, point):
+        self.updatePosition()
         if point == MOUSE:
             return self.rect.collidepoint([MOUSE.x, MOUSE.y])
         else:

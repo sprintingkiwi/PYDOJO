@@ -23,9 +23,22 @@ terrain.scale(1280, 50)
 
 print(platforms)
 
+for p in platforms:
+    p.gorand()
+
 pyco.jumping = False
+pyco.onfloor = False
 
 while True:
+
+    if pyco.collide(terrain):
+        pyco.onfloor = True
+    elif not pyco.onfloor:
+        for p in platforms:
+            if pyco.collide(p):
+                pyco.onfloor = True
+    else:
+        pyco.onfloor = False
 
     if key(RIGHT):
         pyco.point(90)
@@ -34,8 +47,9 @@ while True:
         pyco.point(-90)
         pyco.forward(pyco.speed)
     if keydown(UP):
-        pyco.jumping = True
-        t = 0
+        if pyco.onfloor:
+            pyco.jumping = True
+            t = 0
 
     if pyco.jumping:
         if t < 20:
@@ -45,11 +59,11 @@ while True:
     if key(DOWN):
         pyco.point(180)
         pyco.forward(pyco.speed)
-    if not pyco.collide(terrain):
+    if not pyco.onfloor:
         # print('falling')
         pyco.y += 10
 
-    for p in platforms:
-        p.forward(1)
+    # for p in platforms:
+    #     p.forward(1)
 
     update()

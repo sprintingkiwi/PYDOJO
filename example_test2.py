@@ -27,12 +27,12 @@ print(pyco.getposition())
 while True:
 
     # Move the Turtle
-    # for colore in COLORS:
-    #     uga.forward(passi)
-    #     uga.right(10)
-    #     uga.pensize += 1
-    #     passi += 1
-    #     uga.pencolor = colore
+    for colore in COLORS:
+        uga.forward(passi)
+        uga.right(10)
+        uga.pensize += 1
+        passi += 1
+        uga.pencolor = colore
 
     # Loop Pyco's costumes
     pyco.nextcostume()
