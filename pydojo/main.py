@@ -312,7 +312,7 @@ class Actor(pygame.sprite.Sprite):
         self.width = self.costumes[self.cosnumber][1].get_width()
         self.height = self.costumes[self.cosnumber][1].get_height()
         self.image = self.costumes[self.cosnumber][1]
-        self.mask = pygame.mask.from_surface(self.image)
+        # self.mask = pygame.mask.from_surface(self.image)
 
     def updatePosition(self):
         self.rect.centerx = int(self.x)
@@ -338,7 +338,7 @@ class Actor(pygame.sprite.Sprite):
         self.height = self.costumes[self.cosnumber][1].get_height()
         # image and mask for pygame sprite/group methods
         self.image = self.costumes[self.cosnumber][1]
-        self.mask = pygame.mask.from_surface(self.image)
+        # self.mask = pygame.mask.from_surface(self.image)
 
     def loadcostume(self, path, cosname=None):
         self.load(path, cosname)
