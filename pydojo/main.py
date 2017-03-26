@@ -174,12 +174,6 @@ defaultClock = pygame.time.Clock()
 
 # One of the most important functions
 def update():
-    # Refresh the event list
-    eventsStorage.LIST = pygame.event.get()
-    # Refresh mouse position
-    MOUSE.pos = pygame.mouse.get_pos()
-    MOUSE.x = MOUSE.pos[0]
-    MOUSE.y = MOUSE.pos[1]
     # Manage the time for hide and pause methods
     actualTime = pygame.time.get_ticks()
     # Compute actors pauses
@@ -209,7 +203,14 @@ def update():
     screenInfo.screen.blit(screenInfo.penSurface, [0, 0])
     # refresh the pygame screen
     pygame.display.update()
+    # FPS limit
     defaultClock.tick(60)
+    # Refresh the event list
+    eventsStorage.LIST = pygame.event.get()
+    # Refresh mouse position
+    MOUSE.pos = pygame.mouse.get_pos()
+    MOUSE.x = MOUSE.pos[0]
+    MOUSE.y = MOUSE.pos[1]
 
 
 def UPDATE():
@@ -369,9 +370,11 @@ class Actor(pygame.sprite.Sprite):
 
     def setx(self, x):
         self.x = x
+        self.updatePosition()
 
     def sety(self, y):
         self.y = y
+        self.updatePosition()
 
     def getposition(self):
         return [self.x, self.y]
@@ -388,12 +391,12 @@ class Actor(pygame.sprite.Sprite):
     def getdirection(self):
         return self.direction
 
-    # @hideaway
-    def draw(self, rect=None):
+    def updateImage(self):
+        self.transform = True
         # If the image changed the transform functions apply
         if self.rotate:
             # Full 360 rotation style
-            if self.rotation == 360 and self.transform:
+            if self.rotation == 360:
                 self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
                 self.updateRect()
             # Horizontal Flip rotation style
@@ -406,6 +409,9 @@ class Actor(pygame.sprite.Sprite):
                     if self.needToFlip == 'right':
                         self.flip('horizontal')
                         self.needToFlip = 'left'
+
+    # @hideaway
+    def draw(self, rect=None):
         # Blit the image to the screen
         screenInfo.screen.blit(self.costumes[self.cosnumber][1],
                                ((self.x - self.width / 2),
@@ -437,7 +443,7 @@ class Actor(pygame.sprite.Sprite):
         else:
             self.x = x.x
             self.y = x.y
-        self.updateRect()
+        self.updatePosition()
 
     def setposition(self, *args):
         self.goto(*args)
@@ -452,7 +458,7 @@ class Actor(pygame.sprite.Sprite):
             rangey = [0, screenInfo.resolution[1]]
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
-        self.updateRect()
+        self.updatePosition()
 
     def pendown(self):
         self.penState = 'down'
@@ -464,13 +470,11 @@ class Actor(pygame.sprite.Sprite):
         if self.y > screenInfo.resolution[1] or self.y < 0:
             self.direction = (180 - self.direction) % 360
             self.heading = self.direction - 90
-            if self.rotate:
-                self.transform = True
+            self.updateImage()
         if self.x > screenInfo.resolution[0] or self.x < 0:
             self.direction = (0 - self.direction) % 360
             self.heading = self.direction - 90
-            if self.rotate:
-                self.transform = True
+            self.updateImage()
 
     # @pausable
     def forward(self, steps):
@@ -489,21 +493,19 @@ class Actor(pygame.sprite.Sprite):
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
         if self.bounce:
             self.bounceOnEdge()
-        self.updateRect()
+        self.updatePosition()
 
     # @pausable
     def right(self, angle):
         self.direction = (self.direction + angle) % 360
         self.heading = self.direction - 90
-        if self.rotate:
-            self.transform = True
+        self.updateImage()
 
     # @pausable
     def left(self, angle):
         self.direction = (self.direction - angle) % 360
         self.heading = self.direction - 90
-        if self.rotate:
-            self.transform = True
+        self.updateImage()
 
     # @pausable
     def stamp(self):
@@ -536,8 +538,7 @@ class Actor(pygame.sprite.Sprite):
             angle = angle * (180 / math.pi)
             self.direction = angle
             self.heading = angle - 90
-        if self.rotate:
-            self.transform = True
+        self.updateImage()
 
     def flip(self, direction):
         if direction == 'horizontal':
@@ -593,6 +594,8 @@ class Actor(pygame.sprite.Sprite):
     # Mask collision
     @hideaway
     def collide(self, target):
+        self.updatePosition()
+        target.updatePosition()
         result = pygame.sprite.groupcollide(self.spriteGroup,
                                             target.spriteGroup,
                                             False,
