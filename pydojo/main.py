@@ -174,14 +174,20 @@ defaultClock = pygame.time.Clock()
 
 # One of the most important functions
 def update():
+    # Refresh the event list
+    eventsStorage.LIST = pygame.event.get()
+    # Refresh mouse position
+    MOUSE.pos = pygame.mouse.get_pos()
+    MOUSE.x = MOUSE.pos[0]
+    MOUSE.y = MOUSE.pos[1]
     # Manage the time for hide and pause methods
     actualTime = pygame.time.get_ticks()
     # Compute actors pauses
-    # for actor in actorsInfo.pausedActorsList:
-    #     deltaTime = actualTime - actor.startPauseTime
-    #     if deltaTime >= actor.pauseTime:
-    #         actor.paused = False
-    #         actorsInfo.pausedActorsList.remove(actor)
+    for actor in actorsInfo.pausedActorsList:
+        deltaTime = actualTime - actor.startPauseTime
+        if deltaTime >= actor.pauseTime:
+            actor.paused = False
+            actorsInfo.pausedActorsList.remove(actor)
     # Compute actors hide time
     for actor in actorsInfo.hiddenActorsList:
         deltaTime = actualTime - actor.startHideTime
@@ -191,29 +197,19 @@ def update():
             actorsInfo.drawList.append(actor)
     # Update actors position
     for actor in actorsInfo.actorsList:
-        actor.updateRect()
+        actor.updatePosition()
     # Order Actor's list by layer
     actorsInfo.drawList.sort(key=lambda x: x.layer)
     # Draw screen base color
     screenInfo.screen.fill(screenInfo.bgColor)
-    # Transform Actors Images
-    for actor in actorsInfo.actorsList:
-        actor.transformImage()
     # Draw Actors (and Background)
     for actor in actorsInfo.drawList:
         actor.draw()
     # Draw the turtle drawings surface
     screenInfo.screen.blit(screenInfo.penSurface, [0, 0])
-    # Refresh the pygame screen
+    # refresh the pygame screen
     pygame.display.update()
-    # FPS limit
     defaultClock.tick(60)
-    # Refresh the event list
-    eventsStorage.LIST = pygame.event.get()
-    # Refresh mouse position
-    MOUSE.pos = pygame.mouse.get_pos()
-    MOUSE.x = MOUSE.pos[0]
-    MOUSE.y = MOUSE.pos[1]
 
 
 def UPDATE():
@@ -357,7 +353,7 @@ class Actor(pygame.sprite.Sprite):
             for cos in self.costumes:
                 if cos[0] == newcostume:
                     self.cosnumber = self.costumes.index(cos)
-        # self.updateRect()
+        self.updateRect()
 
     def getcostume(self):
         return self.costume
@@ -392,14 +388,14 @@ class Actor(pygame.sprite.Sprite):
     def getdirection(self):
         return self.direction
 
-    def transformImage(self):
+    # @hideaway
+    def draw(self, rect=None):
         # If the image changed the transform functions apply
         if self.rotate:
             # Full 360 rotation style
             if self.rotation == 360 and self.transform:
-                self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1],
-                                                                           -self.heading)
-                # self.updateRect()
+                self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
+                self.updateRect()
             # Horizontal Flip rotation style
             elif self.rotation == 'flip':
                 if self.direction < 0 or self.direction > 180:
@@ -410,9 +406,6 @@ class Actor(pygame.sprite.Sprite):
                     if self.needToFlip == 'right':
                         self.flip('horizontal')
                         self.needToFlip = 'left'
-
-    # @hideaway
-    def draw(self, rect=None):
         # Blit the image to the screen
         screenInfo.screen.blit(self.costumes[self.cosnumber][1],
                                ((self.x - self.width / 2),
@@ -444,7 +437,7 @@ class Actor(pygame.sprite.Sprite):
         else:
             self.x = x.x
             self.y = x.y
-        # self.updateRect()
+        self.updateRect()
 
     def setposition(self, *args):
         self.goto(*args)
@@ -459,7 +452,7 @@ class Actor(pygame.sprite.Sprite):
             rangey = [0, screenInfo.resolution[1]]
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
-        # self.updateRect()
+        self.updateRect()
 
     def pendown(self):
         self.penState = 'down'
@@ -496,7 +489,7 @@ class Actor(pygame.sprite.Sprite):
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
         if self.bounce:
             self.bounceOnEdge()
-        # self.updateRect()
+        self.updateRect()
 
     # @pausable
     def right(self, angle):
@@ -557,7 +550,7 @@ class Actor(pygame.sprite.Sprite):
                 cos[1] = pygame.transform.flip(cos[1], False, True)
             for cos in self.originalCostumes:
                 cos[1] = pygame.transform.flip(cos[1], False, True)
-        # self.updateRect()
+        self.updateRect()
 
     def scale(self, w, h=None):
         if h is not None:
@@ -566,7 +559,7 @@ class Actor(pygame.sprite.Sprite):
             for cos in self.originalCostumes:
                 cos[1] = pygame.transform.scale(cos[1], (w, h))
             self.actualScale = [w, h]
-            # self.updateRect()
+            self.updateRect()
         else:
             width = int(self.width * w)
             height = int(self.height * w)

@@ -25,8 +25,6 @@ hey = Sound('example_library/hey.wav')
 
 print(actorsInfo.actorsList)
 
-update()
-
 while True:
 
     # print(actorsInfo.drawList)
@@ -71,4 +69,5 @@ while True:
 
     fill(PINK)
 
+    # update screen and events queue
     update()
