@@ -344,7 +344,8 @@ class Actor(pygame.sprite.Sprite):
         self.load(path, cosname)
 
     def loadfolder(self, path):
-        pass
+        for f in os.listdir(path):
+            self.load(os.path.join(path, f))
 
     def setcostume(self, newcostume):
         if type(newcostume) is int:
@@ -358,12 +359,20 @@ class Actor(pygame.sprite.Sprite):
     def getcostume(self):
         return self.costume
 
-    def nextcostume(self, pause=1):
+    def nextcostume(self, pause=10, costumes=None):
         if self.coscount > pause:
-            if self.cosnumber < len(self.costumes) - 1:
-                self.setcostume(self.cosnumber + 1)
+            if costumes is not None:
+                firstCostume = costumes[0]
+                lastCostume = costumes[1]
+                if self.cosnumber < lastCostume:
+                    self.setcostume(self.cosnumber + 1)
+                else:
+                    self.setcostume(firstCostume)
             else:
-                self.setcostume(0)
+                if self.cosnumber < len(self.costumes) - 1:
+                    self.setcostume(self.cosnumber + 1)
+                else:
+                    self.setcostume(0)
             self.coscount = 0
         self.coscount += 1
 

@@ -4,6 +4,8 @@ from pydojo import *
 screen(1280, 720)
 
 pyco = Actor('example_library/pyco1.png', 'idle')
+pyco.loadfolder('example_library/pyco_walk/')
+print pyco.costumes
 pyco.scale(0.2)
 pyco.goto(100, 600)
 pyco.speed = 5
@@ -35,9 +37,13 @@ while True:
     if key(RIGHT):
         pyco.point(90)
         pyco.forward(pyco.speed)
+        pyco.nextcostume(pause=7, costumes=[1, 4])
+    if keyup(RIGHT):
+        pyco.setcostume('idle')
     if key(LEFT):
         pyco.point(-90)
         pyco.forward(pyco.speed)
+        pyco.nextcostume()
     if keydown(UP):
         if pyco.collide(terrain) or pyco.collide(platforms):
             pyco.jumping = True
