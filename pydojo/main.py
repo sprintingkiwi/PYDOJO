@@ -1,4 +1,4 @@
-import pygame, math, random, os, subprocess, sys
+import pygame, math, random, os, subprocess, sys, copy
 from pyfirmata import *
 from serial import *
 from time import sleep, time
@@ -183,11 +183,11 @@ def update():
     # Manage the time for hide and pause methods
     actualTime = pygame.time.get_ticks()
     # Compute actors pauses
-    for actor in actorsInfo.pausedActorsList:
-        deltaTime = actualTime - actor.startPauseTime
-        if deltaTime >= actor.pauseTime:
-            actor.paused = False
-            actorsInfo.pausedActorsList.remove(actor)
+    # for actor in actorsInfo.pausedActorsList:
+    #     deltaTime = actualTime - actor.startPauseTime
+    #     if deltaTime >= actor.pauseTime:
+    #         actor.paused = False
+    #         actorsInfo.pausedActorsList.remove(actor)
     # Compute actors hide time
     for actor in actorsInfo.hiddenActorsList:
         deltaTime = actualTime - actor.startHideTime
@@ -228,11 +228,24 @@ def ticks():
     return pygame.time.get_ticks()
 
 
-def pausable(func):
-    def wrapper(self, *args):
-        if not self.paused:
-            return func(self, *args)
-    return wrapper
+def clone(target):
+    # clonedActor = target.spriteGroup.copy().sprites()[0]
+    clonedActor = copy.copy(target)
+    actorsInfo.actorsList.append(clonedActor)
+    if not target.hidden:
+        actorsInfo.drawList.append(clonedActor)
+    return clonedActor
+
+
+def distance(a, b):
+    return math.hypot(b.x - a.x, b.y - a.y)
+
+
+# def pausable(func):
+#     def wrapper(self, *args):
+#         if not self.paused:
+#             return func(self, *args)
+#     return wrapper
 
 
 def hideaway(func):
@@ -399,7 +412,6 @@ class Actor(pygame.sprite.Sprite):
     def getdirection(self):
         return self.direction
 
-    # @hideaway
     def draw(self, rect=None):
         # If the image changed the transform functions apply
         if self.rotate:
@@ -435,11 +447,11 @@ class Actor(pygame.sprite.Sprite):
 
     # @pausable
     def goto(self, x=None, y=None):
-        if type(x) is int:
-            if x is None:
-                x = self.x
-            if y is None:
-                y = self.y
+        if type(x) is int or type(x) is float:
+            # if x is None:
+            #     x = self.x
+            # if y is None:
+            #     y = self.y
             self.x = x
             self.y = y
         elif type(x) is list or type(x) is tuple:

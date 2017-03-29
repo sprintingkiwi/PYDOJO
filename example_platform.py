@@ -11,6 +11,11 @@ pyco.goto(100, 600)
 pyco.speed = 5
 # pyco.rotate = False
 pyco.rotation = 'flip'
+pyco.bullets = []
+
+py = Actor('example_library/python.png')
+py.scale(50, 50)
+py.hide()
 
 platforms = []
 
@@ -48,6 +53,20 @@ while True:
         if pyco.collide(terrain) or pyco.collide(platforms):
             pyco.jumping = True
             t = 0
+    if keydown(SPACE):
+        bullet = clone(py)
+        bullet.point(pyco.direction)
+        bullet.goto(pyco)
+        bullet.show()
+        pyco.bullets.append(bullet)
+        print pyco.bullets
+        # for b in pyco.bullets:
+        #     print distance(pyco, b)
+
+    for b in pyco.bullets:
+        b.forward(10)
+        if distance(pyco, b) > 2000:
+            pyco.bullets.remove(b)
 
     if pyco.jumping:
         if t < 15:
@@ -57,6 +76,8 @@ while True:
     if key(DOWN):
         pyco.point(180)
         pyco.forward(pyco.speed)
+
+
     if not pyco.collide(terrain) and not pyco.collide(platforms):
         # print('falling')
         pyco.y += gravity
