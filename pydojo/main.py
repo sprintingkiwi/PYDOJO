@@ -241,6 +241,16 @@ def distance(a, b):
     return math.hypot(b.x - a.x, b.y - a.y)
 
 
+# def randombetween(a, b, *args):
+#     if a is int and b is int:
+#         return random.randint(a, b)
+#     else:
+#         for i in args:
+#
+#         roll = random.randint(0, 1)
+#         if
+
+
 # def pausable(func):
 #     def wrapper(self, *args):
 #         if not self.paused:
@@ -529,6 +539,11 @@ class Actor(pygame.sprite.Sprite):
     def left(self, angle):
         self.direction = (self.direction - angle) % 360
         self.heading = self.direction - 90
+        if self.rotate:
+            self.transform = True
+
+    def roll(self, angle):
+        self.heading += angle
         if self.rotate:
             self.transform = True
 

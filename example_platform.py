@@ -39,6 +39,7 @@ gravity = 10
 
 while True:
 
+    # MOVEMENT
     if key(RIGHT):
         pyco.point(90)
         pyco.forward(pyco.speed)
@@ -48,35 +49,39 @@ while True:
     if key(LEFT):
         pyco.point(-90)
         pyco.forward(pyco.speed)
-        pyco.nextcostume()
+        pyco.nextcostume(pause=7, costumes=[1, 4])
+    if keyup(LEFT):
+        pyco.setcostume('idle')
+
+    # JUMP
     if keydown(UP):
         if pyco.collide(terrain) or pyco.collide(platforms):
             pyco.jumping = True
             t = 0
+    if pyco.jumping:
+        if t < 15:
+            pyco.y -= (2 * gravity)
+            t = t + 1
+
+    # SHOOT
     if keydown(SPACE):
         bullet = clone(py)
         bullet.point(pyco.direction)
         bullet.goto(pyco)
         bullet.show()
         pyco.bullets.append(bullet)
-        print pyco.bullets
+        # print pyco.bullets
         # for b in pyco.bullets:
         #     print distance(pyco, b)
-
     for b in pyco.bullets:
         b.forward(10)
         if distance(pyco, b) > 2000:
             pyco.bullets.remove(b)
-
-    if pyco.jumping:
-        if t < 15:
-            pyco.y -= (2 * gravity)
-            t = t + 1
+        b.roll(5)
 
     if key(DOWN):
         pyco.point(180)
         pyco.forward(pyco.speed)
-
 
     if not pyco.collide(terrain) and not pyco.collide(platforms):
         # print('falling')
