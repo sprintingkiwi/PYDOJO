@@ -1,4 +1,4 @@
-import pygame, math, random, os, subprocess, sys, copy
+import pygame, math, random, os, subprocess, sys, copy, gc
 from pyfirmata import *
 from serial import *
 from time import sleep, time
@@ -320,6 +320,7 @@ class Actor(pygame.sprite.Sprite):
         self.pensize = 1
         self.needToStamp = False
         self.bounce = False
+        self.tag = "untagged"
 
     # find costume name from image path
     def findCostumeName(self, path):
@@ -636,20 +637,30 @@ class Actor(pygame.sprite.Sprite):
     @hideaway
     def collide(self, target):
         if isinstance(target, Actor):
-            self.updatePosition()
-            target.updatePosition()
-            result = pygame.sprite.groupcollide(self.spriteGroup,
-                                                target.spriteGroup,
-                                                False,
-                                                False,
-                                                pygame.sprite.collide_mask)
-            if len(result) > 0:
-                # print(target.costume)
-                return True
+            if not target.hidden:
+                self.updatePosition()
+                target.updatePosition()
+                # result = pygame.sprite.groupcollide(self.spriteGroup,
+                #                                     target.spriteGroup,
+                #                                     False,
+                #                                     False,
+                #                                     pygame.sprite.collide_mask)
+                # if len(result) > 0:
+                #     # print(target.costume)
+                #     return True
+                result = pygame.sprite.collide_mask(self, target)
+                if result is not None:
+                    return True
         elif type(target) is list:
             for a in target:
                 if self.collide(a):
                     return True
+        elif type(target) is str:
+            for obj in gc.get_objects():
+                if isinstance(obj, Actor):
+                    if obj.tag == target:
+                        if self.collide(obj):
+                            return True
 
     # Rect collision
     @hideaway
