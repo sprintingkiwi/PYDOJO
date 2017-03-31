@@ -48,6 +48,9 @@ terrain.scale(1280, 50)
 
 gravity = 10
 
+for a in getactors():
+    print a.costume
+
 while True:
 
     # MOVEMENT

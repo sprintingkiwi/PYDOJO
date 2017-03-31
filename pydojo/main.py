@@ -241,6 +241,18 @@ def distance(a, b):
     return math.hypot(b.x - a.x, b.y - a.y)
 
 
+def getactors(tag=None):
+    taggedActorsList = []
+    for obj in gc.get_objects():
+        if isinstance(obj, Actor):
+            if tag is None:
+                taggedActorsList.append(obj)
+            elif tag is str:
+                if obj.tag == tag:
+                    taggedActorsList.append(obj)
+    return taggedActorsList
+
+
 # def randombetween(a, b, *args):
 #     if a is int and b is int:
 #         return random.randint(a, b)
