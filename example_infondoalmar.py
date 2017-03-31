@@ -1,7 +1,7 @@
 from pydojo import *
 
 # CREATE GAME DISPLAY
-screen(1920, 1080)
+screen(800, 600)
 
 background('example_library/sea.png')
 

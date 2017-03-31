@@ -35,7 +35,8 @@ while True:
         uga.pencolor = colore
 
     # Loop Pyco's costumes
-    pyco.nextcostume()
+    pyco.nextcostume(pause=1)
+    pyco.right(10)
 
     if keydown(B):
         setbackground('bedroom')

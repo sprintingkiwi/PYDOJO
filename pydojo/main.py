@@ -1,4 +1,4 @@
-import pygame, math, random, os, subprocess, sys
+import pygame, math, random, os, subprocess, sys, copy, gc
 from pyfirmata import *
 from serial import *
 from time import sleep, time
@@ -6,7 +6,7 @@ from time import sleep, time
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 1.4
+LIBRARY_VERSION = 1.5
 
 # Colors
 BLACK = [0, 0, 0]
@@ -96,6 +96,7 @@ class ActorsInfo():
         self.drawList = []
         self.pausedActorsList = []
         self.hiddenActorsList = []
+        self.glideList = []
         self.counts = []
 
 
@@ -172,6 +173,18 @@ def setbackground(*args):
 defaultClock = pygame.time.Clock()
 
 
+# GLIDING
+def processGliding():
+    for item in actorsInfo.glideList:
+        item[0].point(item[1], item[2])
+        if (abs(int(item[0].x) - item[1]) > 5) or (abs(int(item[0].y) - item[2]) > 5):
+            item[0].forward(item[3])
+        else:
+            item[0].goto(item[1], item[2])
+            item[0].gliding = False
+            actorsInfo.glideList.remove(item)
+
+
 # One of the most important functions
 def update():
     # Refresh the event list
@@ -183,11 +196,11 @@ def update():
     # Manage the time for hide and pause methods
     actualTime = pygame.time.get_ticks()
     # Compute actors pauses
-    for actor in actorsInfo.pausedActorsList:
-        deltaTime = actualTime - actor.startPauseTime
-        if deltaTime >= actor.pauseTime:
-            actor.paused = False
-            actorsInfo.pausedActorsList.remove(actor)
+    # for actor in actorsInfo.pausedActorsList:
+    #     deltaTime = actualTime - actor.startPauseTime
+    #     if deltaTime >= actor.pauseTime:
+    #         actor.paused = False
+    #         actorsInfo.pausedActorsList.remove(actor)
     # Compute actors hide time
     for actor in actorsInfo.hiddenActorsList:
         deltaTime = actualTime - actor.startHideTime
@@ -195,6 +208,11 @@ def update():
             actor.hidden = False
             actorsInfo.hiddenActorsList.remove(actor)
             actorsInfo.drawList.append(actor)
+    # Gliding
+    processGliding()
+    # Update actors position
+    # for actor in actorsInfo.actorsList:
+    #     actor.updatePosition()
     # Order Actor's list by layer
     actorsInfo.drawList.sort(key=lambda x: x.layer)
     # Draw screen base color
@@ -225,11 +243,46 @@ def ticks():
     return pygame.time.get_ticks()
 
 
-def pausable(func):
-    def wrapper(self, *args):
-        if not self.paused:
-            return func(self, *args)
-    return wrapper
+def clone(target):
+    # clonedActor = target.spriteGroup.copy().sprites()[0]
+    clonedActor = copy.copy(target)
+    actorsInfo.actorsList.append(clonedActor)
+    if not target.hidden:
+        actorsInfo.drawList.append(clonedActor)
+    return clonedActor
+
+
+def distance(a, b):
+    return math.hypot(b.x - a.x, b.y - a.y)
+
+
+def getactors(tag=None):
+    taggedActorsList = []
+    for obj in gc.get_objects():
+        if isinstance(obj, Actor):
+            if tag is None:
+                taggedActorsList.append(obj)
+            elif tag is str:
+                if obj.tag == tag:
+                    taggedActorsList.append(obj)
+    return taggedActorsList
+
+
+# def randombetween(a, b, *args):
+#     if a is int and b is int:
+#         return random.randint(a, b)
+#     else:
+#         for i in args:
+#
+#         roll = random.randint(0, 1)
+#         if
+
+
+# def pausable(func):
+#     def wrapper(self, *args):
+#         if not self.paused:
+#             return func(self, *args)
+#     return wrapper
 
 
 def hideaway(func):
@@ -251,7 +304,6 @@ class Actor(pygame.sprite.Sprite):
         if path is None:
             path = (os.path.dirname(sys.modules[__name__].__file__))
             path = os.path.join(path, 'turtle.png')
-            print path
         actorsInfo.actorsList.append(self)
         actorsInfo.drawList.append(self)
         pygame.sprite.Sprite.__init__(self)
@@ -281,6 +333,9 @@ class Actor(pygame.sprite.Sprite):
         self.coscount = 0
         # if path is not None:
         self.load(path, cosname)
+        self.actualScale = [self.width, self.height]
+        self.spriteGroup = pygame.sprite.Group()
+        self.spriteGroup.add(self)
         # rotation style
         self.rotate = True
         self.rotation = 360
@@ -292,6 +347,8 @@ class Actor(pygame.sprite.Sprite):
         self.pensize = 1
         self.needToStamp = False
         self.bounce = False
+        self.tag = "untagged"
+        self.gliding = False
 
     # find costume name from image path
     def findCostumeName(self, path):
@@ -302,12 +359,16 @@ class Actor(pygame.sprite.Sprite):
     # update rect as the image changes
     def updateRect(self):
         self.rect = self.costumes[self.cosnumber][1].get_rect()
-        self.rect.centerx = int(self.x)
-        self.rect.centery = int(self.y)
+        self.updatePosition()
         self.size = self.costumes[self.cosnumber][1].get_size()
         self.width = self.costumes[self.cosnumber][1].get_width()
         self.height = self.costumes[self.cosnumber][1].get_height()
-        self.actualScale = [self.width, self.height]
+        self.image = self.costumes[self.cosnumber][1]
+        # self.mask = pygame.mask.from_surface(self.image)
+
+    def updatePosition(self):
+        self.rect.centerx = int(self.x)
+        self.rect.centery = int(self.y)
 
     # load Actor's image
     def load(self, path, cosname=None):
@@ -315,19 +376,28 @@ class Actor(pygame.sprite.Sprite):
             self.costume = self.findCostumeName(path)
         else:
             self.costume = cosname
-        img = pygame.image.load(path).convert_alpha()
+        self.rawImg = pygame.image.load(path).convert_alpha()
         if len(self.costumes) > 0:
-            img = pygame.transform.scale(img, self.actualScale)
-        self.costumes.append([self.costume, img])
-        self.originalCostumes.append([self.costume, img])
-        self.mask = pygame.mask.from_surface(self.costumes[self.cosnumber][1])
-        self.updateRect()
+            self.rawImg = pygame.transform.scale(self.rawImg, self.actualScale)
+        self.costumes.append([self.costume, self.rawImg])
+        self.originalCostumes.append([self.costume, self.rawImg])
+        # Generate Rect and other stuff
+        self.rect = self.costumes[self.cosnumber][1].get_rect()
+        self.rect.centerx = int(self.x)
+        self.rect.centery = int(self.y)
+        self.size = self.costumes[self.cosnumber][1].get_size()
+        self.width = self.costumes[self.cosnumber][1].get_width()
+        self.height = self.costumes[self.cosnumber][1].get_height()
+        # image and mask for pygame sprite/group methods
+        self.image = self.costumes[self.cosnumber][1]
+        # self.mask = pygame.mask.from_surface(self.image)
 
     def loadcostume(self, path, cosname=None):
         self.load(path, cosname)
 
     def loadfolder(self, path):
-        pass
+        for f in os.listdir(path):
+            self.load(os.path.join(path, f))
 
     def setcostume(self, newcostume):
         if type(newcostume) is int:
@@ -341,28 +411,30 @@ class Actor(pygame.sprite.Sprite):
     def getcostume(self):
         return self.costume
 
-    def nextcostume(self, pause=1):
+    def nextcostume(self, pause=10, costumes=None):
         if self.coscount > pause:
-            if self.cosnumber < len(self.costumes) - 1:
-                self.setcostume(self.cosnumber + 1)
+            if costumes is not None:
+                firstCostume = costumes[0]
+                lastCostume = costumes[1]
+                if self.cosnumber < lastCostume:
+                    self.setcostume(self.cosnumber + 1)
+                else:
+                    self.setcostume(firstCostume)
             else:
-                self.setcostume(0)
+                if self.cosnumber < len(self.costumes) - 1:
+                    self.setcostume(self.cosnumber + 1)
+                else:
+                    self.setcostume(0)
             self.coscount = 0
         self.coscount += 1
 
-    def setposition(self, pos=0, y=0):
-        if pos is float:
-            self.x = pos
-            self.y = y
-        else:
-            self.x = pos[0]
-            self.y = pos[1]
-
     def setx(self, x):
         self.x = x
+        self.updatePosition()
 
     def sety(self, y):
         self.y = y
+        self.updatePosition()
 
     def getposition(self):
         return [self.x, self.y]
@@ -379,12 +451,11 @@ class Actor(pygame.sprite.Sprite):
     def getdirection(self):
         return self.direction
 
-    # @hideaway
     def draw(self, rect=None):
         # If the image changed the transform functions apply
         if self.rotate:
             # Full 360 rotation style
-            if self.rotation == 360:
+            if self.rotation == 360 and self.transform:
                 self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
                 self.updateRect()
             # Horizontal Flip rotation style
@@ -413,9 +484,13 @@ class Actor(pygame.sprite.Sprite):
         if self.rotate:
             self.costumes[self.cosnumber][1] = self.originalCostumes[self.cosnumber][1]
 
-    @pausable
-    def goto(self, x, y=0):
-        if type(x) is int:
+    # @pausable
+    def goto(self, x=None, y=None):
+        if type(x) is int or type(x) is float:
+            # if x is None:
+            #     x = self.x
+            # if y is None:
+            #     y = self.y
             self.x = x
             self.y = y
         elif type(x) is list or type(x) is tuple:
@@ -428,9 +503,22 @@ class Actor(pygame.sprite.Sprite):
         else:
             self.x = x.x
             self.y = x.y
-        self.updateRect()
+        self.updatePosition()
 
-    @pausable
+    def setposition(self, *args):
+        self.goto(*args)
+
+    def glide(self, x, y=None, speed=10):
+        if not self.gliding:
+            destx = x
+            desty = y
+            if y is None:
+                destx = x.x
+                desty = x.y
+            actorsInfo.glideList.append([self, destx, desty, speed])
+            self.gliding = True
+
+    # @pausable
     def gorand(self,
                rangex=None,
                rangey=None):
@@ -440,7 +528,7 @@ class Actor(pygame.sprite.Sprite):
             rangey = [0, screenInfo.resolution[1]]
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
-        self.updateRect()
+        self.updatePosition()
 
     def pendown(self):
         self.penState = 'down'
@@ -448,7 +536,7 @@ class Actor(pygame.sprite.Sprite):
     def penup(self):
         self.penState = 'up'
 
-    def BounceOnEdge(self):
+    def bounceOnEdge(self):
         if self.y > screenInfo.resolution[1] or self.y < 0:
             self.direction = (180 - self.direction) % 360
             self.heading = self.direction - 90
@@ -460,7 +548,7 @@ class Actor(pygame.sprite.Sprite):
             if self.rotate:
                 self.transform = True
 
-    @pausable
+    # @pausable
     def forward(self, steps):
         if self.penState == 'down':
             startX = self.x
@@ -476,38 +564,48 @@ class Actor(pygame.sprite.Sprite):
         self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
         if self.bounce:
-            self.BounceOnEdge()
-        self.updateRect()
+            self.bounceOnEdge()
+        self.updatePosition()
 
-    @pausable
+    # @pausable
     def right(self, angle):
         self.direction = (self.direction + angle) % 360
         self.heading = self.direction - 90
         if self.rotate:
             self.transform = True
 
-    @pausable
+    # @pausable
     def left(self, angle):
         self.direction = (self.direction - angle) % 360
         self.heading = self.direction - 90
         if self.rotate:
             self.transform = True
 
-    @pausable
+    def roll(self, angle):
+        self.heading += angle
+        if self.rotate:
+            self.transform = True
+
+    # @pausable
     def stamp(self):
         if not self.needToStamp:
             self.needToStamp = True
 
-    @pausable
-    def point(self, target):
+    # @pausable
+    def point(self, target, y=None):
         # set heading as angle
-        if type(target) is int and type(target) is not str:
+        if type(target) is int and type(target) is not str and y is None:
             angle = target % 360
             self.direction = angle
             self.heading = angle - 90
         # point at coordinate
         elif type(target) is list and type(target) is not str:
             angle = -math.atan2(self.x - target[0], self.y - target[1])
+            angle = angle * (180 / math.pi)
+            self.direction = angle
+            self.heading = angle - 90
+        elif y is not None:
+            angle = -math.atan2(self.x - target, self.y - y)
             angle = angle * (180 / math.pi)
             self.direction = angle
             self.heading = angle - 90
@@ -580,20 +678,44 @@ class Actor(pygame.sprite.Sprite):
 
     # Mask collision
     @hideaway
-    def mcollide(self, target):
-        result = pygame.sprite.collide_mask(self, target)
-        if result is not None:
-            return True
-            # print(result)
+    def collide(self, target):
+        if isinstance(target, Actor):
+            if not target.hidden:
+                self.updatePosition()
+                target.updatePosition()
+                # result = pygame.sprite.groupcollide(self.spriteGroup,
+                #                                     target.spriteGroup,
+                #                                     False,
+                #                                     False,
+                #                                     pygame.sprite.collide_mask)
+                # if len(result) > 0:
+                #     # print(target.costume)
+                #     return True
+                result = pygame.sprite.collide_mask(self, target)
+                if result is not None:
+                    return True
+        elif type(target) is list:
+            for a in target:
+                if self.collide(a):
+                    return True
+        elif type(target) is str:
+            for obj in gc.get_objects():
+                if isinstance(obj, Actor):
+                    if obj.tag == target:
+                        if self.collide(obj):
+                            return True
 
     # Rect collision
     @hideaway
-    def collide(self, target):
+    def rectcollide(self, target):
+        self.updatePosition()
+        target.updatePosition()
         if not target.hidden:
             return self.rect.colliderect(target.rect)
 
     @hideaway
     def collidepoint(self, point):
+        self.updatePosition()
         if point == MOUSE:
             return self.rect.collidepoint([MOUSE.x, MOUSE.y])
         else:
@@ -639,14 +761,13 @@ class Text(Actor):
                  fontsize=32, bold=False,
                  italic=False,
                  color=[0, 0, 0]):
-        Actor.__init__(self)
         self.string = str(string)
         self.name = name
         self.fontsize = fontsize
         self.bold = bold
         self.italic = italic
         self.color = color
-        self.updateText()
+        Actor.__init__(self)
 
     def updateText(self):
         self.font = pygame.font.SysFont(self.name,
@@ -661,6 +782,7 @@ class Text(Actor):
     def load(self, path, cosname):
         self.costumes.append([self.costume, None])
         self.originalCostumes.append([self.costume, None])
+        self.updateText()
 
     def write(self, string):
         self.string = str(string)
