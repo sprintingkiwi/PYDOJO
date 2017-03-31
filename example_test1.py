@@ -52,7 +52,10 @@ while True:
     if keydown(G):
         dyno.pendown()
         dyno.gorand()
-        dyno.glide(800, 600)
+        dyno.glide(testo)
+
+    if keydown(W):
+        print(dyno.x, dyno.y)
 
     star.left(1)
     # print(dyno.direction)

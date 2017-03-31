@@ -180,6 +180,7 @@ def processGliding():
         if (abs(int(item[0].x) - item[1]) > 5) or (abs(int(item[0].y) - item[2]) > 5):
             item[0].forward(item[3])
         else:
+            item[0].goto(item[1], item[2])
             item[0].gliding = False
             actorsInfo.glideList.remove(item)
 
@@ -507,10 +508,15 @@ class Actor(pygame.sprite.Sprite):
     def setposition(self, *args):
         self.goto(*args)
 
-    def glide(self, x, y, speed=10):
+    def glide(self, x, y=None, speed=10):
         if not self.gliding:
-            actorsInfo.glideList.append([self, x, y, speed])
-        self.gliding = True
+            destx = x
+            desty = y
+            if y is None:
+                destx = x.x
+                desty = x.y
+            actorsInfo.glideList.append([self, destx, desty, speed])
+            self.gliding = True
 
     # @pausable
     def gorand(self,
