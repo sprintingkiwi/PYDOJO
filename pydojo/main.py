@@ -96,6 +96,7 @@ class ActorsInfo():
         self.drawList = []
         self.pausedActorsList = []
         self.hiddenActorsList = []
+        self.glideList = []
         self.counts = []
 
 
@@ -172,6 +173,17 @@ def setbackground(*args):
 defaultClock = pygame.time.Clock()
 
 
+# GLIDING
+def processGliding():
+    for item in actorsInfo.glideList:
+        item[0].point(item[1], item[2])
+        if (abs(int(item[0].x) - item[1]) > 5) or (abs(int(item[0].y) - item[2]) > 5):
+            item[0].forward(item[3])
+        else:
+            item[0].gliding = False
+            actorsInfo.glideList.remove(item)
+
+
 # One of the most important functions
 def update():
     # Refresh the event list
@@ -195,6 +207,8 @@ def update():
             actor.hidden = False
             actorsInfo.hiddenActorsList.remove(actor)
             actorsInfo.drawList.append(actor)
+    # Gliding
+    processGliding()
     # Update actors position
     # for actor in actorsInfo.actorsList:
     #     actor.updatePosition()
@@ -333,6 +347,7 @@ class Actor(pygame.sprite.Sprite):
         self.needToStamp = False
         self.bounce = False
         self.tag = "untagged"
+        self.gliding = False
 
     # find costume name from image path
     def findCostumeName(self, path):
@@ -492,6 +507,11 @@ class Actor(pygame.sprite.Sprite):
     def setposition(self, *args):
         self.goto(*args)
 
+    def glide(self, x, y, speed=10):
+        if not self.gliding:
+            actorsInfo.glideList.append([self, x, y, speed])
+        self.gliding = True
+
     # @pausable
     def gorand(self,
                rangex=None,
@@ -566,15 +586,20 @@ class Actor(pygame.sprite.Sprite):
             self.needToStamp = True
 
     # @pausable
-    def point(self, target):
+    def point(self, target, y=None):
         # set heading as angle
-        if type(target) is int and type(target) is not str:
+        if type(target) is int and type(target) is not str and y is None:
             angle = target % 360
             self.direction = angle
             self.heading = angle - 90
         # point at coordinate
         elif type(target) is list and type(target) is not str:
             angle = -math.atan2(self.x - target[0], self.y - target[1])
+            angle = angle * (180 / math.pi)
+            self.direction = angle
+            self.heading = angle - 90
+        elif y is not None:
+            angle = -math.atan2(self.x - target, self.y - y)
             angle = angle * (180 / math.pi)
             self.direction = angle
             self.heading = angle - 90

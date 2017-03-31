@@ -47,16 +47,22 @@ while True:
     # dyno.direction = 90
     # dyno.left(1)
     testo.right(1)
-    dyno.point(MOUSE)
-    dyno.forward(3)
+    # dyno.point(MOUSE)
+    # dyno.forward(3)
+    if keydown(G):
+        dyno.pendown()
+        dyno.gorand()
+        dyno.glide(800, 600)
+
     star.left(1)
     # print(dyno.direction)
 
     if dyno.collide(star):
         # print(dyno.collide(star))
         star.setcostume(1)
+        print('dyno ha toccato star')
         # hey.play()
-        dyno.hide(2)
+        # dyno.hide(2)
 
     if dyno.collide(testo):
         testo.write('toccato')
