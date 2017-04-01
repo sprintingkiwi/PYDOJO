@@ -553,7 +553,7 @@ class Actor(pygame.sprite.Sprite):
         if self.penState == 'down':
             startX = self.x
             startY = self.y
-            for i in range(steps):
+            for i in range(abs(steps)):
                 pygame.draw.circle(screenInfo.penSurface,
                                    self.pencolor,
                                    [int(startX), int(startY)],
@@ -566,6 +566,9 @@ class Actor(pygame.sprite.Sprite):
         if self.bounce:
             self.bounceOnEdge()
         self.updatePosition()
+
+    def back(self, steps):
+        self.forward(-steps)
 
     # @pausable
     def right(self, angle):
