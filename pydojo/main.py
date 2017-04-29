@@ -763,7 +763,7 @@ class Actor(pygame.sprite.Sprite):
 
 class Text(Actor):
     def __init__(self,
-                 string,
+                 string='Text',
                  name='Liberation Serif',
                  fontsize=32, bold=False,
                  italic=False,
