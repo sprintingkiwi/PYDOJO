@@ -189,6 +189,10 @@ def processGliding():
 def update():
     # Refresh the event list
     eventsStorage.LIST = pygame.event.get()
+    # Close pygame window when x clicked
+    for e in eventsStorage.LIST:
+        if e.type == pygame.QUIT:
+            quit()
     # Refresh mouse position
     MOUSE.pos = pygame.mouse.get_pos()
     MOUSE.x = MOUSE.pos[0]
