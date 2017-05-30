@@ -45,6 +45,22 @@ COLORS = [RED,
           BEIGE,
           LAVENDER]
 
+SUPPORTED_IMAGE_FORMATS = ['png', 'jpg', 'gif', 'bmp']
+
+
+# Class for Game Info
+class GameInfo():
+    def __init__(self):
+        self.framerate = 60
+
+
+game_info = GameInfo()
+
+
+def framerate(fps):
+    game_info.framerate = fps
+
+
 # OBJECTS FOR DATA STORAGE
 class EventsStorage():
     def __init__(self):
@@ -184,16 +200,42 @@ def process_gliding():
 
 # One of the most important functions
 def update():
+
+    # DRAW
+    # Update actors position
+    # for actor in actorsInfo.actorsList:
+    #     actor.update_position()
+    # Order Actor's list by layer
+    actors_info.draw_list.sort(key=lambda x: x.layer)
+    # Draw screen base color
+    screen_info.screen.fill(screen_info.bg_color)
+    # Draw Actors (and Background)
+    for actor in actors_info.draw_list:
+        actor.draw()
+    # Draw the turtle drawings surface
+    screen_info.screen.blit(screen_info.pen_surface, [0, 0])
+    # refresh the pygame screen
+    pygame.display.update()
+
+    # framerate
+    default_clock.tick(game_info.framerate)
+
+    # EVENTS
     # Refresh the event list
     events_storage.list = pygame.event.get()
-    # Close pygame window when x clicked
+    # Close pygame window when X icon clicked or ESCAPE pressed
     for e in events_storage.list:
         if e.type == pygame.QUIT:
             quit()
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_ESCAPE:
+                quit()
     # Refresh mouse position
     MOUSE.pos = pygame.mouse.get_pos()
     MOUSE.x = MOUSE.pos[0]
     MOUSE.y = MOUSE.pos[1]
+
+    # OTHER
     # Manage the time for hide and pause methods
     actual_time = pygame.time.get_ticks()
     # Compute actors pauses
@@ -211,21 +253,6 @@ def update():
             actors_info.draw_list.append(actor)
     # Gliding
     process_gliding()
-    # Update actors position
-    # for actor in actorsInfo.actorsList:
-    #     actor.update_position()
-    # Order Actor's list by layer
-    actors_info.draw_list.sort(key=lambda x: x.layer)
-    # Draw screen base color
-    screen_info.screen.fill(screen_info.bg_color)
-    # Draw Actors (and Background)
-    for actor in actors_info.draw_list:
-        actor.draw()
-    # Draw the turtle drawings surface
-    screen_info.screen.blit(screen_info.pen_surface, [0, 0])
-    # refresh the pygame screen
-    pygame.display.update()
-    default_clock.tick(60)
 
 
 def UPDATE():
@@ -398,7 +425,8 @@ class Actor(pygame.sprite.Sprite):
 
     def loadfolder(self, path):
         for f in os.listdir(path):
-            self.load(os.path.join(path, f))
+            if f.split('.')[1] in SUPPORTED_IMAGE_FORMATS:
+                self.load(os.path.join(path, f))
 
     def setcostume(self, newcostume):
         if type(newcostume) is int:

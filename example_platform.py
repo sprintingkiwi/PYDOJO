@@ -5,11 +5,12 @@ screen(1280, 720)
 
 background('example_asset/backgrounds/forest2.png')
 
+framerate(30)
+
 # PYCO INIT
 pyco = Actor('example_asset/characters/pyco1.png', 'idle')
 pyco.loadfolder('example_asset/characters/pyco_walk/')
 # print pyco.costumes
-pyco.scale(0.2)
 pyco.goto(100, 600)
 pyco.speed = 5
 # pyco.rotate = False
@@ -20,7 +21,6 @@ pyco.jumping = False
 # BAT INIT
 bat = Actor('example_asset/characters/bat1.png')
 bat.load('example_asset/characters/bat2.png')
-bat.scale(0.2)
 bat.rotation = 'flip'
 bat.point(random.randint(0, 360))
 bat.bounce = True
@@ -36,6 +36,7 @@ platforms = []
 for i in range(6):
     a = Actor('example_asset/characters/platform.png', str(i))
     a.tag = 'support'
+    a.scale(200, 50)
     platforms.append(a)
 for p in platforms:
     p.gorand()

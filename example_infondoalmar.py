@@ -7,12 +7,10 @@ background('example_asset/backgrounds/sea.png')
 
 # CREATE SHARK ACTOR
 shark = Actor('example_asset/characters/shark1.png')
-shark.scale(0.2)
 shark.rotation = 'flip'
 
 # CREATE FISH
 fish = Actor('example_asset/characters/fish1.png')
-fish.scale(0.2)
 fish.point(60)
 fish.bounce = True
 fish.rotation = 'flip'
