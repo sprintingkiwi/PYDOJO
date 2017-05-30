@@ -4,8 +4,7 @@ from pydojo import *
 screen(1280, 720)
 
 # CREATE ACTOR
-pyco = Actor('example_library/pyco1.png')
-pyco.scale(0.2)
+pyco = Actor('example_asset/characters/pyco1.png')
 
 # score variable
 presi = 0
@@ -15,14 +14,14 @@ punti = Text(presi, color=RED)
 punti.goto(100, 100)
 
 # counter variable
-inizioconta = time()
+inizioconta = ticks()
 
 # MAIN LOOP
 while True:
     # MOVE RANDOM
-    if time() - inizioconta > 1:
+    if ticks() - inizioconta > 1000:
         pyco.gorand()
-        inizioconta = time()
+        inizioconta = ticks()
 
     # ADD 1 POINT when target actor is clicked
     if pyco.click():

@@ -1,7 +1,7 @@
 from pydojo import *
 screen(1100, 1100)
 
-head = Actor('example_library/square.png')
+head = Actor('example_asset/characters/square.png')
 head.speed = 5
 head.size = 30
 head.pensize = 10
@@ -11,9 +11,9 @@ tail = []
 tailcoords = []
 food = []
 
-apple = Actor('example_library/apple.png')
+apple = Actor('example_asset/characters/apple.png')
 apple.layer = -1
-apple.scale(0.1)
+apple.scale(0.5)
 apple.hide()
 
 for i in range(10):
@@ -26,19 +26,10 @@ for i in range(10):
 while True:
 
     # Controls
-    if key(L):
-        pezzo = clone(head)
-        tail.append(pezzo)
-    if key(Z):
-        head.speed = head.speed + 15
-    if key(D):
-        head.point(90)
-    if key(A):
-        head.point(-90)
-    if key(S):
-        head.point(180)
-    if key(W):
-        head.point(0)
+    if key(RIGHT):
+        head.right(5)
+    if key(LEFT):
+        head.left(5)
 
     # Boundaries
     if head.y < 0:

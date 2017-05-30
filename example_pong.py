@@ -82,8 +82,6 @@ while True:
 
     while not gameover:
 
-        print(actorsInfo.drawList)
-
         # controls
         events()
 

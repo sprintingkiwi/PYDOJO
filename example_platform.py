@@ -3,11 +3,11 @@ from pydojo import *
 # create game display
 screen(1280, 720)
 
-background('example_library/forest2.png')
+background('example_asset/backgrounds/forest2.png')
 
 # PYCO INIT
-pyco = Actor('example_library/pyco1.png', 'idle')
-pyco.loadfolder('example_library/pyco_walk/')
+pyco = Actor('example_asset/characters/pyco1.png', 'idle')
+pyco.loadfolder('example_asset/characters/pyco_walk/')
 # print pyco.costumes
 pyco.scale(0.2)
 pyco.goto(100, 600)
@@ -18,8 +18,8 @@ pyco.bullets = []
 pyco.jumping = False
 
 # BAT INIT
-bat = Actor('example_library/bat1.png')
-bat.load('example_library/bat2.png')
+bat = Actor('example_asset/characters/bat1.png')
+bat.load('example_asset/characters/bat2.png')
 bat.scale(0.2)
 bat.rotation = 'flip'
 bat.point(random.randint(0, 360))
@@ -27,24 +27,25 @@ bat.bounce = True
 bat.tag = 'enemy'
 
 # PY BULLET INIT
-py = Actor('example_library/python.png')
+py = Actor('example_asset/characters/python.png')
 py.scale(50, 50)
 py.hide()
 
 # PLATFORMS INIT
 platforms = []
 for i in range(6):
-    a = Actor('example_library/platform.png', str(i))
-    a.tag = 'flying platform'
+    a = Actor('example_asset/characters/platform.png', str(i))
+    a.tag = 'support'
     platforms.append(a)
 for p in platforms:
     p.gorand()
 # print(platforms)
 
 # TERRAIN INIT
-terrain = Actor('example_library/terrain.png')
+terrain = Actor('example_asset/characters/terrain.png')
 terrain.goto(CENTER.x, 700)
 terrain.scale(1280, 50)
+terrain.tag = 'support'
 
 gravity = 10
 
@@ -69,7 +70,7 @@ while True:
 
     # JUMP
     if keydown(UP):
-        if pyco.collide(terrain) or pyco.collide(platforms):
+        if pyco.collide('support'):
             pyco.jumping = True
             t = 0
     if pyco.jumping:
@@ -107,7 +108,7 @@ while True:
         pyco.point(180)
         pyco.forward(pyco.speed)
 
-    if not pyco.collide(terrain) and not pyco.collide(platforms):
+    if not pyco.collide('support'):
         # print('falling')
         pyco.y += gravity
 

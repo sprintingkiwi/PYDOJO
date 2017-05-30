@@ -3,19 +3,19 @@ from pydojo import *
 # CREATE GAME DISPLAY
 screen(1280, 720)
 
-background('example_library/citynight.png')
-loadbackground('example_library/bedroom.png')
+background('example_asset/backgrounds/citynight.png')
+loadbackground('example_asset/backgrounds/bedroom.png')
 
-print(screenInfo.background.costumes)
+print(screen_info.background.costumes)
 
 uga = Actor()
 uga.pendown()
 
-pyco = Actor('example_library/pyco2.png')
+pyco = Actor('example_asset/characters/pyco2.png')
 pyco.scale(0.5)
-pyco.load('example_library/pyco4.png')
-pyco.load('example_library/pyco5.png')
-pyco.load('example_library/pyco6.png')
+pyco.load('example_asset/characters/pyco4.png')
+pyco.load('example_asset/characters/pyco5.png')
+pyco.load('example_asset/characters/pyco6.png')
 
 passi = 1
 
@@ -41,7 +41,7 @@ while True:
     if keydown(B):
         setbackground('bedroom')
         # background('example_library/bedroom.png')
-        print(screenInfo.background.costumes)
+        print(screen_info.background.costumes)
     if keydown(C):
         setbackground('citynight')
     if keydown(F):
