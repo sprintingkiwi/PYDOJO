@@ -3,7 +3,7 @@ import pygame, math, random, os, subprocess, sys, copy, gc, time
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 1.5
+LIBRARY_VERSION = 1.6
 
 # Colors
 BLACK = [0, 0, 0]
