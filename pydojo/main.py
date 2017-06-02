@@ -780,6 +780,7 @@ class Actor(pygame.sprite.Sprite):
     @hideaway
     def hide(self, t=-1):
         if not self.hidden:
+            self.hidden = True
             # actors_info.draw_list.remove(self)
             actors_to_draw.remove(self)
             if t >= 0:
