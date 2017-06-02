@@ -3,22 +3,20 @@ from pydojo import *
 # CREATE GAME DISPLAY
 screen(800, 600)
 
-background('example_library/sea.png')
+background('example_asset/backgrounds/sea.png')
 
 # CREATE SHARK ACTOR
-shark = Actor('example_library/shark1.png')
-shark.scale(0.2)
+shark = Actor('example_asset/characters/shark1.png')
 shark.rotation = 'flip'
 
 # CREATE FISH
-fish = Actor('example_library/fish1.png')
-fish.scale(0.2)
+fish = Actor('example_asset/characters/fish1.png')
 fish.point(60)
 fish.bounce = True
 fish.rotation = 'flip'
 
 print(CENTER.x, CENTER.y)
-print(screenInfo.resolution)
+print(screen_info.resolution)
 
 # MAIN LOOP
 while True:

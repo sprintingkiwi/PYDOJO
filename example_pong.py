@@ -39,27 +39,27 @@ timetext.goto(400, 150)
 instructions = Text("press START to play again or press ESCAPE to quit the game")
 instructions.goto(width / 2, height / 2)
 
-background("example_library/sea.png")
+background("example_asset/backgrounds/sea.png")
 
-edge = Actor("example_library/edge.png")
+edge = Actor("example_asset/backgrounds/edge.png")
 edge.goto(width / 2, height / 2)
 
-playerL = Actor("example_library/fish2.png")
+playerL = Actor("example_asset/characters/fish2.png")
 playerL.point(90)
 playerL.goto(50, 50)
 
-playerR = Actor("example_library/fish1.png")
+playerR = Actor("example_asset/characters/fish1.png")
 playerR.point(-90)
 playerR.flip("horizontal")
 playerR.goto(width - 50, height - 50)
 
 players = [playerL, playerR]
 for player in players:
-    player.scale(0.2)
+    player.scale(0.7)
     player.rotate = False
 
-ball = Actor("example_library/seastar1.png")
-ball.scale(0.1)
+ball = Actor("example_asset/characters/seastar1.png")
+ball.scale(0.4)
 
 while True:
 
@@ -76,13 +76,11 @@ while True:
         ball.point(random.randint(-135, -45))
 
     speed = 2
-    starttime = time()
-    counttime = time()
+    starttime = ticks()
+    counttime = ticks()
     gameover = False
 
     while not gameover:
-
-        print(actorsInfo.drawList)
 
         # controls
         events()
@@ -92,12 +90,12 @@ while True:
         ball.heading += 1
 
         # time management
-        actualtime = time() - starttime
+        actualtime = ticks() - starttime
         timetext.write(str(int(actualtime)))
-        deltatime = time() - counttime
-        if deltatime > 3:
+        deltatime = ticks() - counttime
+        if deltatime > 3000:
             speed += 1
-            counttime = time()
+            counttime = ticks()
 
         # collisions
         if ball.collide(playerL):
@@ -119,7 +117,7 @@ while True:
         # wait
         wait(10)
 
-    # draw end-menu images
+    # transform_image end-menu images
     title.write("GAME OVER")
     instructions.show()
 

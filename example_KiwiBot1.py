@@ -1,4 +1,5 @@
 from pydojo import *
+from pyfirmata import *
 
 # inizializzo
 pygame.init()
@@ -162,6 +163,6 @@ while True:
     else:
         honk(0)
 
-    gobo.draw()
+    gobo.transform_image()
     sleep(0.01)
     UPDATE()

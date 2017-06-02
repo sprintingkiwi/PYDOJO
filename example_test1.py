@@ -3,13 +3,13 @@ from pydojo import *
 # create game display
 screen(1280, 720)
 
-dyno = Actor('example_library/dinosaur1.png')
-dyno.scale(0.2)
+dyno = Actor('example_asset/characters/dinosaur1.png')
+dyno.scale(0.8)
 dyno.goto(500, 300)
 dyno.rotation = 'flip'
 
-star = Actor('example_library/seastar1.png', 'felice')
-star.load('example_library/seastar2.png', 'triste')
+star = Actor('example_asset/characters/seastar1.png', 'felice')
+star.load('example_asset/characters/seastar2.png', 'triste')
 star.scale(200, 200)
 star.goto(600, 500)
 
@@ -21,9 +21,7 @@ testo.goto(100, 100)
 
 # dyno.rotate = False
 
-hey = Sound('example_library/hey.wav')
-
-print(actorsInfo.actorsList)
+hey = Sound('example_asset/sounds/hey.wav')
 
 while True:
 
@@ -47,12 +45,12 @@ while True:
     # dyno.direction = 90
     # dyno.left(1)
     testo.right(1)
-    # dyno.point(MOUSE)
-    # dyno.forward(3)
-    if keydown(G):
-        dyno.pendown()
-        dyno.gorand()
-        dyno.glide(testo)
+    dyno.point(MOUSE)
+    dyno.forward(3)
+    # if keydown(G):
+    #     dyno.pendown()
+    #     dyno.gorand()
+    #     dyno.glide(testo)
 
     if keydown(W):
         print(dyno.x, dyno.y)
@@ -65,7 +63,7 @@ while True:
         star.setcostume(1)
         print('dyno ha toccato star')
         # hey.play()
-        # dyno.hide(2)
+        dyno.hide(2)
 
     if dyno.collide(testo):
         testo.write('toccato')
