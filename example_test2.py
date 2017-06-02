@@ -12,10 +12,11 @@ uga = Actor()
 uga.pendown()
 
 pyco = Actor('example_asset/characters/pyco2.png')
-pyco.scale(0.5)
 pyco.load('example_asset/characters/pyco4.png')
 pyco.load('example_asset/characters/pyco5.png')
 pyco.load('example_asset/characters/pyco6.png')
+
+pyco.show()
 
 passi = 1
 

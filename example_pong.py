@@ -117,7 +117,7 @@ while True:
         # wait
         wait(10)
 
-    # draw end-menu images
+    # transform_image end-menu images
     title.write("GAME OVER")
     instructions.show()
 

@@ -146,13 +146,15 @@ def SCREEN(*args):
 
 def enable_background():
     if screen_info.color_filled:
-        actors_info.draw_list.append(screen_info.background)
+        # actors_info.draw_list.append(screen_info.background)
+        # actors_to_draw.add(screen_info.background)
         screen_info.color_filled = False
 
 
 def disable_background():
     if not screen_info.color_filled and screen_info.has_background:
-        actors_info.draw_list.remove(screen_info.background)
+        # actors_info.draw_list.remove(screen_info.background)
+        # actors_to_draw.remove(screen_info.background)
         screen_info.color_filled = True
 
 
@@ -198,20 +200,26 @@ def process_gliding():
             actors_info.glide_list.remove(item)
 
 
+# Actors-to-transform_image GROUP
+actors_to_draw = pygame.sprite.LayeredUpdates()
+
+
 # One of the most important functions
 def update():
 
     # DRAW
-    # Update actors position
-    # for actor in actorsInfo.actorsList:
-    #     actor.update_position()
     # Order Actor's list by layer
-    actors_info.draw_list.sort(key=lambda x: x.layer)
+    # actors_info.draw_list.sort(key=lambda x: x.layer)
     # Draw screen base color
     screen_info.screen.fill(screen_info.bg_color)
     # Draw Actors (and Background)
-    for actor in actors_info.draw_list:
-        actor.draw()
+    # for actor in actors_info.draw_list:
+    #     actor.transform_image()
+    for actor in actors_to_draw:
+        actor.transform_image()
+    if screen_info.has_background:
+        actors_to_draw.clear(screen_info.screen, screen_info.background.image)
+    actors_to_draw.draw(screen_info.screen)
     # Draw the turtle drawings surface
     screen_info.screen.blit(screen_info.pen_surface, [0, 0])
     # refresh the pygame screen
@@ -250,7 +258,8 @@ def update():
         if delta_time >= actor.hide_time:
             actor.hidden = False
             actors_info.hidden_actors_list.remove(actor)
-            actors_info.draw_list.append(actor)
+            # actors_info.draw_list.append(actor)
+            actors_to_draw.add(actor)
     # Gliding
     process_gliding()
 
@@ -276,7 +285,8 @@ def clone(target):
     clonedActor = copy.copy(target)
     actors_info.actors_list.append(clonedActor)
     if not target.hidden:
-        actors_info.draw_list.append(clonedActor)
+        # actors_info.draw_list.append(clonedActor)
+        actors_to_draw.add(clonedActor)
     return clonedActor
 
 
@@ -329,12 +339,14 @@ def terminate():
 # ACTOR CLASS
 class Actor(pygame.sprite.Sprite):
     def __init__(self, path=None, cosname=None):
+        super(Actor, self).__init__()
         if path is None:
             path = (os.path.dirname(sys.modules[__name__].__file__))
             path = os.path.join(path, 'turtle.png')
         actors_info.actors_list.append(self)
-        actors_info.draw_list.append(self)
-        pygame.sprite.Sprite.__init__(self)
+        # actors_info.draw_list.append(self)
+        actors_to_draw.add(self)
+        # pygame.sprite.Sprite.__init__(self)
         # Actor coordinates
         self.x = 0.0
         self.x = screen_info.resolution[0] / 2
@@ -480,7 +492,7 @@ class Actor(pygame.sprite.Sprite):
     def getdirection(self):
         return self.direction
 
-    def draw(self, rect=None):
+    def transform_image(self, rect=None):
         # If the image changed the transform functions apply
         if self.rotate:
             # Full 360 rotation style
@@ -498,10 +510,10 @@ class Actor(pygame.sprite.Sprite):
                         self.flip('horizontal')
                         self.need_to_flip = 'left'
         # Blit the image to the screen
-        screen_info.screen.blit(self.costumes[self.cosnumber][1],
-                                ((self.x - self.width / 2),
-                                (self.y - self.height / 2)),
-                                rect)
+        # screen_info.screen.blit(self.costumes[self.cosnumber][1],
+        #                         ((self.x - self.width / 2),
+        #                         (self.y - self.height / 2)),
+        #                         rect)
         # Stamp in the turtle drawing surface
         if self.need_to_stamp:
             screen_info.pen_surface.blit(self.costumes[self.cosnumber][1],
@@ -767,12 +779,15 @@ class Actor(pygame.sprite.Sprite):
 
     @hideaway
     def hide(self, t=-1):
-        self.hidden = True
-        actors_info.draw_list.remove(self)
-        if t >= 0:
-            actors_info.hidden_actors_list.append(self)
-            self.hide_time = t * 1000
-            self.start_hide_time = pygame.time.get_ticks()
+        if not self.hidden:
+            # actors_info.draw_list.remove(self)
+            actors_to_draw.remove(self)
+            if t >= 0:
+                actors_info.hidden_actors_list.append(self)
+                self.hide_time = t * 1000
+                self.start_hide_time = pygame.time.get_ticks()
+        else:
+            pass
 
     def show(self):
         if self.hidden:
@@ -781,7 +796,8 @@ class Actor(pygame.sprite.Sprite):
                 actors_info.hidden_actors_list.remove(self)
             except:
                 print(actors_info.hidden_actors_list)
-            actors_info.draw_list.append(self)
+            # actors_info.draw_list.append(self)
+            actors_to_draw.add(self)
         else:
             pass
 
