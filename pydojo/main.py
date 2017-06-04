@@ -1,4 +1,4 @@
-import pygame, math, random, os, subprocess, sys, copy, gc, time
+import pygame, math, random, os, subprocess, sys, gc, time
 
 pygame.init()
 
@@ -267,13 +267,50 @@ def ticks():
 
 
 def clone(target):
-    # clonedActor = target.sprite_group.copy().sprites()[0]
-    clonedActor = copy.copy(target)
-    actors_info.actors_list.append(clonedActor)
-    clonedActor.update_rect()
-    if not target.hidden:
-        actors_to_draw.add(clonedActor)
-    return clonedActor
+    # clonedActor = copy.copy(target)
+    # actors_info.actors_list.append(clonedActor)
+    # clonedActor.update_rect()
+    # if not target.hidden:
+    #     actors_to_draw.add(clonedActor)
+    # return clonedActor
+    cloned_actor = Actor(target.path)
+    cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
+    cloned_actor.x = target.x
+    cloned_actor.y = target.y
+    # Actor angle direction
+    cloned_actor.direction = target.direction
+    # image orientation
+    cloned_actor.heading = target.heading
+    cloned_actor.layer = target.layer
+    cloned_actor.count = 0
+    cloned_actor.paused = False
+    cloned_actor.hidden = target.hidden
+    cloned_actor.pause_time = 0.0
+    cloned_actor.hide_time = 0.0
+    cloned_actor.start_pause_time = 0.0
+    cloned_actor.start_hide_time = 0.0
+    # load actor image
+    cloned_actor.costumes = target.costumes
+    cloned_actor.costume = target.costume
+    cloned_actor.cosnumber = target.cosnumber
+    cloned_actor.original_costumes = target.original_costumes
+    cloned_actor.coscount = 0
+    # if path is not None:
+    cloned_actor.actual_scale = [cloned_actor.width, cloned_actor.height]
+    # rotation style
+    cloned_actor.rotate = target.rotate
+    cloned_actor.rotation = target.rotation
+    cloned_actor.need_to_flip = target.need_to_flip
+    # needs to transform image?
+    cloned_actor.transform = target.transform
+    cloned_actor.pen_state = target.pen_state
+    cloned_actor.pencolor = target.pencolor
+    cloned_actor.pensize = target.pensize
+    cloned_actor.need_to_stamp = target.need_to_stamp
+    cloned_actor.bounce = target.bounce
+    cloned_actor.tag = target.tag
+    cloned_actor.gliding = False
+    return cloned_actor
 
 
 def distance(a, b):
@@ -357,11 +394,9 @@ class Actor(pygame.sprite.Sprite):
         self.cosnumber = 0
         self.original_costumes = []
         self.coscount = 0
-        # if path is not None:
+        self.path = path
         self.load(path, cosname)
         self.actual_scale = [self.width, self.height]
-        self.sprite_group = pygame.sprite.Group()
-        self.sprite_group.add(self)
         # rotation style
         self.rotate = True
         self.rotation = 360

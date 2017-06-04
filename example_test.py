@@ -19,6 +19,6 @@ print food
 while True:
 
     for f in food:
-        f.hide()
+        f.forward(1)
 
     update()
