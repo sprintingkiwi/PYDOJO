@@ -409,6 +409,8 @@ class Actor(pygame.sprite.Sprite):
         self.bounce = False
         self.tag = "untagged"
         self.gliding = False
+        self.sliding_costumes = False
+        self.animations = {}
 
     # find costume name from image path
     def find_costume_name(self, path):
@@ -455,7 +457,7 @@ class Actor(pygame.sprite.Sprite):
         else:
             try:
                 self.loadfolder(path)
-                print('Loading folder of costumes instead')
+                print('Loading folder of costumes instead: ' + path)
             except:
                 print('Image not supported')
                 quit()
@@ -483,17 +485,32 @@ class Actor(pygame.sprite.Sprite):
     def nextcostume(self, pause=10, costumes=None):
         if self.coscount > pause:
             if costumes is not None:
-                firstCostume = costumes[0]
-                lastCostume = costumes[1]
-                if self.cosnumber < lastCostume:
+                first_costume = costumes[0]
+                last_costume = costumes[1]
+                if self.cosnumber < last_costume:
                     self.setcostume(self.cosnumber + 1)
                 else:
-                    self.setcostume(firstCostume)
+                    self.setcostume(first_costume)
             else:
                 if self.cosnumber < len(self.costumes) - 1:
                     self.setcostume(self.cosnumber + 1)
                 else:
                     self.setcostume(0)
+            self.coscount = 0
+        self.coscount += 1
+
+    def slidecostumes(self, first=None, last=None, pause=10, interval=1):
+        if first is None:
+            first = 0
+        if last is None:
+            last = len(self.costumes) - 1
+        if self.cosnumber < first or self.cosnumber > last:
+            self.cosnumber = first
+        if self.coscount > pause:
+            if self.cosnumber < last:
+                self.setcostume(self.cosnumber + interval)
+            else:
+                self.setcostume(first)
             self.coscount = 0
         self.coscount += 1
 
