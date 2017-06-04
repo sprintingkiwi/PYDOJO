@@ -91,13 +91,8 @@ class ScreenInfo():
         self.pen_surface = pygame.Surface([32, 32])
         self.has_background = False
         self.bg_color = BLACK
-        self.color_filled = False
-
-    def createBackground(self, *args):
-        self.background = Actor(*args)
-        self.background.layer = -100
-        self.background.scale(self.resolution[0], self.resolution[1])
-        self.has_background = True
+        self.backgrounds = {}
+        self.background = None
 
 
 screen_info = ScreenInfo()
@@ -144,45 +139,37 @@ def SCREEN(*args):
     screen(*args)
 
 
-def enable_background():
-    if screen_info.color_filled:
-        # actors_info.draw_list.append(screen_info.background)
-        # actors_to_draw.add(screen_info.background)
-        screen_info.color_filled = False
-
-
-def disable_background():
-    if not screen_info.color_filled and screen_info.has_background:
-        # actors_info.draw_list.remove(screen_info.background)
-        # actors_to_draw.remove(screen_info.background)
-        screen_info.color_filled = True
-
-
 def fill(color):
+    screen_info.has_background = False
     screen_info.bg_color = color
-    disable_background()
 
 
 def clear():
     CreatePenSurface()
 
 
-def background(*args):
-    screen_info.createBackground(*args)
-    enable_background()
+def find_file_name(path):
+    words = path.split('/')
+    name = words[-1]
+    return name.split('.')[0]
 
 
-def loadbackground(*args):
-    if not screen_info.has_background:
-        screen_info.createBackground(*args)
-    else:
-        screen_info.background.load(*args)
-        # screenInfo.background.setcostume(screenInfo.background.cosnumber + 1)
+def background(path):
+    screen_info.has_background = True
+    screen_info.background = pygame.image.load(path).convert_alpha()
+    screen_info.background = pygame.transform.scale(screen_info.background,
+                                                    screen_info.resolution)
+    screen_info.backgrounds[find_file_name(path)] = screen_info.background
+    screen_info.screen.blit(screen_info.background, (0, 0))
 
 
-def setbackground(*args):
-    screen_info.background.setcostume(*args)
-    enable_background()
+def loadbackground(path):
+    background(path)
+
+
+def setbackground(name):
+    screen_info.background = screen_info.backgrounds[name]
+    screen_info.screen.blit(screen_info.background, (0, 0))
 
 
 default_clock = pygame.time.Clock()
@@ -208,21 +195,20 @@ actors_to_draw = pygame.sprite.LayeredUpdates()
 def update():
 
     # DRAW
-    # Order Actor's list by layer
-    # actors_info.draw_list.sort(key=lambda x: x.layer)
-    # Draw screen base color
-    screen_info.screen.fill(screen_info.bg_color)
-    # Draw Actors (and Background)
-    # for actor in actors_info.draw_list:
-    #     actor.transform_image()
+    # Transform Actor's images
     for actor in actors_to_draw:
         actor.transform_image()
+    # Draw screen base color if needed
+    if not screen_info.has_background:
+        screen_info.screen.fill(screen_info.bg_color)
+    # Draw background if needed
     if screen_info.has_background:
-        actors_to_draw.clear(screen_info.screen, screen_info.background.image)
+        actors_to_draw.clear(screen_info.screen, screen_info.background)
+    # Draw the visible-Actors group
     actors_to_draw.draw(screen_info.screen)
     # Draw the turtle drawings surface
     screen_info.screen.blit(screen_info.pen_surface, [0, 0])
-    # refresh the pygame screen
+    # Refresh the Pygame screen
     pygame.display.update()
 
     # framerate
@@ -284,8 +270,8 @@ def clone(target):
     # clonedActor = target.sprite_group.copy().sprites()[0]
     clonedActor = copy.copy(target)
     actors_info.actors_list.append(clonedActor)
+    clonedActor.update_rect()
     if not target.hidden:
-        # actors_info.draw_list.append(clonedActor)
         actors_to_draw.add(clonedActor)
     return clonedActor
 
@@ -781,7 +767,6 @@ class Actor(pygame.sprite.Sprite):
     def hide(self, t=-1):
         if not self.hidden:
             self.hidden = True
-            # actors_info.draw_list.remove(self)
             actors_to_draw.remove(self)
             if t >= 0:
                 actors_info.hidden_actors_list.append(self)
@@ -793,11 +778,12 @@ class Actor(pygame.sprite.Sprite):
     def show(self):
         if self.hidden:
             self.hidden = False
-            try:
-                actors_info.hidden_actors_list.remove(self)
-            except:
-                print(actors_info.hidden_actors_list)
-            # actors_info.draw_list.append(self)
+            if self in actors_info.hidden_actors_list:
+                try:
+                    actors_info.hidden_actors_list.remove(self)
+                except:
+                    print('errore strano')
+                    print(actors_info.hidden_actors_list)
             actors_to_draw.add(self)
         else:
             pass

@@ -97,9 +97,6 @@ while True:
         pyco.hide()
 
     for b in pyco.bullets:
-        # if bat.collide(b):
-        #     print('colpito')
-        #     bat.hide(2)
         b.forward(10)
         if distance(pyco, b) > 2000:
             pyco.bullets.remove(b)
