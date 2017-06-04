@@ -380,7 +380,7 @@ class Actor(pygame.sprite.Sprite):
         # image orientation
         self.heading = 0
         self.layer = 0
-        self.actual_scale = 1
+        self.actual_scale = [100, 100]
         self.count = 0
         self.paused = False
         self.hidden = False
@@ -396,7 +396,6 @@ class Actor(pygame.sprite.Sprite):
         self.coscount = 0
         self.path = path
         self.load(path, cosname)
-        self.actual_scale = [self.width, self.height]
         # rotation style
         self.rotate = True
         self.rotation = 360
@@ -433,25 +432,33 @@ class Actor(pygame.sprite.Sprite):
 
     # load Actor's image
     def load(self, path, cosname=None):
-        if cosname is None:
-            self.costume = self.find_costume_name(path)
+        if path[-3:] in SUPPORTED_IMAGE_FORMATS:
+            if cosname is None:
+                self.costume = self.find_costume_name(path)
+            else:
+                self.costume = cosname
+            self.rawImg = pygame.image.load(path).convert_alpha()
+            # if len(self.costumes) > 0:
+            #     self.rawImg = pygame.transform.scale(self.rawImg, self.actual_scale)
+            self.costumes.append([self.costume, self.rawImg])
+            self.original_costumes.append([self.costume, self.rawImg])
+            # Generate Rect and other stuff
+            self.rect = self.costumes[self.cosnumber][1].get_rect()
+            self.rect.centerx = int(self.x)
+            self.rect.centery = int(self.y)
+            self.size = self.costumes[self.cosnumber][1].get_size()
+            self.width = self.costumes[self.cosnumber][1].get_width()
+            self.height = self.costumes[self.cosnumber][1].get_height()
+            # image attribute for pygame sprite/group methods
+            self.image = self.costumes[self.cosnumber][1]
+            self.actual_scale = [self.width, self.height]
         else:
-            self.costume = cosname
-        self.rawImg = pygame.image.load(path).convert_alpha()
-        if len(self.costumes) > 0:
-            self.rawImg = pygame.transform.scale(self.rawImg, self.actual_scale)
-        self.costumes.append([self.costume, self.rawImg])
-        self.original_costumes.append([self.costume, self.rawImg])
-        # Generate Rect and other stuff
-        self.rect = self.costumes[self.cosnumber][1].get_rect()
-        self.rect.centerx = int(self.x)
-        self.rect.centery = int(self.y)
-        self.size = self.costumes[self.cosnumber][1].get_size()
-        self.width = self.costumes[self.cosnumber][1].get_width()
-        self.height = self.costumes[self.cosnumber][1].get_height()
-        # image and mask for pygame sprite/group methods
-        self.image = self.costumes[self.cosnumber][1]
-        # self.mask = pygame.mask.from_surface(self.image)
+            try:
+                self.loadfolder(path)
+                print('Loading folder of costumes instead')
+            except:
+                print('Image not supported')
+                quit()
 
     def loadcostume(self, path, cosname=None):
         self.load(path, cosname)
