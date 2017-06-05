@@ -1,4 +1,4 @@
-import pygame, math, random, os, subprocess, sys, copy, gc, time
+import pygame, math, random, os, subprocess, sys, gc, time
 
 pygame.init()
 
@@ -91,13 +91,8 @@ class ScreenInfo():
         self.pen_surface = pygame.Surface([32, 32])
         self.has_background = False
         self.bg_color = BLACK
-        self.color_filled = False
-
-    def createBackground(self, *args):
-        self.background = Actor(*args)
-        self.background.layer = -100
-        self.background.scale(self.resolution[0], self.resolution[1])
-        self.has_background = True
+        self.backgrounds = {}
+        self.background = None
 
 
 screen_info = ScreenInfo()
@@ -144,45 +139,37 @@ def SCREEN(*args):
     screen(*args)
 
 
-def enable_background():
-    if screen_info.color_filled:
-        # actors_info.draw_list.append(screen_info.background)
-        # actors_to_draw.add(screen_info.background)
-        screen_info.color_filled = False
-
-
-def disable_background():
-    if not screen_info.color_filled and screen_info.has_background:
-        # actors_info.draw_list.remove(screen_info.background)
-        # actors_to_draw.remove(screen_info.background)
-        screen_info.color_filled = True
-
-
 def fill(color):
+    screen_info.has_background = False
     screen_info.bg_color = color
-    disable_background()
 
 
 def clear():
     CreatePenSurface()
 
 
-def background(*args):
-    screen_info.createBackground(*args)
-    enable_background()
+def find_file_name(path):
+    words = path.split('/')
+    name = words[-1]
+    return name.split('.')[0]
 
 
-def loadbackground(*args):
-    if not screen_info.has_background:
-        screen_info.createBackground(*args)
-    else:
-        screen_info.background.load(*args)
-        # screenInfo.background.setcostume(screenInfo.background.cosnumber + 1)
+def background(path):
+    screen_info.has_background = True
+    screen_info.background = pygame.image.load(path).convert_alpha()
+    screen_info.background = pygame.transform.scale(screen_info.background,
+                                                    screen_info.resolution)
+    screen_info.backgrounds[find_file_name(path)] = screen_info.background
+    screen_info.screen.blit(screen_info.background, (0, 0))
 
 
-def setbackground(*args):
-    screen_info.background.setcostume(*args)
-    enable_background()
+def loadbackground(path):
+    background(path)
+
+
+def setbackground(name):
+    screen_info.background = screen_info.backgrounds[name]
+    screen_info.screen.blit(screen_info.background, (0, 0))
 
 
 default_clock = pygame.time.Clock()
@@ -208,21 +195,20 @@ actors_to_draw = pygame.sprite.LayeredUpdates()
 def update():
 
     # DRAW
-    # Order Actor's list by layer
-    # actors_info.draw_list.sort(key=lambda x: x.layer)
-    # Draw screen base color
-    screen_info.screen.fill(screen_info.bg_color)
-    # Draw Actors (and Background)
-    # for actor in actors_info.draw_list:
-    #     actor.transform_image()
+    # Transform Actor's images
     for actor in actors_to_draw:
         actor.transform_image()
+    # Draw screen base color if needed
+    if not screen_info.has_background:
+        screen_info.screen.fill(screen_info.bg_color)
+    # Draw background if needed
     if screen_info.has_background:
-        actors_to_draw.clear(screen_info.screen, screen_info.background.image)
+        actors_to_draw.clear(screen_info.screen, screen_info.background)
+    # Draw the visible-Actors group
     actors_to_draw.draw(screen_info.screen)
     # Draw the turtle drawings surface
     screen_info.screen.blit(screen_info.pen_surface, [0, 0])
-    # refresh the pygame screen
+    # Refresh the Pygame screen
     pygame.display.update()
 
     # framerate
@@ -281,13 +267,50 @@ def ticks():
 
 
 def clone(target):
-    # clonedActor = target.sprite_group.copy().sprites()[0]
-    clonedActor = copy.copy(target)
-    actors_info.actors_list.append(clonedActor)
-    if not target.hidden:
-        # actors_info.draw_list.append(clonedActor)
-        actors_to_draw.add(clonedActor)
-    return clonedActor
+    # clonedActor = copy.copy(target)
+    # actors_info.actors_list.append(clonedActor)
+    # clonedActor.update_rect()
+    # if not target.hidden:
+    #     actors_to_draw.add(clonedActor)
+    # return clonedActor
+    cloned_actor = Actor(target.path)
+    cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
+    cloned_actor.x = target.x
+    cloned_actor.y = target.y
+    # Actor angle direction
+    cloned_actor.direction = target.direction
+    # image orientation
+    cloned_actor.heading = target.heading
+    cloned_actor.layer = target.layer
+    cloned_actor.count = 0
+    cloned_actor.paused = False
+    cloned_actor.hidden = target.hidden
+    cloned_actor.pause_time = 0.0
+    cloned_actor.hide_time = 0.0
+    cloned_actor.start_pause_time = 0.0
+    cloned_actor.start_hide_time = 0.0
+    # load actor image
+    cloned_actor.costumes = target.costumes
+    cloned_actor.costume = target.costume
+    cloned_actor.cosnumber = target.cosnumber
+    cloned_actor.original_costumes = target.original_costumes
+    cloned_actor.coscount = 0
+    # if path is not None:
+    cloned_actor.actual_scale = [cloned_actor.width, cloned_actor.height]
+    # rotation style
+    cloned_actor.rotate = target.rotate
+    cloned_actor.rotation = target.rotation
+    cloned_actor.need_to_flip = target.need_to_flip
+    # needs to transform image?
+    cloned_actor.transform = target.transform
+    cloned_actor.pen_state = target.pen_state
+    cloned_actor.pencolor = target.pencolor
+    cloned_actor.pensize = target.pensize
+    cloned_actor.need_to_stamp = target.need_to_stamp
+    cloned_actor.bounce = target.bounce
+    cloned_actor.tag = target.tag
+    cloned_actor.gliding = False
+    return cloned_actor
 
 
 def distance(a, b):
@@ -357,7 +380,7 @@ class Actor(pygame.sprite.Sprite):
         # image orientation
         self.heading = 0
         self.layer = 0
-        self.actual_scale = 1
+        self.actual_scale = [100, 100]
         self.count = 0
         self.paused = False
         self.hidden = False
@@ -371,11 +394,8 @@ class Actor(pygame.sprite.Sprite):
         self.cosnumber = 0
         self.original_costumes = []
         self.coscount = 0
-        # if path is not None:
+        self.path = path
         self.load(path, cosname)
-        self.actual_scale = [self.width, self.height]
-        self.sprite_group = pygame.sprite.Group()
-        self.sprite_group.add(self)
         # rotation style
         self.rotate = True
         self.rotation = 360
@@ -389,6 +409,8 @@ class Actor(pygame.sprite.Sprite):
         self.bounce = False
         self.tag = "untagged"
         self.gliding = False
+        self.sliding_costumes = False
+        self.animations = {}
 
     # find costume name from image path
     def find_costume_name(self, path):
@@ -412,25 +434,33 @@ class Actor(pygame.sprite.Sprite):
 
     # load Actor's image
     def load(self, path, cosname=None):
-        if cosname is None:
-            self.costume = self.find_costume_name(path)
+        if path[-3:] in SUPPORTED_IMAGE_FORMATS:
+            if cosname is None:
+                self.costume = self.find_costume_name(path)
+            else:
+                self.costume = cosname
+            self.rawImg = pygame.image.load(path).convert_alpha()
+            # if len(self.costumes) > 0:
+            #     self.rawImg = pygame.transform.scale(self.rawImg, self.actual_scale)
+            self.costumes.append([self.costume, self.rawImg])
+            self.original_costumes.append([self.costume, self.rawImg])
+            # Generate Rect and other stuff
+            self.rect = self.costumes[self.cosnumber][1].get_rect()
+            self.rect.centerx = int(self.x)
+            self.rect.centery = int(self.y)
+            self.size = self.costumes[self.cosnumber][1].get_size()
+            self.width = self.costumes[self.cosnumber][1].get_width()
+            self.height = self.costumes[self.cosnumber][1].get_height()
+            # image attribute for pygame sprite/group methods
+            self.image = self.costumes[self.cosnumber][1]
+            self.actual_scale = [self.width, self.height]
         else:
-            self.costume = cosname
-        self.rawImg = pygame.image.load(path).convert_alpha()
-        if len(self.costumes) > 0:
-            self.rawImg = pygame.transform.scale(self.rawImg, self.actual_scale)
-        self.costumes.append([self.costume, self.rawImg])
-        self.original_costumes.append([self.costume, self.rawImg])
-        # Generate Rect and other stuff
-        self.rect = self.costumes[self.cosnumber][1].get_rect()
-        self.rect.centerx = int(self.x)
-        self.rect.centery = int(self.y)
-        self.size = self.costumes[self.cosnumber][1].get_size()
-        self.width = self.costumes[self.cosnumber][1].get_width()
-        self.height = self.costumes[self.cosnumber][1].get_height()
-        # image and mask for pygame sprite/group methods
-        self.image = self.costumes[self.cosnumber][1]
-        # self.mask = pygame.mask.from_surface(self.image)
+            try:
+                self.loadfolder(path)
+                print('Loading folder of costumes instead: ' + path)
+            except:
+                print('Image not supported')
+                quit()
 
     def loadcostume(self, path, cosname=None):
         self.load(path, cosname)
@@ -455,17 +485,32 @@ class Actor(pygame.sprite.Sprite):
     def nextcostume(self, pause=10, costumes=None):
         if self.coscount > pause:
             if costumes is not None:
-                firstCostume = costumes[0]
-                lastCostume = costumes[1]
-                if self.cosnumber < lastCostume:
+                first_costume = costumes[0]
+                last_costume = costumes[1]
+                if self.cosnumber < last_costume:
                     self.setcostume(self.cosnumber + 1)
                 else:
-                    self.setcostume(firstCostume)
+                    self.setcostume(first_costume)
             else:
                 if self.cosnumber < len(self.costumes) - 1:
                     self.setcostume(self.cosnumber + 1)
                 else:
                     self.setcostume(0)
+            self.coscount = 0
+        self.coscount += 1
+
+    def slidecostumes(self, first=None, last=None, pause=10, interval=1):
+        if first is None:
+            first = 0
+        if last is None:
+            last = len(self.costumes) - 1
+        if self.cosnumber < first or self.cosnumber > last:
+            self.cosnumber = first
+        if self.coscount > pause:
+            if self.cosnumber < last:
+                self.setcostume(self.cosnumber + interval)
+            else:
+                self.setcostume(first)
             self.coscount = 0
         self.coscount += 1
 
@@ -781,7 +826,6 @@ class Actor(pygame.sprite.Sprite):
     def hide(self, t=-1):
         if not self.hidden:
             self.hidden = True
-            # actors_info.draw_list.remove(self)
             actors_to_draw.remove(self)
             if t >= 0:
                 actors_info.hidden_actors_list.append(self)
@@ -793,11 +837,12 @@ class Actor(pygame.sprite.Sprite):
     def show(self):
         if self.hidden:
             self.hidden = False
-            try:
-                actors_info.hidden_actors_list.remove(self)
-            except:
-                print(actors_info.hidden_actors_list)
-            # actors_info.draw_list.append(self)
+            if self in actors_info.hidden_actors_list:
+                try:
+                    actors_info.hidden_actors_list.remove(self)
+                except:
+                    print('errore strano')
+                    print(actors_info.hidden_actors_list)
             actors_to_draw.add(self)
         else:
             pass

@@ -1,24 +1,31 @@
 from pydojo import *
-screen(1100, 1100)
+
+width = 1280
+height = 720
+screen(width, height)
 
 head = Actor('example_asset/characters/square.png')
 head.speed = 5
 head.size = 30
 head.pensize = 10
 head.scale(0.5)
+head.tag = 'snake'
+head.layer = 2
 
 tail = []
 tailcoords = []
 food = []
 
 apple = Actor('example_asset/characters/apple.png')
-apple.layer = -1
+apple.layer = 1
 apple.scale(0.5)
 apple.hide()
 
 for i in range(10):
     m = clone(apple)
     m.gorand()
+    while m.collide('t'):
+        m.gorand()
     m.show()
     m.tag = 'food'
     food.append(m)
@@ -33,19 +40,22 @@ while True:
 
     # Boundaries
     if head.y < 0:
-        head.goto(head.x, 1100)
+        head.goto(head.x, height)
     if head.x < 0:
-        head.goto(1100, head.y)
-    if head.y > 1100:
+        head.goto(width, head.y)
+    if head.y > height:
         head.goto(head.x, 0)
-    if head.x > 1100:
+    if head.x > width:
         head.goto(0, head.y)
 
     # Eating food
     for f in food:
         if f.collide(head):
             for i in range(10):
-                tail.append(clone(head))
+                t = clone(head)
+                t.tag = 'snake'
+                t.layer = 2
+                tail.append(t)
             f.hide()
             food.remove(f)
 

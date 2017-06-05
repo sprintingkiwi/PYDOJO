@@ -6,8 +6,6 @@ screen(1280, 720)
 background('example_asset/backgrounds/citynight.png')
 loadbackground('example_asset/backgrounds/bedroom.png')
 
-print(screen_info.background.costumes)
-
 uga = Actor()
 uga.pendown()
 
@@ -42,7 +40,6 @@ while True:
     if keydown(B):
         setbackground('bedroom')
         # background('example_library/bedroom.png')
-        print(screen_info.background.costumes)
     if keydown(C):
         setbackground('citynight')
     if keydown(F):
