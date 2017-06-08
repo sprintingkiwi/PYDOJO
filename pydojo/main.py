@@ -49,7 +49,7 @@ SUPPORTED_IMAGE_FORMATS = ['png', 'jpg', 'gif', 'bmp']
 
 
 # Class for Game Info
-class GameInfo():
+class GameInfo:
     def __init__(self):
         self.framerate = 60
 
@@ -71,20 +71,71 @@ class EventsStorage():
 events_storage = EventsStorage()
 
 
-class MouseState():
+class MouseState:
     def __init__(self):
+        self.left = False
         self.leftdown = False
+        self.leftup = False
+        self.central = False
         self.centraldown = False
+        self.centralup = False
+        self.right = False
         self.rightdown = False
+        self.rightup = False
         self.pos = pygame.mouse.get_pos()
         self.x = self.pos[0]
         self.y = self.pos[1]
+        self.hidden = False
+
+    def hide(self):
+        pygame.mouse.set_visible(False)
+        self.hidden = True
+
+    def show(self):
+        pygame.mouse.set_visible(True)
+        self.hidden = False
+
+    def update_events(self):
+        self.pos = pygame.mouse.get_pos()
+        self.x = MOUSE.pos[0]
+        self.y = MOUSE.pos[1]
+        buttons = pygame.mouse.get_pressed()
+        # Left
+        if buttons[0] == 0 and self.left is True:
+            self.leftup = True
+        else:
+            self.leftup = False
+        if self.leftdown is True:
+            self.leftdown = False
+        if self.left is False:
+            self.leftdown = bool(buttons[0])
+        self.left = bool(buttons[0])
+        # Central
+        if buttons[1] == 0 and self.central is True:
+            self.centralup = True
+        else:
+            self.centralup = False
+        if self.centraldown is True:
+            self.centraldown = False
+        if self.central is False:
+            self.centraldown = bool(buttons[1])
+        self.central = bool(buttons[1])
+        # Right
+        if buttons[2] == 0 and self.right is True:
+            self.rightup = True
+        else:
+            self.rightup = False
+        if self.rightdown is True:
+            self.rightdown = False
+        if self.right is False:
+            self.rightdown = bool(buttons[2])
+        self.right = bool(buttons[2])
 
 
 MOUSE = MouseState()
 
 
-class ScreenInfo():
+class ScreenInfo:
     def __init__(self):
         self.screen = None
         self.resolution = [800, 600]
@@ -98,7 +149,7 @@ class ScreenInfo():
 screen_info = ScreenInfo()
 
 
-class ActorsInfo():
+class ActorsInfo:
     def __init__(self):
         self.actors_list = []
         self.draw_list = []
@@ -114,7 +165,7 @@ actors_info = ActorsInfo()
 CENTER = pygame.sprite.Sprite()
 
 
-def CreatePenSurface():
+def create_pen_surface():
     path = (os.path.dirname(sys.modules[__name__].__file__))
     path = os.path.join(path, 'pensurface.png')
     screen_info.pen_surface = pygame.image.load(path).convert_alpha()
@@ -129,7 +180,7 @@ def screen(w, h, fullscreen=False):
     else:
         screen_info.screen = pygame.display.set_mode([w, h])
     # Create surface for turtle drawings
-    CreatePenSurface()
+    create_pen_surface()
     # Get screen center
     CENTER.x = screen_info.resolution[0] / 2
     CENTER.y = screen_info.resolution[1] / 2
@@ -145,7 +196,7 @@ def fill(color):
 
 
 def clear():
-    CreatePenSurface()
+    create_pen_surface()
 
 
 def find_file_name(path):
@@ -225,9 +276,7 @@ def update():
             if e.key == pygame.K_ESCAPE:
                 quit()
     # Refresh mouse position
-    MOUSE.pos = pygame.mouse.get_pos()
-    MOUSE.x = MOUSE.pos[0]
-    MOUSE.y = MOUSE.pos[1]
+    MOUSE.update_events()
 
     # OTHER
     # Manage the time for hide and pause methods
@@ -741,29 +790,27 @@ class Actor(pygame.sprite.Sprite):
             self.scale(width, height)
 
     # check if the mouse has clicked the Actor
-    def click(self, option='down'):
-        mousepos = pygame.mouse.get_pos()
-        buttons = pygame.mouse.get_pressed()
-        if not MOUSE.leftdown:
-            if self.rect.collidepoint(mousepos) and buttons[0] == 1:
-                MOUSE.leftdown = True
-                return True
+    def click(self):
+        if self.collidepoint(MOUSE.pos) and MOUSE.leftdown is True:
+            return True
         else:
-            for event in events_storage.list:
-                if event.type == pygame.MOUSEBUTTONUP:
-                    MOUSE.leftdown = False
+            return False
+        # else:
+        #     for event in events_storage.list:
+        #         if event.type == pygame.MOUSEBUTTONUP:
+        #             MOUSE.leftdown = False
 
-    def rclick(self, option='down'):
-        mousepos = pygame.mouse.get_pos()
-        buttons = pygame.mouse.get_pressed()
-        if not MOUSE.rightdown:
-            if self.rect.collidepoint(mousepos) and buttons[2] == 1:
-                MOUSE.rightdown = True
-                return True
+    def centralclick(self):
+        if self.collidepoint(MOUSE.pos) and MOUSE.centraldown is True:
+            return True
         else:
-            for event in events_storage.list:
-                if event.type == pygame.MOUSEBUTTONUP:
-                    MOUSE.rightdown = False
+            return False
+
+    def rightclick(self):
+        if self.collidepoint(MOUSE.pos) and MOUSE.rightdown is True:
+            return True
+        else:
+            return False
 
     # Mask collision
     @hideaway
@@ -805,10 +852,7 @@ class Actor(pygame.sprite.Sprite):
     @hideaway
     def collidepoint(self, point):
         self.update_position()
-        if point == MOUSE:
-            return self.rect.collidepoint([MOUSE.x, MOUSE.y])
-        else:
-            return self.rect.collidepoint(point)
+        return self.rect.collidepoint(point)
 
     # pause actor's actions (da completare)
     def pause(self, t=-1):
@@ -900,11 +944,11 @@ class Text(Actor):
 
 
 # SUONI
-def load(path):
+def musicload(path):
     pygame.mixer.music.load(path)
 
 
-def play():
+def musicplay():
     pygame.mixer.music.play()
 
 
@@ -1029,78 +1073,89 @@ EURO = pygame.K_EURO
 
 
 # detect the continuous pression of a key
-def key(key):
-    if pygame.key.get_pressed()[key]:
+def key(keycode):
+    if pygame.key.get_pressed()[keycode]:
         return True
 
 
 # detect the single pression of a key
-def keydown(key):
+def keydown(keycode):
     for event in events_storage.list:
         if event.type == pygame.KEYDOWN:
-            if event.key == key:
+            if event.key == keycode:
                 return True
 
 
 # detect the release of a key
-def keyup(key):
+def keyup(keycode):
     for event in events_storage.list:
         if event.type == pygame.KEYUP:
-            if event.key == key:
+            if event.key == keycode:
                 return True
 
 
+def anykeydown():
+    for event in events_storage.list:
+        if event.type == pygame.KEYDOWN:
+            return True
+        else:
+            return False
+
+
 # GAMEPAD
-gamepadCount = pygame.joystick.get_count()
-gamepads = []
-for gamepadID in range(pygame.joystick.get_count()):
-    # add gamepad to list
-    gamepads.append(pygame.joystick.Joystick(gamepadID))
-    # initialize gamepad
-    gamepads[gamepadID].init()
+class GamePadManager:
+    def __init__(self):
+        self.gamepad_count = pygame.joystick.get_count()
+        self.gamepads = []
+        for gamepadID in range(self.gamepad_count):
+            # add gamepad to list
+            self.gamepads.append(pygame.joystick.Joystick(gamepadID))
+            # initialize gamepad
+            self.gamepads[gamepadID].init()
 
+gamepad_manager = GamePadManager()
 
-# try:
-#     # creo un oggetto Joystick
-#     _pad0 = pygame.joystick.Joystick(0)
-#     # inizializzo il joystick
-#     _pad0.init()
-# except:
-#     print('no GamePad found...')
+# gamepadCount = pygame.joystick.get_count()
+# gamepads = []
+# for gamepadID in range(pygame.joystick.get_count()):
+#     # add gamepad to list
+#     gamepads.append(pygame.joystick.Joystick(gamepadID))
+#     # initialize gamepad
+#     gamepads[gamepadID].init()
+
 
 def buttondown(btn, pad=0):
-    global gamepadCount, gamepads
-    if gamepadCount > 0:
-        return gamepads[pad].get_button(btn)
+    if gamepad_manager.gamepad_count > 0:
+        return gamepad_manager.gamepads[pad].get_button(btn)
     else:
         print('no gamepad found...')
 
 
 def axis(hand, direction, pad=0):
-    global gamepadCount, gamepads
-    if gamepadCount > 0:
+    if gamepad_manager.gamepad_count > 0:
         if hand == 'left':
             if direction == 'horizontal':
-                return gamepads[pad].get_axis(0)
+                return gamepad_manager.gamepads[pad].get_axis(0)
             elif direction == 'vertical':
-                return gamepads[pad].get_axis(1)
+                return gamepad_manager.gamepads[pad].get_axis(1)
         elif hand == 'right':
             if direction == 'horizontal':
-                return gamepads[pad].get_axis(3)
+                return gamepad_manager.gamepads[pad].get_axis(3)
             elif direction == 'vertical':
-                return gamepads[pad].get_axis(4)
+                return gamepad_manager.gamepads[pad].get_axis(4)
     else:
         print('no gamepad found...')
 
 
 def trigger(hand, pad=0):
-    global gamepadCount, gamepads
-    if gamepadCount > 0:
+    if gamepad_manager.gamepad_count > 0:
         if hand == 'left':
-            raw = gamepads[pad].get_axis(2)
+            raw = gamepad_manager.gamepads[pad].get_axis(2)
             value = (raw + 1) / 2
             return value
         if hand == 'right':
-            raw = gamepads[pad].get_axis(5)
+            raw = gamepad_manager.gamepads[pad].get_axis(5)
             value = (raw + 1) / 2
             return value
+    else:
+        print('no gamepad found...')

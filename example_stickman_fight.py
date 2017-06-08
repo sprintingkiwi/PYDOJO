@@ -14,8 +14,15 @@ hero.rotation = 'flip'
 hero.speed = 0
 hero.x = 100
 
+instructions = Text("press A or D to move, J-K-L to attack, U-I-O to defend!", color=CYAN)
+
 # MAIN LOOP
 while True:
+
+    # print hero.costumes[hero.cosnumber][0]
+
+    if anykeydown():
+        instructions.hide()
 
     hero.forward(hero.speed)
 
@@ -60,23 +67,23 @@ while True:
             hero.action = 'kamae idle'
     elif hero.action == 'yoko geri':
         hero.speed = 5
-        hero.slidecostumes(72, 95, pause=1)
-        if hero.cosnumber > 94:
+        hero.slidecostumes(72, 103, pause=1)
+        if hero.cosnumber > 92:
             hero.action = 'kamae idle'
     elif hero.action == 'age uke':
         hero.speed = -3
-        hero.slidecostumes(96, 119, pause=0.5)
-        if hero.cosnumber > 118:
+        hero.slidecostumes(104, 127, pause=0.5)
+        if hero.cosnumber > 126:
             hero.action = 'kamae idle'
     elif hero.action == 'gedan barai':
         hero.speed = -5
-        hero.slidecostumes(120, 143, pause=0.5)
-        if hero.cosnumber > 142:
+        hero.slidecostumes(128, 151, pause=0.5)
+        if hero.cosnumber > 150:
             hero.action = 'kamae idle'
     elif hero.action == 'hit body':
         hero.speed = -1
-        hero.slidecostumes(144, 167, pause=1)
-        if hero.cosnumber > 166:
+        hero.slidecostumes(152, 175, pause=1)
+        if hero.cosnumber > 174:
             hero.action = 'kamae idle'
 
     # UPDATE SCREEN
