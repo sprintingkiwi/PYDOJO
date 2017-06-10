@@ -61,6 +61,10 @@ for player in players:
 ball = Actor("example_asset/characters/seastar1.png")
 ball.scale(0.4)
 
+music = Sound("example_asset/sounds/littlesong.wav")
+
+music.play(-1)
+
 while True:
 
     title.write('Pong')

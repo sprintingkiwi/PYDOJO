@@ -53,6 +53,8 @@ gravity = 10
 for a in getactors():
     print a.costume
 
+print(ACTORS)
+
 while True:
 
     # MOVEMENT

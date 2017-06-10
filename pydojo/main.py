@@ -82,9 +82,9 @@ class MouseState:
         self.right = False
         self.rightdown = False
         self.rightup = False
-        self.pos = pygame.mouse.get_pos()
-        self.x = self.pos[0]
-        self.y = self.pos[1]
+        self.position = pygame.mouse.get_pos()
+        self.x = self.position[0]
+        self.y = self.position[1]
         self.hidden = False
 
     def hide(self):
@@ -96,9 +96,9 @@ class MouseState:
         self.hidden = False
 
     def update_events(self):
-        self.pos = pygame.mouse.get_pos()
-        self.x = MOUSE.pos[0]
-        self.y = MOUSE.pos[1]
+        self.position = pygame.mouse.get_pos()
+        self.x = MOUSE.position[0]
+        self.y = MOUSE.position[1]
         buttons = pygame.mouse.get_pressed()
         # Left
         if buttons[0] == 0 and self.left is True:
@@ -239,7 +239,7 @@ def process_gliding():
 
 
 # Actors-to-transform_image GROUP
-actors_to_draw = pygame.sprite.LayeredUpdates()
+ACTORS = pygame.sprite.LayeredUpdates()
 
 
 # One of the most important functions
@@ -247,16 +247,16 @@ def update():
 
     # DRAW
     # Transform Actor's images
-    for actor in actors_to_draw:
+    for actor in ACTORS:
         actor.transform_image()
     # Draw screen base color if needed
     if not screen_info.has_background:
         screen_info.screen.fill(screen_info.bg_color)
     # Draw background if needed
     if screen_info.has_background:
-        actors_to_draw.clear(screen_info.screen, screen_info.background)
+        ACTORS.clear(screen_info.screen, screen_info.background)
     # Draw the visible-Actors group
-    actors_to_draw.draw(screen_info.screen)
+    ACTORS.draw(screen_info.screen)
     # Draw the turtle drawings surface
     screen_info.screen.blit(screen_info.pen_surface, [0, 0])
     # Refresh the Pygame screen
@@ -294,7 +294,7 @@ def update():
             actor.hidden = False
             actors_info.hidden_actors_list.remove(actor)
             # actors_info.draw_list.append(actor)
-            actors_to_draw.add(actor)
+            ACTORS.add(actor)
     # Gliding
     process_gliding()
 
@@ -320,7 +320,7 @@ def clone(target):
     # actors_info.actors_list.append(clonedActor)
     # clonedActor.update_rect()
     # if not target.hidden:
-    #     actors_to_draw.add(clonedActor)
+    #     ACTORS.add(clonedActor)
     # return clonedActor
     cloned_actor = Actor(target.path)
     cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
@@ -417,7 +417,7 @@ class Actor(pygame.sprite.Sprite):
             path = os.path.join(path, 'turtle.png')
         actors_info.actors_list.append(self)
         # actors_info.draw_list.append(self)
-        actors_to_draw.add(self)
+        ACTORS.add(self)
         # pygame.sprite.Sprite.__init__(self)
         # Actor coordinates
         self.x = 0.0
@@ -791,7 +791,7 @@ class Actor(pygame.sprite.Sprite):
 
     # check if the mouse has clicked the Actor
     def click(self):
-        if self.collidepoint(MOUSE.pos) and MOUSE.leftdown is True:
+        if self.collidepoint(MOUSE.position) and MOUSE.leftdown is True:
             return True
         else:
             return False
@@ -801,13 +801,13 @@ class Actor(pygame.sprite.Sprite):
         #             MOUSE.leftdown = False
 
     def centralclick(self):
-        if self.collidepoint(MOUSE.pos) and MOUSE.centraldown is True:
+        if self.collidepoint(MOUSE.position) and MOUSE.centraldown is True:
             return True
         else:
             return False
 
     def rightclick(self):
-        if self.collidepoint(MOUSE.pos) and MOUSE.rightdown is True:
+        if self.collidepoint(MOUSE.position) and MOUSE.rightdown is True:
             return True
         else:
             return False
@@ -850,9 +850,12 @@ class Actor(pygame.sprite.Sprite):
             return self.rect.colliderect(target.rect)
 
     @hideaway
-    def collidepoint(self, point):
+    def collidepoint(self, x=0, y=0):
         self.update_position()
-        return self.rect.collidepoint(point)
+        if type(x) is list or type(x) is tuple:
+            return self.rect.collidepoint(x)
+        else:
+            return self.rect.collidepoint(x, y)
 
     # pause actor's actions (da completare)
     def pause(self, t=-1):
@@ -870,7 +873,7 @@ class Actor(pygame.sprite.Sprite):
     def hide(self, t=-1):
         if not self.hidden:
             self.hidden = True
-            actors_to_draw.remove(self)
+            ACTORS.remove(self)
             if t >= 0:
                 actors_info.hidden_actors_list.append(self)
                 self.hide_time = t * 1000
@@ -887,7 +890,7 @@ class Actor(pygame.sprite.Sprite):
                 except:
                     print('errore strano')
                     print(actors_info.hidden_actors_list)
-            actors_to_draw.add(self)
+            ACTORS.add(self)
         else:
             pass
 
@@ -948,13 +951,18 @@ def musicload(path):
     pygame.mixer.music.load(path)
 
 
-def musicplay():
-    pygame.mixer.music.play()
+def musicplay(loops=0, start=0.0):
+    pygame.mixer.music.play(loops, start)
 
 
-def Sound(path):
-    s = pygame.mixer.Sound(path)
-    return s
+# def Sound(path):
+#     s = pygame.mixer.Sound(path)
+#     return s
+
+class Sound(pygame.mixer.Sound):
+    def __init__(self, path):
+        super(Sound, self).__init__(path)
+
 
 
 # EVENTS:

@@ -23,7 +23,7 @@ while not gameover:
     gatto.forward(1)
 
     #MOUSE (the animal) MOVEMENT
-    if not topo.collidepoint(MOUSE):
+    if not topo.collidepoint(MOUSE.position):
         topo.point(MOUSE)
         topo.forward(4)
 
