@@ -238,7 +238,7 @@ def process_gliding():
             actors_info.glide_list.remove(item)
 
 
-# Actors-to-transform_image GROUP
+# Actors-to-transform_rotate_image GROUP
 ACTORS = pygame.sprite.LayeredUpdates()
 
 
@@ -247,8 +247,8 @@ def update():
 
     # DRAW
     # Transform Actor's images
-    for actor in ACTORS:
-        actor.transform_image()
+    # for actor in ACTORS:
+    #     actor.transform_rotate_image()
     # Draw screen base color if needed
     if not screen_info.has_background:
         screen_info.screen.fill(screen_info.bg_color)
@@ -323,7 +323,6 @@ def clone(target):
     #     ACTORS.add(clonedActor)
     # return clonedActor
     cloned_actor = Actor(target.path)
-    cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
     cloned_actor.x = target.x
     cloned_actor.y = target.y
     # Actor angle direction
@@ -342,23 +341,25 @@ def clone(target):
     cloned_actor.costumes = target.costumes
     cloned_actor.costume = target.costume
     cloned_actor.cosnumber = target.cosnumber
-    cloned_actor.original_costumes = target.original_costumes
+    # cloned_actor.original_costumes = target.original_costumes
     cloned_actor.coscount = 0
     # if path is not None:
     cloned_actor.actual_scale = [cloned_actor.width, cloned_actor.height]
     # rotation style
-    cloned_actor.rotate = target.rotate
+    # cloned_actor.rotate = target.rotate
     cloned_actor.rotation = target.rotation
     cloned_actor.need_to_flip = target.need_to_flip
-    # needs to transform image?
-    cloned_actor.transform = target.transform
+    # needs to need_to_transform image?
+    cloned_actor.need_to_rotate = target.need_to_rotate
+    # cloned_actor.need_to_scale = target.need_to_scale
     cloned_actor.pen_state = target.pen_state
     cloned_actor.pencolor = target.pencolor
     cloned_actor.pensize = target.pensize
-    cloned_actor.need_to_stamp = target.need_to_stamp
+    # cloned_actor.need_to_stamp = target.need_to_stamp
     cloned_actor.bounce = target.bounce
     cloned_actor.tag = target.tag
     cloned_actor.gliding = False
+    cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
     return cloned_actor
 
 
@@ -429,7 +430,7 @@ class Actor(pygame.sprite.Sprite):
         # image orientation
         self.heading = 0
         self.layer = 0
-        self.actual_scale = [100, 100]
+        # self.actual_scale = [100, 100]
         self.count = 0
         self.paused = False
         self.hidden = False
@@ -441,25 +442,35 @@ class Actor(pygame.sprite.Sprite):
         self.costumes = []
         self.costume = ''
         self.cosnumber = 0
-        self.original_costumes = []
+        # self.original_costumes = []
         self.coscount = 0
-        self.path = path
-        self.load(path, cosname)
-        # rotation style
-        self.rotate = True
         self.rotation = 360
         self.need_to_flip = 'left'
-        # needs to transform image?
-        self.transform = False
+        # needs to need_to_transform image?
+        self.need_to_rotate = False
+        # self.need_to_scale = False
         self.pen_state = 'up'
         self.pencolor = RED
         self.pensize = 1
-        self.need_to_stamp = False
+        # self.need_to_stamp = False
         self.bounce = False
         self.tag = "untagged"
         self.gliding = False
         self.sliding_costumes = False
-        self.animations = {}
+        # self.animations = {}
+        self.rect = None
+        self.size = None
+        self.width = None
+        self.height = None
+        self.raw_img = None
+        # self.image = None
+        self.path = path
+        self.load(path, cosname)
+        self.image = self.costumes[self.cosnumber][1]
+        self.update_rect()
+        self.actual_scale = [self.width, self.height]
+        # rotation style
+        # self.rotate = True
 
     # find costume name from image path
     def find_costume_name(self, path):
@@ -469,12 +480,12 @@ class Actor(pygame.sprite.Sprite):
 
     # update rect as the image changes
     def update_rect(self):
-        self.rect = self.costumes[self.cosnumber][1].get_rect()
+        self.rect = self.image.get_rect()
         self.update_position()
-        self.size = self.costumes[self.cosnumber][1].get_size()
-        self.width = self.costumes[self.cosnumber][1].get_width()
-        self.height = self.costumes[self.cosnumber][1].get_height()
-        self.image = self.costumes[self.cosnumber][1]
+        self.size = self.image.get_size()
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        # self.image = self.costumes[self.cosnumber][1]
         # self.mask = pygame.mask.from_surface(self.image)
 
     def update_position(self):
@@ -488,21 +499,19 @@ class Actor(pygame.sprite.Sprite):
                 self.costume = self.find_costume_name(path)
             else:
                 self.costume = cosname
-            self.rawImg = pygame.image.load(path).convert_alpha()
+            self.raw_img = pygame.image.load(path).convert_alpha()
             # if len(self.costumes) > 0:
-            #     self.rawImg = pygame.transform.scale(self.rawImg, self.actual_scale)
-            self.costumes.append([self.costume, self.rawImg])
-            self.original_costumes.append([self.costume, self.rawImg])
+            #     self.raw_img = pygame.need_to_transform.scale(self.raw_img, self.actual_scale)
+            self.costumes.append([self.costume, self.raw_img])
+            # self.original_costumes.append([self.costume, self.raw_img])
             # Generate Rect and other stuff
-            self.rect = self.costumes[self.cosnumber][1].get_rect()
-            self.rect.centerx = int(self.x)
-            self.rect.centery = int(self.y)
-            self.size = self.costumes[self.cosnumber][1].get_size()
-            self.width = self.costumes[self.cosnumber][1].get_width()
-            self.height = self.costumes[self.cosnumber][1].get_height()
+            # self.rect = self.costumes[self.cosnumber][1].get_rect()
+            # self.rect.centerx = int(self.x)
+            # self.rect.centery = int(self.y)
+            # self.size = self.costumes[self.cosnumber][1].get_size()
+            # self.width = self.costumes[self.cosnumber][1].get_width()
+            # self.height = self.costumes[self.cosnumber][1].get_height()
             # image attribute for pygame sprite/group methods
-            self.image = self.costumes[self.cosnumber][1]
-            self.actual_scale = [self.width, self.height]
         else:
             try:
                 self.loadfolder(path)
@@ -526,7 +535,10 @@ class Actor(pygame.sprite.Sprite):
             for cos in self.costumes:
                 if cos[0] == newcostume:
                     self.cosnumber = self.costumes.index(cos)
-        self.update_rect()
+        if self.need_to_rotate:
+            self.transform_rotate_image()
+        else:
+            self.update_rect()
 
     def getcostume(self):
         return self.costume
@@ -554,7 +566,7 @@ class Actor(pygame.sprite.Sprite):
         if last is None:
             last = len(self.costumes) - 1
         if self.cosnumber < first or self.cosnumber > last:
-            self.cosnumber = first
+            self.setcostume(first)
         if self.coscount > pause:
             if self.cosnumber < last:
                 self.setcostume(self.cosnumber + interval)
@@ -585,39 +597,6 @@ class Actor(pygame.sprite.Sprite):
 
     def getdirection(self):
         return self.direction
-
-    def transform_image(self, rect=None):
-        # If the image changed the transform functions apply
-        if self.rotate:
-            # Full 360 rotation style
-            if self.rotation == 360 and self.transform:
-                self.costumes[self.cosnumber][1] = pygame.transform.rotate(self.costumes[self.cosnumber][1], -self.heading)
-                self.update_rect()
-            # Horizontal Flip rotation style
-            elif self.rotation == 'flip':
-                if self.direction < 0 or self.direction > 180:
-                    if self.need_to_flip == 'left':
-                        self.flip('horizontal')
-                        self.need_to_flip = 'right'
-                if self.direction > 0 and self.direction < 180:
-                    if self.need_to_flip == 'right':
-                        self.flip('horizontal')
-                        self.need_to_flip = 'left'
-        # Blit the image to the screen
-        # screen_info.screen.blit(self.costumes[self.cosnumber][1],
-        #                         ((self.x - self.width / 2),
-        #                         (self.y - self.height / 2)),
-        #                         rect)
-        # Stamp in the turtle drawing surface
-        if self.need_to_stamp:
-            screen_info.pen_surface.blit(self.costumes[self.cosnumber][1],
-                                         ((self.x - self.width / 2),
-                                        (self.y - self.height / 2)),
-                                         rect)
-            self.need_to_stamp = False
-        # And then the original image is loaded
-        if self.rotate:
-            self.costumes[self.cosnumber][1] = self.original_costumes[self.cosnumber][1]
 
     # @pausable
     def goto(self, x=None, y=None):
@@ -671,63 +650,91 @@ class Actor(pygame.sprite.Sprite):
     def penup(self):
         self.pen_state = 'up'
 
-    def bounceOnEdge(self):
+    def bounce_on_edge(self):
         if self.y > screen_info.resolution[1] or self.y < 0:
             self.direction = (180 - self.direction) % 360
             self.heading = self.direction - 90
-            if self.rotate:
-                self.transform = True
+            if self.rotation is not False:
+                self.transform_rotate_image()
         if self.x > screen_info.resolution[0] or self.x < 0:
             self.direction = (0 - self.direction) % 360
             self.heading = self.direction - 90
-            if self.rotate:
-                self.transform = True
+            if self.rotation is not False:
+                self.transform_rotate_image()
 
     # @pausable
     def forward(self, steps):
         if self.pen_state == 'down':
-            startX = self.x
-            startY = self.y
+            start_x = self.x
+            start_y = self.y
             for i in range(abs(steps)):
                 pygame.draw.circle(screen_info.pen_surface,
                                    self.pencolor,
-                                   [int(startX), int(startY)],
+                                   [int(start_x), int(start_y)],
                                    self.pensize)
                 # pygame.display.update()
-                startX = self.x + i * math.sin(math.radians(self.direction))
-                startY = self.y + i * -math.cos(math.radians(self.direction))
+                start_x = self.x + i * math.sin(math.radians(self.direction))
+                start_y = self.y + i * -math.cos(math.radians(self.direction))
         self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
         if self.bounce:
-            self.bounceOnEdge()
+            self.bounce_on_edge()
         self.update_position()
 
     def back(self, steps):
         self.forward(-steps)
 
+    def transform_rotate_image(self):
+        self.need_to_rotate = True
+        # If the image changed the transform rotate functions apply
+        # First, restore original image
+        self.image = self.costumes[self.cosnumber][1]
+        # Then rotate it:
+        # Full 360 rotation style
+        if self.rotation == 360:
+            self.image = pygame.transform.rotate(self.image, -self.heading)
+        # Horizontal Flip rotation style
+        elif self.rotation == 'flip':
+            if self.direction < 0 or self.direction > 180:
+                if self.need_to_flip == 'left':
+                    self.flip('horizontal')
+                    self.need_to_flip = 'right'
+            if 0 < self.direction < 180:
+                if self.need_to_flip == 'right':
+                    self.flip('horizontal')
+                    self.need_to_flip = 'left'
+        # In the end update the rect
+        self.update_rect()
+        # Stamp in the turtle drawing surface
+        # if self.need_to_stamp:
+        #     self.need_to_stamp = False
+        # And then the original image is loaded
+        # self.costumes[self.cosnumber][1] = self.original_costumes[self.cosnumber][1]
+
     # @pausable
     def right(self, angle):
         self.direction = (self.direction + angle) % 360
         self.heading = self.direction - 90
-        if self.rotate:
-            self.transform = True
+        self.transform_rotate_image()
 
     # @pausable
     def left(self, angle):
         self.direction = (self.direction - angle) % 360
         self.heading = self.direction - 90
-        if self.rotate:
-            self.transform = True
+        self.transform_rotate_image()
 
-    def roll(self, angle):
+    def rotate(self, angle):
         self.heading += angle
-        if self.rotate:
-            self.transform = True
+        self.transform_rotate_image()
 
     # @pausable
     def stamp(self):
-        if not self.need_to_stamp:
-            self.need_to_stamp = True
+        # if not self.need_to_stamp:
+        #     self.need_to_stamp = True
+        screen_info.pen_surface.blit(self.image,
+                                     ((self.x - self.width / 2),
+                                      (self.y - self.height / 2)),
+                                     None)
 
     # @pausable
     def point(self, target, y=None):
@@ -760,28 +767,31 @@ class Actor(pygame.sprite.Sprite):
             angle = angle * (180 / math.pi)
             self.direction = angle
             self.heading = angle - 90
-        if self.rotate:
-            self.transform = True
+        self.transform_rotate_image()
 
     def flip(self, direction):
         if direction == 'horizontal':
+            # self.image = pygame.transform.flip(self.image, True, False)
             for cos in self.costumes:
                 cos[1] = pygame.transform.flip(cos[1], True, False)
-            for cos in self.original_costumes:
-                cos[1] = pygame.transform.flip(cos[1], True, False)
+            # for cos in self.original_costumes:
+            #     cos[1] = pygame.transform.flip(cos[1], True, False)
         if direction == 'vertical':
+            # self.image = pygame.transform.flip(self.image, False, True)
             for cos in self.costumes:
                 cos[1] = pygame.transform.flip(cos[1], False, True)
-            for cos in self.original_costumes:
-                cos[1] = pygame.transform.flip(cos[1], False, True)
-        self.update_rect()
+            # for cos in self.original_costumes:
+            #     cos[1] = pygame.transform.flip(cos[1], False, True)
+        self.transform_rotate_image()
 
     def scale(self, w, h=None):
+        # self.need_to_scale = True
         if h is not None:
+            self.image = pygame.transform.scale(self.image, (w, h))
             for cos in self.costumes:
                 cos[1] = pygame.transform.scale(cos[1], (w, h))
-            for cos in self.original_costumes:
-                cos[1] = pygame.transform.scale(cos[1], (w, h))
+            # for cos in self.original_costumes:
+            #     cos[1] = pygame.transform.scale(cos[1], (w, h))
             self.actual_scale = [w, h]
             self.update_rect()
         else:
@@ -819,14 +829,6 @@ class Actor(pygame.sprite.Sprite):
             if not target.hidden:
                 self.update_position()
                 target.update_position()
-                # result = pygame.sprite.groupcollide(self.sprite_group,
-                #                                     target.sprite_group,
-                #                                     False,
-                #                                     False,
-                #                                     pygame.sprite.collide_mask)
-                # if len(result) > 0:
-                #     # print(target.costume)
-                #     return True
                 result = pygame.sprite.collide_mask(self, target)
                 if result is not None:
                     return True
@@ -857,17 +859,17 @@ class Actor(pygame.sprite.Sprite):
         else:
             return self.rect.collidepoint(x, y)
 
-    # pause actor's actions (da completare)
-    def pause(self, t=-1):
-        self.paused = True
-        if t >= 0:
-            actors_info.paused_actors_list.append(self)
-            self.pause_time = t * 1000
-            self.start_pause_time = pygame.time.get_ticks()
-
-    def unpause(self):
-        self.paused = False
-        actors_info.paused_actors_list.remove(self)
+    # pause actor's actions (wip)
+    # def pause(self, t=-1):
+    #     self.paused = True
+    #     if t >= 0:
+    #         actors_info.paused_actors_list.append(self)
+    #         self.pause_time = t * 1000
+    #         self.start_pause_time = pygame.time.get_ticks()
+    #
+    # def unpause(self):
+    #     self.paused = False
+    #     actors_info.paused_actors_list.remove(self)
 
     @hideaway
     def hide(self, t=-1):
@@ -915,15 +917,21 @@ class Text(Actor):
                                         self.fontsize,
                                         self.bold,
                                         self.italic)
-        img = self.font.render(self.string, True, self.color)
-        self.costumes[self.cosnumber][1] = img
-        self.original_costumes[self.cosnumber][1] = img
-        self.update_rect()
+        self.image = self.font.render(self.string, True, self.color)
+        # self.costumes[0] = ["text", self.image]
+        self.costumes[0][1] = self.image
+        # self.original_costumes[self.cosnumber][1] = img
+        if self.need_to_rotate:
+            self.transform_rotate_image()
+        else:
+            self.update_rect()
 
     def load(self, path, cosname):
-        self.costumes.append([self.costume, None])
-        self.original_costumes.append([self.costume, None])
+        self.costumes.append(["text", None])
+        # self.original_costumes.append([self.costume, None])
         self.update_text()
+        # self.image = self.font.render(self.string, True, self.color)
+        # self.costumes.append(["text", self.image])
 
     def write(self, string):
         self.string = str(string)
@@ -941,7 +949,7 @@ class Text(Actor):
         self.italic = italic
         self.update_text()
 
-    def color(self, color):
+    def setcolor(self, color):
         self.color = color
         self.update_text()
 

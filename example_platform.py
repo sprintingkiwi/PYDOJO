@@ -102,7 +102,7 @@ while True:
         b.forward(10)
         if distance(pyco, b) > 2000:
             pyco.bullets.remove(b)
-        b.roll(5)
+        b.rotate(5)
 
     if key(DOWN):
         pyco.point(180)

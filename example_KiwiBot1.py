@@ -163,6 +163,6 @@ while True:
     else:
         honk(0)
 
-    gobo.transform_image()
+    gobo.transform_rotate_image()
     sleep(0.01)
     UPDATE()

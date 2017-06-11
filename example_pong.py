@@ -45,18 +45,16 @@ edge = Actor("example_asset/backgrounds/edge.png")
 edge.goto(width / 2, height / 2)
 
 playerL = Actor("example_asset/characters/fish2.png")
-playerL.point(90)
 playerL.goto(50, 50)
 
 playerR = Actor("example_asset/characters/fish1.png")
-playerR.point(-90)
 playerR.flip("horizontal")
 playerR.goto(width - 50, height - 50)
 
 players = [playerL, playerR]
 for player in players:
     player.scale(0.7)
-    player.rotate = False
+    player.rotation = False
 
 ball = Actor("example_asset/characters/seastar1.png")
 ball.scale(0.4)

@@ -25,6 +25,8 @@ print(pyco.getposition())
 # MAIN LOOP
 while True:
 
+    print pyco.direction, pyco.heading
+
     # Move the Turtle
     for colore in COLORS:
         uga.forward(passi)
@@ -46,8 +48,10 @@ while True:
         fill(TOMATO)
 
     if keydown(H):
+        print "flip!"
         pyco.flip('horizontal')
     if keydown(V):
+        print "flip!"
         pyco.flip('vertical')
 
     wait(100)
