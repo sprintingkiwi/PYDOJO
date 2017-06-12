@@ -17,6 +17,7 @@ pyco.speed = 5
 pyco.rotation = 'flip'
 pyco.bullets = []
 pyco.jumping = False
+pyco.scale(0.9)
 
 # BAT INIT
 bat = Actor('example_asset/characters/bat1.png')
@@ -25,6 +26,7 @@ bat.rotation = 'flip'
 bat.point(random.randint(0, 360))
 bat.bounce = True
 bat.tag = 'enemy'
+bat.scale(0.9)
 
 # PY BULLET INIT
 py = Actor('example_asset/characters/python.png')

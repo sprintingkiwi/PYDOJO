@@ -348,7 +348,7 @@ def clone(target):
     # rotation style
     # cloned_actor.rotate = target.rotate
     cloned_actor.rotation = target.rotation
-    cloned_actor.need_to_flip = target.need_to_flip
+    cloned_actor.hor_direction = target.hor_direction
     # needs to need_to_transform image?
     cloned_actor.need_to_rotate = target.need_to_rotate
     # cloned_actor.need_to_scale = target.need_to_scale
@@ -445,7 +445,7 @@ class Actor(pygame.sprite.Sprite):
         # self.original_costumes = []
         self.coscount = 0
         self.rotation = 360
-        self.need_to_flip = 'left'
+        self.hor_direction = 'right'
         # needs to need_to_transform image?
         self.need_to_rotate = False
         # self.need_to_scale = False
@@ -535,6 +535,7 @@ class Actor(pygame.sprite.Sprite):
             for cos in self.costumes:
                 if cos[0] == newcostume:
                     self.cosnumber = self.costumes.index(cos)
+        self.image = self.costumes[self.cosnumber][1]
         if self.need_to_rotate:
             self.transform_rotate_image()
         else:
@@ -696,13 +697,19 @@ class Actor(pygame.sprite.Sprite):
         # Horizontal Flip rotation style
         elif self.rotation == 'flip':
             if self.direction < 0 or self.direction > 180:
-                if self.need_to_flip == 'left':
-                    self.flip('horizontal')
-                    self.need_to_flip = 'right'
-            if 0 < self.direction < 180:
-                if self.need_to_flip == 'right':
-                    self.flip('horizontal')
-                    self.need_to_flip = 'left'
+                self.hor_direction = 'left'
+            elif 0 < self.direction < 180:
+                self.hor_direction = 'right'
+            if self.hor_direction == 'left':
+                self.image = pygame.transform.flip(self.image, True, False)
+            # if self.direction < 0 or self.direction > 180:
+            #     if self.need_to_flip == 'left':
+            #         self.flip('horizontal')
+            #         self.need_to_flip = 'right'
+            # if 0 < self.direction < 180:
+            #     if self.need_to_flip == 'right':
+            #         self.flip('horizontal')
+            #         self.need_to_flip = 'left'
         # In the end update the rect
         self.update_rect()
         # Stamp in the turtle drawing surface
@@ -790,10 +797,10 @@ class Actor(pygame.sprite.Sprite):
             self.image = pygame.transform.scale(self.image, (w, h))
             for cos in self.costumes:
                 cos[1] = pygame.transform.scale(cos[1], (w, h))
+            self.update_rect()
             # for cos in self.original_costumes:
             #     cos[1] = pygame.transform.scale(cos[1], (w, h))
             self.actual_scale = [w, h]
-            self.update_rect()
         else:
             width = int(self.width * w)
             height = int(self.height * w)
