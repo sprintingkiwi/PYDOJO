@@ -25,7 +25,7 @@ print(pyco.getposition())
 # MAIN LOOP
 while True:
 
-    print pyco.direction, pyco.heading
+    # print pyco.direction, pyco.heading
 
     # Move the Turtle
     for colore in COLORS:
@@ -46,6 +46,7 @@ while True:
         setbackground('citynight')
     if keydown(F):
         fill(TOMATO)
+        print screen_info.backgrounds
 
     if keydown(H):
         print "flip!"

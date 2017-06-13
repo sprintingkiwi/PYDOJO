@@ -215,10 +215,13 @@ def background(path):
 
 
 def loadbackground(path):
-    background(path)
+    bg = pygame.image.load(path).convert_alpha()
+    bg = pygame.transform.scale(bg, screen_info.resolution)
+    screen_info.backgrounds[find_file_name(path)] = bg
 
 
 def setbackground(name):
+    screen_info.has_background = True
     screen_info.background = screen_info.backgrounds[name]
     screen_info.screen.blit(screen_info.background, (0, 0))
 
@@ -253,7 +256,7 @@ def update():
     if not screen_info.has_background:
         screen_info.screen.fill(screen_info.bg_color)
     # Draw background if needed
-    if screen_info.has_background:
+    else:
         ACTORS.clear(screen_info.screen, screen_info.background)
     # Draw the visible-Actors group
     ACTORS.draw(screen_info.screen)
@@ -352,7 +355,7 @@ def clone(target):
     # needs to need_to_transform image?
     cloned_actor.need_to_rotate = target.need_to_rotate
     # cloned_actor.need_to_scale = target.need_to_scale
-    cloned_actor.pen_state = target.pen_state
+    cloned_actor.penstate = target.penstate
     cloned_actor.pencolor = target.pencolor
     cloned_actor.pensize = target.pensize
     # cloned_actor.need_to_stamp = target.need_to_stamp
@@ -449,9 +452,9 @@ class Actor(pygame.sprite.Sprite):
         # needs to need_to_transform image?
         self.need_to_rotate = False
         # self.need_to_scale = False
-        self.pen_state = 'up'
+        self.penstate = 'up'
         self.pencolor = RED
-        self.pensize = 1
+        self.pensize = 10
         # self.need_to_stamp = False
         self.bounce = False
         self.tag = "untagged"
@@ -595,6 +598,7 @@ class Actor(pygame.sprite.Sprite):
 
     def setdirection(self, angle):
         self.direction = angle
+        self.transform_rotate_image()
 
     def getdirection(self):
         return self.direction
@@ -646,10 +650,19 @@ class Actor(pygame.sprite.Sprite):
         self.update_position()
 
     def pendown(self):
-        self.pen_state = 'down'
+        self.penstate = 'down'
 
     def penup(self):
-        self.pen_state = 'up'
+        self.penstate = 'up'
+
+    def setpensize(self, size):
+        self.pensize = size
+
+    def setpencolor(self, r=0, g=0, b=0):
+        if type(r) is list or type(r) is tuple:
+            self.pencolor = r
+        else:
+            self.pencolor = [r, g, b]
 
     def bounce_on_edge(self):
         if self.y > screen_info.resolution[1] or self.y < 0:
@@ -665,7 +678,7 @@ class Actor(pygame.sprite.Sprite):
 
     # @pausable
     def forward(self, steps):
-        if self.pen_state == 'down':
+        if self.penstate == 'down':
             start_x = self.x
             start_y = self.y
             for i in range(abs(steps)):
@@ -683,6 +696,9 @@ class Actor(pygame.sprite.Sprite):
         self.update_position()
 
     def back(self, steps):
+        self.forward(-steps)
+
+    def backward(self, steps):
         self.forward(-steps)
 
     def transform_rotate_image(self):
@@ -805,6 +821,9 @@ class Actor(pygame.sprite.Sprite):
             width = int(self.width * w)
             height = int(self.height * w)
             self.scale(width, height)
+
+    def setlayer(self, layer):
+        self.layer = layer
 
     # check if the mouse has clicked the Actor
     def click(self):
@@ -977,7 +996,18 @@ def musicplay(loops=0, start=0.0):
 class Sound(pygame.mixer.Sound):
     def __init__(self, path):
         super(Sound, self).__init__(path)
+        self.volume = self.get_volume() * 100
+        self.lenght = self.get_length()
 
+    def setvolume(self, volume):
+        self.set_volume(volume / 100)
+        self.volume = volume
+
+    def volumeup(self, value):
+        self.setvolume(self.volume + value)
+
+    def volumedown(self, value):
+        self.setvolume(self.volume - value)
 
 
 # EVENTS:
@@ -1135,6 +1165,7 @@ class GamePadManager:
             self.gamepads.append(pygame.joystick.Joystick(gamepadID))
             # initialize gamepad
             self.gamepads[gamepadID].init()
+        self.no_gamepad_found = False
 
 gamepad_manager = GamePadManager()
 
@@ -1150,8 +1181,9 @@ gamepad_manager = GamePadManager()
 def buttondown(btn, pad=0):
     if gamepad_manager.gamepad_count > 0:
         return gamepad_manager.gamepads[pad].get_button(btn)
-    else:
+    elif not gamepad_manager.no_gamepad_found:
         print('no gamepad found...')
+        gamepad_manager.no_gamepad_found = True
 
 
 def axis(hand, direction, pad=0):
@@ -1166,8 +1198,9 @@ def axis(hand, direction, pad=0):
                 return gamepad_manager.gamepads[pad].get_axis(3)
             elif direction == 'vertical':
                 return gamepad_manager.gamepads[pad].get_axis(4)
-    else:
+    elif not gamepad_manager.no_gamepad_found:
         print('no gamepad found...')
+        gamepad_manager.no_gamepad_found = True
 
 
 def trigger(hand, pad=0):
@@ -1180,5 +1213,6 @@ def trigger(hand, pad=0):
             raw = gamepad_manager.gamepads[pad].get_axis(5)
             value = (raw + 1) / 2
             return value
-    else:
+    elif not gamepad_manager.no_gamepad_found:
         print('no gamepad found...')
+        gamepad_manager.no_gamepad_found = True

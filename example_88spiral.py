@@ -5,8 +5,7 @@ screen(1920, 1080)
 
 uga = Actor()
 uga.pendown()
-uga.pencolor = ORANGE
-uga.pensize = 10
+uga.setpencolor(ORANGE)
 
 p = 10
 
