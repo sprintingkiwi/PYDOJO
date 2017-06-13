@@ -172,6 +172,52 @@ def create_pen_surface():
     screen_info.pen_surface = pygame.transform.scale(screen_info.pen_surface, screen_info.resolution)
 
 
+class ColorsInfo:
+    def __init__(self):
+        self.color_scale_phase = 'g_up'
+        self.r = 255
+        self.g = 0
+        self.b = 0
+
+
+colors_info = ColorsInfo()
+
+
+def colorscale(interval=1):
+    if colors_info.color_scale_phase == 'g_up':
+        if colors_info.g + interval <= 255:
+            colors_info.g += interval
+        else:
+            colors_info.color_scale_phase = 'r_down'
+    elif colors_info.color_scale_phase == 'r_down':
+        if colors_info.r - interval >= 0:
+            colors_info.r -= interval
+        else:
+            colors_info.color_scale_phase = 'b_up'
+    elif colors_info.color_scale_phase == 'b_up':
+        if colors_info.b + interval <= 255:
+            colors_info.b += interval
+        else:
+            colors_info.color_scale_phase = 'g_down'
+    elif colors_info.color_scale_phase == 'g_down':
+        if colors_info.g - interval >= 0:
+            colors_info.g -= interval
+        else:
+            colors_info.color_scale_phase = 'r_up'
+    elif colors_info.color_scale_phase == 'r_up':
+        if colors_info.r + interval <= 255:
+            colors_info.r += interval
+        else:
+            colors_info.color_scale_phase = 'b_down'
+    elif colors_info.color_scale_phase == 'b_down':
+        if colors_info.b - interval >= 0:
+            colors_info.b -= interval
+        else:
+            colors_info.color_scale_phase = 'g_up'
+    return [colors_info.r, colors_info.g, colors_info.b]
+
+
+
 # SCREEN
 def screen(w, h, fullscreen=False):
     screen_info.resolution = [w, h]
@@ -358,6 +404,10 @@ def clone(target):
     cloned_actor.penstate = target.penstate
     cloned_actor.pencolor = target.pencolor
     cloned_actor.pensize = target.pensize
+    cloned_actor.pencolor_scale_phase = target.pencolor_scale_phase
+    cloned_actor.pen_r = target.pen_r
+    cloned_actor.pen_g = target.pen_g
+    cloned_actor.pen_b = target.pen_b
     # cloned_actor.need_to_stamp = target.need_to_stamp
     cloned_actor.bounce = target.bounce
     cloned_actor.tag = target.tag
@@ -455,6 +505,10 @@ class Actor(pygame.sprite.Sprite):
         self.penstate = 'up'
         self.pencolor = RED
         self.pensize = 10
+        self.pencolor_scale_phase = 'g_up'
+        self.pen_r = 255
+        self.pen_g = 0
+        self.pen_b = 0
         # self.need_to_stamp = False
         self.bounce = False
         self.tag = "untagged"
@@ -663,6 +717,42 @@ class Actor(pygame.sprite.Sprite):
             self.pencolor = r
         else:
             self.pencolor = [r, g, b]
+
+    def colorscale(self, interval=1):
+        if self.pencolor_scale_phase == 'g_up':
+            if self.pen_g + interval <= 255:
+                self.pen_g += interval
+            else:
+                self.pencolor_scale_phase = 'r_down'
+        elif self.pencolor_scale_phase == 'r_down':
+            if self.pen_r - interval >= 0:
+                self.pen_r -= interval
+            else:
+                self.pencolor_scale_phase = 'b_up'
+        elif self.pencolor_scale_phase == 'b_up':
+            if self.pen_b + interval <= 255:
+                self.pen_b += interval
+            else:
+                self.pencolor_scale_phase = 'g_down'
+        elif self.pencolor_scale_phase == 'g_down':
+            if self.pen_g - interval >= 0:
+                self.pen_g -= interval
+            else:
+                self.pencolor_scale_phase = 'r_up'
+        elif self.pencolor_scale_phase == 'r_up':
+            if self.pen_r + interval <= 255:
+                self.pen_r += interval
+            else:
+                self.pencolor_scale_phase = 'b_down'
+        elif self.pencolor_scale_phase == 'b_down':
+            if self.pen_b - interval >= 0:
+                self.pen_b -= interval
+            else:
+                self.pencolor_scale_phase = 'g_up'
+        return [self.pen_r, self.pen_g, self.pen_b]
+
+    def changepencolor(self, interval=1):
+        self.setpencolor(self.colorscale(interval))
 
     def bounce_on_edge(self):
         if self.y > screen_info.resolution[1] or self.y < 0:

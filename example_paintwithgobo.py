@@ -23,6 +23,8 @@ while True:
         fill(LAVENDER)
     if keydown(P):
         fill(PINK)
+    if key(SPACE):
+        fill(colorscale(5))
 
     # UPDATE SCREEN
     update()
