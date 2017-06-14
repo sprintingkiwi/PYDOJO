@@ -97,7 +97,7 @@ while True:
 
         # ball movement
         ball.forward(speed)
-        ball.rotate(1)
+        ball.roll(1)
 
         # time management
         actualtime = ticks() - starttime

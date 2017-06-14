@@ -22,7 +22,7 @@ while True:
 #         quit()
 #
 #     if keydown(SPACE):
-#         t.rotate(30)
+#         t.roll(30)
 #
 #     update()
 ######################################################

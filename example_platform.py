@@ -13,8 +13,8 @@ pyco.loadfolder('example_asset/characters/pyco_walk/')
 # print pyco.costumes
 pyco.goto(100, 600)
 pyco.speed = 5
-# pyco.rotate = False
-pyco.rotation = 'flip'
+# pyco.roll = False
+pyco.rotate('flip')
 pyco.bullets = []
 pyco.jumping = False
 pyco.scale(0.9)
@@ -22,7 +22,7 @@ pyco.scale(0.9)
 # BAT INIT
 bat = Actor('example_asset/characters/bat1.png')
 bat.load('example_asset/characters/bat2.png')
-bat.rotation = 'flip'
+bat.rotate('flip')
 bat.point(random.randint(0, 360))
 bat.bounce = True
 bat.tag = 'enemy'
@@ -104,7 +104,7 @@ while True:
         b.forward(10)
         if distance(pyco, b) > 2000:
             pyco.bullets.remove(b)
-        b.rotate(5)
+        b.roll(5)
 
     if key(DOWN):
         pyco.point(180)

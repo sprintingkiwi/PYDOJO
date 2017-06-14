@@ -395,7 +395,7 @@ def clone(target):
     # if path is not None:
     cloned_actor.actual_scale = [cloned_actor.width, cloned_actor.height]
     # rotation style
-    # cloned_actor.rotate = target.rotate
+    # cloned_actor.roll = target.roll
     cloned_actor.rotation = target.rotation
     cloned_actor.hor_direction = target.hor_direction
     # needs to need_to_transform image?
@@ -527,7 +527,7 @@ class Actor(pygame.sprite.Sprite):
         self.update_rect()
         self.actual_scale = [self.width, self.height]
         # rotation style
-        # self.rotate = True
+        # self.roll = True
 
     # find costume name from image path
     def find_costume_name(self, path):
@@ -793,10 +793,10 @@ class Actor(pygame.sprite.Sprite):
 
     def transform_rotate_image(self):
         self.need_to_rotate = True
-        # If the image changed the transform rotate functions apply
+        # If the image changed the transform roll functions apply
         # First, restore original image
         self.image = self.costumes[self.cosnumber][1]
-        # Then rotate it:
+        # Then roll it:
         # Full 360 rotation style
         if self.rotation == 360:
             self.image = pygame.transform.rotate(self.image, -self.heading)
@@ -836,9 +836,12 @@ class Actor(pygame.sprite.Sprite):
         self.heading = self.direction - 90
         self.transform_rotate_image()
 
-    def rotate(self, angle):
+    def roll(self, angle):
         self.heading += angle
         self.transform_rotate_image()
+
+    def rotate(self, style):
+        self.rotation = style
 
     # @pausable
     def stamp(self):

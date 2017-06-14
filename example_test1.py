@@ -19,7 +19,7 @@ testo.setfontsize(48)
 testo.setbold(True)
 testo.goto(100, 100)
 
-# dyno.rotate = False
+# dyno.roll = False
 
 hey = Sound('example_asset/sounds/hey.wav')
 

@@ -10,7 +10,7 @@ hero.loadfolder('example_asset/characters/stickman/age_uke')
 hero.loadfolder('example_asset/characters/stickman/gedan_barai')
 hero.loadfolder('example_asset/characters/stickman/hit_body')
 hero.action = 'kamae idle'
-hero.rotation = 'flip'
+hero.rotate('flip')
 hero.speed = 0
 hero.x = 100
 
