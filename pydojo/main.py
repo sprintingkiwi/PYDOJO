@@ -432,6 +432,18 @@ def getactors(tag=None):
     return tagged_actors_list
 
 
+def write(string='Text',
+          position=None,
+          name='Liberation Serif',
+          fontsize=32,
+          bold=False,
+          italic=False,
+          color=[255, 0, 0]):
+    t = Text(string, name, fontsize, bold, italic, color)
+    if position is not None:
+        t.goto(position)
+
+
 # def randombetween(a, b, *args):
 #     if a is int and b is int:
 #         return random.randint(a, b)
@@ -1022,7 +1034,7 @@ class Text(Actor):
                  name='Liberation Serif',
                  fontsize=32, bold=False,
                  italic=False,
-                 color=[0, 0, 0]):
+                 color=[255, 0, 0]):
         self.string = str(string)
         self.name = name
         self.fontsize = fontsize

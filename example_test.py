@@ -1,9 +1,11 @@
 from pydojo import *
-screen(1000, 800)
+screen(1280, 720)
+
 
 while True:
 
     update()
+
 
 ######################################################
 # COLLISIONS, ROTATION AND UPDATE
