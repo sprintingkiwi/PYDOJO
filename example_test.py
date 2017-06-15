@@ -1,32 +1,27 @@
-from pydojo import *
-screen(1280, 720)
-
-
-while True:
-
-    update()
 
 
 ######################################################
 # COLLISIONS, ROTATION AND UPDATE
+from pydojo import *
+screen(1280, 720)
+t = Actor('example_asset/characters/terrain.png')
+t.right(90)
+t.tag('ostacolo')
 
-# t = Actor('example_asset/characters/terrain.png')
-# t.right(90)
-#
-# gobo = Actor('example_asset/characters/gobo.png')
-# gobo.scale(0.5)
-# gobo.goto(800, 500)
-#
-# while True:
-#
-#     if gobo.collide(t):
-#         print('collision')
-#         quit()
-#
-#     if keydown(SPACE):
-#         t.roll(30)
-#
-#     update()
+gobo = Actor('example_asset/characters/gobo.png')
+gobo.scale(0.5)
+gobo.goto(800, 500)
+
+while True:
+
+    if gobo.collide('ostacolo'):
+        print('collision')
+        quit()
+
+    if keydown(SPACE):
+        t.roll(30)
+
+    update()
 ######################################################
 
 ######################################################

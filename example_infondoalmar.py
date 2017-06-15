@@ -11,9 +11,8 @@ shark.rotate('flip')
 
 # CREATE FISH
 fish = Actor('example_asset/characters/fish1.png')
+fish.rotate('flip')
 fish.point(60)
-fish.bounce = True
-fish.rotation = 'flip'
 
 # MAIN LOOP
 while True:
@@ -36,6 +35,7 @@ while True:
 
     # FISH MOVEMENT
     fish.forward(10)
+    fish.bounce()
     # print(fish.direction, fish.heading)
     # update screen and events queue
     update()

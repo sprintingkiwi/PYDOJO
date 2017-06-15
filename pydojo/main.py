@@ -410,7 +410,7 @@ def clone(target):
     cloned_actor.pen_b = target.pen_b
     # cloned_actor.need_to_stamp = target.need_to_stamp
     cloned_actor.bounce = target.bounce
-    cloned_actor.tag = target.tag
+    cloned_actor.tags = target.tags
     cloned_actor.gliding = False
     cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
     return cloned_actor
@@ -427,7 +427,7 @@ def getactors(tag=None):
             if tag is None:
                 tagged_actors_list.append(obj)
             elif tag is str:
-                if obj.tag == tag:
+                if tag in obj.tags:
                     tagged_actors_list.append(obj)
     return tagged_actors_list
 
@@ -522,8 +522,8 @@ class Actor(pygame.sprite.Sprite):
         self.pen_g = 0
         self.pen_b = 0
         # self.need_to_stamp = False
-        self.bounce = False
-        self.tag = "untagged"
+        # self.bounce = False
+        self.tags = []
         self.gliding = False
         self.sliding_costumes = False
         # self.animations = {}
@@ -766,7 +766,7 @@ class Actor(pygame.sprite.Sprite):
     def changepencolor(self, interval=1):
         self.setpencolor(self.colorscale(interval))
 
-    def bounce_on_edge(self):
+    def bounce(self):
         if self.y > screen_info.resolution[1] or self.y < 0:
             self.direction = (180 - self.direction) % 360
             self.heading = self.direction - 90
@@ -793,8 +793,8 @@ class Actor(pygame.sprite.Sprite):
                 start_y = self.y + i * -math.cos(math.radians(self.direction))
         self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
-        if self.bounce:
-            self.bounce_on_edge()
+        # if self.bounce:
+        #     self.bounce_on_edge()
         self.update_position()
 
     def back(self, steps):
@@ -930,6 +930,15 @@ class Actor(pygame.sprite.Sprite):
     def setlayer(self, layer):
         self.layer = layer
 
+    def tag(self, tag):
+        self.tags.append(tag)
+
+    def untag(self, tag):
+        if tag in self.tags:
+            self.tags.remove(tag)
+        else:
+            print('DEBUG: The actor was not tagged that way')
+
     # check if the mouse has clicked the Actor
     def click(self):
         if self.collidepoint(MOUSE.position) and MOUSE.leftdown is True:
@@ -970,7 +979,7 @@ class Actor(pygame.sprite.Sprite):
         elif type(target) is str:
             for obj in gc.get_objects():
                 if isinstance(obj, Actor):
-                    if obj.tag == target:
+                    if target in obj.tags:
                         if self.collide(obj):
                             return True
 

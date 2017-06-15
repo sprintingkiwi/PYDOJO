@@ -25,7 +25,7 @@ bat.load('example_asset/characters/bat2.png')
 bat.rotate('flip')
 bat.point(random.randint(0, 360))
 bat.bounce = True
-bat.tag = 'enemy'
+bat.tag('enemy')
 bat.scale(0.9)
 
 # PY BULLET INIT
@@ -37,7 +37,7 @@ py.hide()
 platforms = []
 for i in range(6):
     a = Actor('example_asset/characters/platform.png', str(i))
-    a.tag = 'support'
+    a.tag('support')
     a.scale(200, 50)
     platforms.append(a)
 for p in platforms:
@@ -48,7 +48,7 @@ for p in platforms:
 terrain = Actor('example_asset/characters/terrain.png')
 terrain.goto(CENTER.x, 700)
 terrain.scale(1280, 50)
-terrain.tag = 'support'
+terrain.tag('support')
 
 gravity = 10
 
@@ -86,7 +86,7 @@ while True:
     # SHOOT
     if keydown(SPACE):
         bullet = clone(py)
-        bullet.tag = 'bullet'
+        bullet.tag('bullet')
         bullet.point(pyco.direction)
         bullet.goto(pyco)
         bullet.show()
