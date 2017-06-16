@@ -593,7 +593,9 @@ class Actor(pygame.sprite.Sprite):
         self.load(path, cosname)
 
     def loadfolder(self, path):
-        for f in os.listdir(path):
+        files_list = os.listdir(path)
+        files_list = sorted(files_list, key=str.lower)
+        for f in files_list:
             if f.split('.')[1] in SUPPORTED_IMAGE_FORMATS:
                 self.load(os.path.join(path, f))
 
