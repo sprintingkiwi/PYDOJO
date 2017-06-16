@@ -24,7 +24,6 @@ bat = Actor('example_asset/characters/bat1.png')
 bat.load('example_asset/characters/bat2.png')
 bat.rotate('flip')
 bat.point(random.randint(0, 360))
-bat.bounce = True
 bat.tag('enemy')
 bat.scale(0.9)
 
@@ -32,6 +31,8 @@ bat.scale(0.9)
 py = Actor('example_asset/characters/python.png')
 py.scale(50, 50)
 py.hide()
+py.tag('bullet')
+py.tag('test')
 
 # PLATFORMS INIT
 platforms = []
@@ -86,10 +87,14 @@ while True:
     # SHOOT
     if keydown(SPACE):
         bullet = clone(py)
-        bullet.tag('bullet')
+        print bullet.tags
+        bullet.rotate(False)
         bullet.point(pyco.direction)
         bullet.goto(pyco)
         bullet.show()
+        bullet.untag('test')
+        print bullet.tags
+        print py.tags
         pyco.bullets.append(bullet)
 
     if pyco.collide(bat):
@@ -102,9 +107,10 @@ while True:
 
     for b in pyco.bullets:
         b.forward(10)
+        b.setdirection(random.randint(b.direction - 10, b.direction + 10))
+        b.roll(5)
         if distance(pyco, b) > 2000:
             pyco.bullets.remove(b)
-        b.roll(5)
 
     if key(DOWN):
         pyco.point(180)
@@ -120,6 +126,7 @@ while True:
     # BAT
     bat.nextcostume()
     bat.forward(10)
+    bat.bounce()
     if bat.collide('bullet'):
         print('colpito')
         bat.hide(2)

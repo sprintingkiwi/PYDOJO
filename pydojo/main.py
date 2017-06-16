@@ -3,7 +3,7 @@ import pygame, math, random, os, subprocess, sys, gc, time
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 1.7
+LIBRARY_VERSION = 1.8
 
 # Colors
 BLACK = [0, 0, 0]
@@ -409,7 +409,7 @@ def clone(target):
     cloned_actor.pen_g = target.pen_g
     cloned_actor.pen_b = target.pen_b
     # cloned_actor.need_to_stamp = target.need_to_stamp
-    cloned_actor.bounce = target.bounce
+    # cloned_actor.bounce = target.bounce
     cloned_actor.tags = target.tags
     cloned_actor.gliding = False
     cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
@@ -850,7 +850,10 @@ class Actor(pygame.sprite.Sprite):
 
     def roll(self, angle):
         self.heading += angle
+        original_rotation_style = self.rotation
+        self.rotate(360)
         self.transform_rotate_image()
+        self.rotate(original_rotation_style)
 
     def rotate(self, style):
         self.rotation = style
@@ -931,7 +934,8 @@ class Actor(pygame.sprite.Sprite):
         self.layer = layer
 
     def tag(self, tag):
-        self.tags.append(tag)
+        if tag not in self.tags:
+            self.tags.append(tag)
 
     def untag(self, tag):
         if tag in self.tags:
