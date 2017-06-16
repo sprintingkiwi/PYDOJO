@@ -3,7 +3,7 @@ import pygame, math, random, os, subprocess, sys, gc, time
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 1.8
+LIBRARY_VERSION = 1.9
 
 # Colors
 BLACK = [0, 0, 0]
@@ -387,7 +387,7 @@ def clone(target):
     cloned_actor.start_pause_time = 0.0
     cloned_actor.start_hide_time = 0.0
     # load actor image
-    cloned_actor.costumes = target.costumes
+    cloned_actor.costumes = list(target.costumes)
     cloned_actor.costume = target.costume
     cloned_actor.cosnumber = target.cosnumber
     # cloned_actor.original_costumes = target.original_costumes
@@ -402,7 +402,7 @@ def clone(target):
     cloned_actor.need_to_rotate = target.need_to_rotate
     # cloned_actor.need_to_scale = target.need_to_scale
     cloned_actor.penstate = target.penstate
-    cloned_actor.pencolor = target.pencolor
+    cloned_actor.pencolor = list(target.pencolor)
     cloned_actor.pensize = target.pensize
     cloned_actor.pencolor_scale_phase = target.pencolor_scale_phase
     cloned_actor.pen_r = target.pen_r
@@ -410,7 +410,7 @@ def clone(target):
     cloned_actor.pen_b = target.pen_b
     # cloned_actor.need_to_stamp = target.need_to_stamp
     # cloned_actor.bounce = target.bounce
-    cloned_actor.tags = target.tags
+    cloned_actor.tags = list(target.tags)
     cloned_actor.gliding = False
     cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
     return cloned_actor
