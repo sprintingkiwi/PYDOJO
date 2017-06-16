@@ -28,6 +28,14 @@ def events():
         playerL.forward(5)
     if key(ESCAPE):
         terminate()
+    if keydown(A):
+        music.volumeup(10)
+        print('music volume up')
+        print music.volume
+    if keydown(S):
+        music.volumedown(10)
+        print('music volume down')
+        print music.volume
 
 
 title = Text("Pong", name="MV Boli", fontsize=96, color=[0, 255, 0])
@@ -45,21 +53,23 @@ edge = Actor("example_asset/backgrounds/edge.png")
 edge.goto(width / 2, height / 2)
 
 playerL = Actor("example_asset/characters/fish2.png")
-playerL.point(90)
 playerL.goto(50, 50)
 
 playerR = Actor("example_asset/characters/fish1.png")
-playerR.point(-90)
 playerR.flip("horizontal")
 playerR.goto(width - 50, height - 50)
 
 players = [playerL, playerR]
 for player in players:
     player.scale(0.7)
-    player.rotate = False
+    player.rotation = False
 
 ball = Actor("example_asset/characters/seastar1.png")
 ball.scale(0.4)
+
+music = Sound("example_asset/sounds/littlesong.wav")
+# music.setvolume(50)
+music.play(-1)
 
 while True:
 
@@ -87,7 +97,7 @@ while True:
 
         # ball movement
         ball.forward(speed)
-        ball.heading += 1
+        ball.roll(1)
 
         # time management
         actualtime = ticks() - starttime

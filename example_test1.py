@@ -19,7 +19,7 @@ testo.setfontsize(48)
 testo.setbold(True)
 testo.goto(100, 100)
 
-# dyno.rotate = False
+# dyno.roll = False
 
 hey = Sound('example_asset/sounds/hey.wav')
 
@@ -47,10 +47,10 @@ while True:
     testo.right(1)
     dyno.point(MOUSE)
     dyno.forward(3)
-    # if keydown(G):
+    if keydown(G):
     #     dyno.pendown()
     #     dyno.gorand()
-    #     dyno.glide(testo)
+        dyno.glide(testo)
 
     if keydown(W):
         print(dyno.x, dyno.y)

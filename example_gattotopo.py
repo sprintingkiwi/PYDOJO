@@ -7,12 +7,12 @@ background('example_asset/backgrounds/carpet.png')
 topo = Actor('example_asset/characters/mouse.png')
 topo.scale(0.3)
 topo.goto(400, 300)
-# topo.rotation = 'flip'
+# topo.rotate(False)
 
 gatto = Actor('example_asset/characters/cat.png')
 gatto.scale(0.5)
 gatto.goto(200, 100)
-# gatto.rotation = 'flip'
+# gatto.rotate(False)
 
 #MAIN LOOP
 gameover = False
@@ -23,7 +23,7 @@ while not gameover:
     gatto.forward(1)
 
     #MOUSE (the animal) MOVEMENT
-    if not topo.collidepoint(MOUSE):
+    if not topo.collidepoint(MOUSE.position):
         topo.point(MOUSE)
         topo.forward(4)
 

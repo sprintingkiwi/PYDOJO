@@ -13,29 +13,32 @@ pyco.loadfolder('example_asset/characters/pyco_walk/')
 # print pyco.costumes
 pyco.goto(100, 600)
 pyco.speed = 5
-# pyco.rotate = False
-pyco.rotation = 'flip'
+# pyco.roll = False
+pyco.rotate('flip')
 pyco.bullets = []
 pyco.jumping = False
+pyco.scale(0.9)
 
 # BAT INIT
 bat = Actor('example_asset/characters/bat1.png')
 bat.load('example_asset/characters/bat2.png')
-bat.rotation = 'flip'
+bat.rotate('flip')
 bat.point(random.randint(0, 360))
-bat.bounce = True
-bat.tag = 'enemy'
+bat.tag('enemy')
+bat.scale(0.9)
 
 # PY BULLET INIT
 py = Actor('example_asset/characters/python.png')
 py.scale(50, 50)
 py.hide()
+py.tag('bullet')
+py.tag('test')
 
 # PLATFORMS INIT
 platforms = []
 for i in range(6):
     a = Actor('example_asset/characters/platform.png', str(i))
-    a.tag = 'support'
+    a.tag('support')
     a.scale(200, 50)
     platforms.append(a)
 for p in platforms:
@@ -46,12 +49,14 @@ for p in platforms:
 terrain = Actor('example_asset/characters/terrain.png')
 terrain.goto(CENTER.x, 700)
 terrain.scale(1280, 50)
-terrain.tag = 'support'
+terrain.tag('support')
 
 gravity = 10
 
 for a in getactors():
     print a.costume
+
+print(ACTORS)
 
 while True:
 
@@ -82,10 +87,14 @@ while True:
     # SHOOT
     if keydown(SPACE):
         bullet = clone(py)
-        bullet.tag = 'bullet'
+        print bullet.tags
+        bullet.rotate(False)
         bullet.point(pyco.direction)
         bullet.goto(pyco)
         bullet.show()
+        bullet.untag('test')
+        print bullet.tags
+        print py.tags
         pyco.bullets.append(bullet)
 
     if pyco.collide(bat):
@@ -98,9 +107,10 @@ while True:
 
     for b in pyco.bullets:
         b.forward(10)
+        b.setdirection(random.randint(b.direction - 10, b.direction + 10))
+        b.roll(5)
         if distance(pyco, b) > 2000:
             pyco.bullets.remove(b)
-        b.roll(5)
 
     if key(DOWN):
         pyco.point(180)
@@ -116,6 +126,7 @@ while True:
     # BAT
     bat.nextcostume()
     bat.forward(10)
+    bat.bounce()
     if bat.collide('bullet'):
         print('colpito')
         bat.hide(2)

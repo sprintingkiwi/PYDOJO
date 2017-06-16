@@ -7,19 +7,17 @@ background('example_asset/backgrounds/sea.png')
 
 # CREATE SHARK ACTOR
 shark = Actor('example_asset/characters/shark1.png')
-shark.rotation = 'flip'
+shark.rotate('flip')
 
 # CREATE FISH
 fish = Actor('example_asset/characters/fish1.png')
+fish.rotate('flip')
 fish.point(60)
-fish.bounce = True
-fish.rotation = 'flip'
-
-print(CENTER.x, CENTER.y)
-print(screen_info.resolution)
 
 # MAIN LOOP
 while True:
+
+    # print shark.direction, shark.heading, shark.actual_scale
 
     # SHARK MOVEMENT
     if key(RIGHT):
@@ -37,6 +35,7 @@ while True:
 
     # FISH MOVEMENT
     fish.forward(10)
-    print(fish.direction, fish.heading)
+    fish.bounce()
+    # print(fish.direction, fish.heading)
     # update screen and events queue
     update()
