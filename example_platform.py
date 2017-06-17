@@ -33,6 +33,7 @@ py.scale(50, 50)
 py.hide()
 py.tag('bullet')
 py.tag('test')
+py.setpencolor(RED)
 
 # PLATFORMS INIT
 platforms = []
@@ -50,11 +51,13 @@ terrain = Actor('example_asset/characters/terrain.png')
 terrain.goto(CENTER.x, 700)
 terrain.scale(1280, 50)
 terrain.tag('support')
+terrain.tag('prova')
+terrain.untag('prova')
 
 gravity = 10
 
-for a in getactors():
-    print a.costume
+for a in ACTORS:
+    print a.costumes
 
 print(ACTORS)
 
@@ -65,6 +68,7 @@ while True:
         pyco.point(90)
         pyco.forward(pyco.speed)
         pyco.nextcostume(pause=7, costumes=[1, 4])
+        print pyco.cosnumber
     if keyup(RIGHT):
         pyco.setcostume('idle')
     if key(LEFT):
@@ -92,6 +96,8 @@ while True:
         bullet.point(pyco.direction)
         bullet.goto(pyco)
         bullet.show()
+        # bullet.pendown()
+        print game_info.tagged_actors
         bullet.untag('test')
         print bullet.tags
         print py.tags

@@ -52,6 +52,7 @@ SUPPORTED_IMAGE_FORMATS = ['png', 'jpg', 'gif', 'bmp']
 class GameInfo:
     def __init__(self):
         self.framerate = 60
+        self.tagged_actors = {}
 
 
 game_info = GameInfo()
@@ -381,7 +382,8 @@ def clone(target):
     cloned_actor.layer = target.layer
     cloned_actor.count = 0
     cloned_actor.paused = False
-    cloned_actor.hidden = target.hidden
+    if target.hidden:
+        cloned_actor.hide()
     cloned_actor.pause_time = 0.0
     cloned_actor.hide_time = 0.0
     cloned_actor.start_pause_time = 0.0
@@ -390,6 +392,8 @@ def clone(target):
     cloned_actor.costumes = list(target.costumes)
     cloned_actor.costume = target.costume
     cloned_actor.cosnumber = target.cosnumber
+    cloned_actor.costumes_by_name = target.costumes_by_name.copy()
+    cloned_actor.costumes_by_number = target.costumes_by_number.copy()
     # cloned_actor.original_costumes = target.original_costumes
     cloned_actor.coscount = 0
     # if path is not None:
@@ -410,9 +414,12 @@ def clone(target):
     cloned_actor.pen_b = target.pen_b
     # cloned_actor.need_to_stamp = target.need_to_stamp
     # cloned_actor.bounce = target.bounce
-    cloned_actor.tags = list(target.tags)
+    # cloned_actor.tags = list(target.tags)
+    for tag in target.tags:
+        cloned_actor.tag(tag)
     cloned_actor.gliding = False
     cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
+    cloned_actor.transform_rotate_image()
     return cloned_actor
 
 
@@ -421,15 +428,23 @@ def distance(a, b):
 
 
 def getactors(tag=None):
-    tagged_actors_list = []
-    for obj in gc.get_objects():
-        if isinstance(obj, Actor):
-            if tag is None:
-                tagged_actors_list.append(obj)
-            elif tag is str:
-                if tag in obj.tags:
-                    tagged_actors_list.append(obj)
-    return tagged_actors_list
+    if tag is not None:
+        if tag in game_info.tagged_actors:
+            return game_info.tagged_actors[tag]
+        else:
+            print('DEBUG: tag not in dictionary')
+            return []
+    else:
+        return ACTORS
+    # tagged_actors_list = []
+    # for obj in gc.get_objects():
+    #     if isinstance(obj, Actor):
+    #         if tag is None:
+    #             tagged_actors_list.append(obj)
+    #         elif tag is str:
+    #             if tag in obj.tags:
+    #                 tagged_actors_list.append(obj)
+    # return tagged_actors_list
 
 
 def write(string='Text',
@@ -482,9 +497,7 @@ class Actor(pygame.sprite.Sprite):
             path = (os.path.dirname(sys.modules[__name__].__file__))
             path = os.path.join(path, 'turtle.png')
         actors_info.actors_list.append(self)
-        # actors_info.draw_list.append(self)
         ACTORS.add(self)
-        # pygame.sprite.Sprite.__init__(self)
         # Actor coordinates
         self.x = 0.0
         self.x = screen_info.resolution[0] / 2
@@ -495,7 +508,6 @@ class Actor(pygame.sprite.Sprite):
         # image orientation
         self.heading = 0
         self.layer = 0
-        # self.actual_scale = [100, 100]
         self.count = 0
         self.paused = False
         self.hidden = False
@@ -503,17 +515,15 @@ class Actor(pygame.sprite.Sprite):
         self.hide_time = 0.0
         self.start_pause_time = 0.0
         self.start_hide_time = 0.0
-        # load actor image
         self.costumes = []
+        self.costumes_by_name = {}
+        self.costumes_by_number = {}
         self.costume = ''
         self.cosnumber = 0
-        # self.original_costumes = []
         self.coscount = 0
         self.rotation = 360
         self.hor_direction = 'right'
-        # needs to need_to_transform image?
         self.need_to_rotate = False
-        # self.need_to_scale = False
         self.penstate = 'up'
         self.pencolor = RED
         self.pensize = 10
@@ -521,8 +531,6 @@ class Actor(pygame.sprite.Sprite):
         self.pen_r = 255
         self.pen_g = 0
         self.pen_b = 0
-        # self.need_to_stamp = False
-        # self.bounce = False
         self.tags = []
         self.gliding = False
         self.sliding_costumes = False
@@ -532,14 +540,11 @@ class Actor(pygame.sprite.Sprite):
         self.width = None
         self.height = None
         self.raw_img = None
-        # self.image = None
         self.path = path
         self.load(path, cosname)
         self.image = self.costumes[self.cosnumber][1]
         self.update_rect()
         self.actual_scale = [self.width, self.height]
-        # rotation style
-        # self.roll = True
 
     # find costume name from image path
     def find_costume_name(self, path):
@@ -554,8 +559,6 @@ class Actor(pygame.sprite.Sprite):
         self.size = self.image.get_size()
         self.width = self.image.get_width()
         self.height = self.image.get_height()
-        # self.image = self.costumes[self.cosnumber][1]
-        # self.mask = pygame.mask.from_surface(self.image)
 
     def update_position(self):
         self.rect.centerx = int(self.x)
@@ -569,18 +572,9 @@ class Actor(pygame.sprite.Sprite):
             else:
                 self.costume = cosname
             self.raw_img = pygame.image.load(path).convert_alpha()
-            # if len(self.costumes) > 0:
-            #     self.raw_img = pygame.need_to_transform.scale(self.raw_img, self.actual_scale)
             self.costumes.append([self.costume, self.raw_img])
-            # self.original_costumes.append([self.costume, self.raw_img])
-            # Generate Rect and other stuff
-            # self.rect = self.costumes[self.cosnumber][1].get_rect()
-            # self.rect.centerx = int(self.x)
-            # self.rect.centery = int(self.y)
-            # self.size = self.costumes[self.cosnumber][1].get_size()
-            # self.width = self.costumes[self.cosnumber][1].get_width()
-            # self.height = self.costumes[self.cosnumber][1].get_height()
-            # image attribute for pygame sprite/group methods
+            self.costumes_by_name[self.costume] = self.raw_img
+            self.costumes_by_number[len(self.costumes) - 1] = self.raw_img
         else:
             try:
                 self.loadfolder(path)
@@ -602,11 +596,14 @@ class Actor(pygame.sprite.Sprite):
     def setcostume(self, newcostume):
         if type(newcostume) is int:
             self.cosnumber = newcostume
+            self.image = self.costumes_by_number[self.cosnumber]
         elif type(newcostume) is str:
-            for cos in self.costumes:
-                if cos[0] == newcostume:
-                    self.cosnumber = self.costumes.index(cos)
-        self.image = self.costumes[self.cosnumber][1]
+            # for cos in self.costumes:
+            #     if cos[0] == newcostume:
+            #         self.cosnumber = self.costumes.index(cos)
+            print self.costumes_by_name
+            self.image = self.costumes_by_name[newcostume]
+        # self.image = self.costumes[self.cosnumber][1]
         if self.need_to_rotate:
             self.transform_rotate_image()
         else:
@@ -938,10 +935,17 @@ class Actor(pygame.sprite.Sprite):
     def tag(self, tag):
         if tag not in self.tags:
             self.tags.append(tag)
+            if tag not in game_info.tagged_actors:
+                game_info.tagged_actors[tag] = []
+            game_info.tagged_actors[tag].append(self)
 
     def untag(self, tag):
         if tag in self.tags:
             self.tags.remove(tag)
+            if tag in game_info.tagged_actors:
+                game_info.tagged_actors[tag].remove(self)
+                if not game_info.tagged_actors[tag]:
+                    del game_info.tagged_actors[tag]
         else:
             print('DEBUG: The actor was not tagged that way')
 
@@ -978,16 +982,21 @@ class Actor(pygame.sprite.Sprite):
                 result = pygame.sprite.collide_mask(self, target)
                 if result is not None:
                     return True
+                else:
+                    return False
         elif type(target) is list:
             for a in target:
                 if self.collide(a):
                     return True
         elif type(target) is str:
-            for obj in gc.get_objects():
-                if isinstance(obj, Actor):
-                    if target in obj.tags:
-                        if self.collide(obj):
-                            return True
+            for a in game_info.tagged_actors[target]:
+                if self.collide(a):
+                    return True
+            # for obj in gc.get_objects():
+            #     if isinstance(obj, Actor):
+            #         if target in obj.tags:
+            #             if self.collide(obj):
+            #                 return True
 
     # Rect collision
     @hideaway
