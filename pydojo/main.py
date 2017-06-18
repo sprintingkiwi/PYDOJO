@@ -3,7 +3,7 @@ import pygame, math, random, os, subprocess, sys, gc, time
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 1.9
+LIBRARY_VERSION = 2.0
 
 # Colors
 BLACK = [0, 0, 0]
@@ -394,6 +394,8 @@ def clone(target):
     cloned_actor.cosnumber = target.cosnumber
     cloned_actor.costumes_by_name = target.costumes_by_name.copy()
     cloned_actor.costumes_by_number = target.costumes_by_number.copy()
+    cloned_actor.animations = target.animations.copy()
+    cloned_actor.current_anim = target.current_anim
     # cloned_actor.original_costumes = target.original_costumes
     cloned_actor.coscount = 0
     # if path is not None:
@@ -534,7 +536,8 @@ class Actor(pygame.sprite.Sprite):
         self.tags = []
         self.gliding = False
         self.sliding_costumes = False
-        # self.animations = {}
+        self.animations = {}
+        self.current_anim = ''
         self.rect = None
         self.size = None
         self.width = None
@@ -597,6 +600,10 @@ class Actor(pygame.sprite.Sprite):
     def loadfolder(self, path):
         files_list = os.listdir(path)
         files_list = sorted(files_list, key=str.lower)
+        anim_name = path.split('/')[-1].split('.')[0]
+        anim_begin = len(self.costumes)
+        anim_end = anim_begin + len(files_list) - 1
+        self.animations[anim_name] = {'begin': anim_begin, 'end': anim_end}
         for f in files_list:
             if f.split('.')[1] in SUPPORTED_IMAGE_FORMATS:
                 self.load(os.path.join(path, f))
@@ -653,6 +660,20 @@ class Actor(pygame.sprite.Sprite):
                 self.setcostume(first)
             self.coscount = 0
         self.coscount += 1
+
+    def play(self, animation, fps=15, loop=True, interval=1):
+        anim = self.animations[animation]
+        pause = 1000 / fps
+        if self.cosnumber < anim['begin'] or self.cosnumber > anim['end']:
+            self.setcostume(anim['begin'])
+        if (loop is False and self.current_anim != animation) or loop is True:
+            self.current_anim = animation
+            if ticks() - self.coscount > pause:
+                if self.cosnumber < anim['end']:
+                    self.setcostume(self.cosnumber + interval)
+                else:
+                    self.setcostume(anim['begin'])
+                self.coscount = ticks()
 
     def setx(self, x):
         self.x = x

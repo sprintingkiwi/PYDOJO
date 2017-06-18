@@ -16,6 +16,8 @@ hero.x = 100
 
 instructions = Text("press A or D to move, J-K-L to attack, U-I-O to defend!", color=CYAN)
 
+print hero.animations
+
 # MAIN LOOP
 while True:
 
@@ -54,35 +56,42 @@ while True:
 
     if hero.action == 'kamae idle':
         hero.speed = 0
-        hero.slidecostumes(0, 23, pause=2)
+        # hero.slidecostumes(0, 23, pause=2)
+        hero.play('kamae_idle')
     elif hero.action == 'kisami tsuki':
         hero.speed = 5
-        hero.slidecostumes(24, 47, pause=0.5)
-        if hero.cosnumber > 46:
-            hero.action = 'kamae idle'
+        # hero.slidecostumes(24, 47, pause=0.5)
+        hero.play('kisami_tsuki', fps=80, loop=False)
+        # if hero.cosnumber > 46:
+        #     hero.action = 'kamae idle'
     elif hero.action == 'mae geri':
         hero.speed = 7
-        hero.slidecostumes(48, 71, pause=1)
+        # hero.slidecostumes(48, 71, pause=1)
+        hero.play('mae_geri', fps=80)
         if hero.cosnumber > 70:
             hero.action = 'kamae idle'
     elif hero.action == 'yoko geri':
         hero.speed = 5
-        hero.slidecostumes(72, 103, pause=1)
+        # hero.slidecostumes(72, 103, pause=1)
+        hero.play('yoko_geri', fps=80)
         if hero.cosnumber > 92:
             hero.action = 'kamae idle'
     elif hero.action == 'age uke':
         hero.speed = -3
-        hero.slidecostumes(104, 127, pause=0.5)
+        # hero.slidecostumes(104, 127, pause=0.5)
+        hero.play('age_uke', fps=80)
         if hero.cosnumber > 126:
             hero.action = 'kamae idle'
     elif hero.action == 'gedan barai':
         hero.speed = -5
-        hero.slidecostumes(128, 151, pause=0.5)
+        # hero.slidecostumes(128, 151, pause=0.5)
+        hero.play('gedan_barai', fps=80)
         if hero.cosnumber > 150:
             hero.action = 'kamae idle'
     elif hero.action == 'hit body':
         hero.speed = -1
-        hero.slidecostumes(152, 175, pause=1)
+        # hero.slidecostumes(152, 175, pause=1)
+        hero.play('hit_body', fps=80)
         if hero.cosnumber > 174:
             hero.action = 'kamae idle'
 
