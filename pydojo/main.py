@@ -3,7 +3,7 @@ import pygame, math, random, os, subprocess, sys, gc, time
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 2.0
+LIBRARY_VERSION = 2.1
 
 # Colors
 BLACK = [0, 0, 0]
@@ -1188,14 +1188,17 @@ class Sound(pygame.mixer.Sound):
         self.lenght = self.get_length()
 
     def setvolume(self, volume):
-        self.set_volume(volume / 100)
         self.volume = volume
+        v = volume / 100
+        self.set_volume(v)
 
     def volumeup(self, value):
-        self.setvolume(self.volume + value)
+        if 0 <= self.volume + value <= 100:
+            self.setvolume(self.volume + value)
 
     def volumedown(self, value):
-        self.setvolume(self.volume - value)
+        if 0 <= self.volume - value <= 100:
+            self.setvolume(self.volume - value)
 
 
 # EVENTS:

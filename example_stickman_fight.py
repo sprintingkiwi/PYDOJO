@@ -79,7 +79,7 @@ while True:
             hero.action = 'kamae idle'
     elif hero.action == 'gedan barai':
         hero.speed = -5
-        hero.play('geda_barai', fps=80, loop=False)
+        hero.play('gedan_barai', fps=80, loop=False)
         if hero.animation['state'] == 'ended':
             hero.action = 'kamae idle'
     elif hero.action == 'hit body':
