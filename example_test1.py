@@ -5,12 +5,12 @@ screen(1280, 720)
 
 dyno = Actor('example_asset/characters/dinosaur1.png')
 dyno.scale(0.8)
-dyno.goto(500, 300)
+dyno.goto(800, 0)
 dyno.rotation = 'flip'
 
-star = Actor('example_asset/characters/seastar1.png', 'felice')
-star.load('example_asset/characters/seastar2.png', 'triste')
-star.scale(200, 200)
+star = Actor('example_asset/characters/seastar2.png', 'triste')
+star.load('example_asset/characters/seastar1.png', 'felice')
+star.scale(180, 180)
 star.goto(600, 500)
 
 testo = Text('ciao', color=GREEN, italic=True)
@@ -60,7 +60,7 @@ while True:
 
     if dyno.collide(star):
         # print(dyno.collide(star))
-        star.setcostume(1)
+        star.setcostume(0)
         print('dyno ha toccato star')
         # hey.play()
         dyno.hide(2)

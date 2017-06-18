@@ -542,7 +542,7 @@ class Actor(pygame.sprite.Sprite):
         self.raw_img = None
         self.path = path
         self.load(path, cosname)
-        self.image = self.costumes[self.cosnumber][1]
+        self.image = self.costumes_by_name[self.costume]['image']
         self.update_rect()
         self.actual_scale = [self.width, self.height]
 
@@ -567,14 +567,22 @@ class Actor(pygame.sprite.Sprite):
     # load Actor's image
     def load(self, path, cosname=None):
         if path[-3:] in SUPPORTED_IMAGE_FORMATS:
+            # Find costume name
             if cosname is None:
                 self.costume = self.find_costume_name(path)
             else:
                 self.costume = cosname
+            # Load Image
             self.raw_img = pygame.image.load(path).convert_alpha()
-            self.costumes.append([self.costume, self.raw_img])
-            self.costumes_by_name[self.costume] = self.raw_img
-            self.costumes_by_number[len(self.costumes) - 1] = self.raw_img
+            # Update Actor costumes list
+            self.costumes.append([self.cosnumber, self.costume])
+            # self.costumes.append([self.costume, self.raw_img])
+            # Find costume number ID
+            cosnumber = len(self.costumes) - 1
+            # Update costumes name dictionary
+            self.costumes_by_name[self.costume] = {'image': self.raw_img, 'number': cosnumber}
+            # Update costumes number dictionary
+            self.costumes_by_number[cosnumber] = {'image': self.raw_img, 'name': self.costume}
         else:
             try:
                 self.loadfolder(path)
@@ -596,13 +604,15 @@ class Actor(pygame.sprite.Sprite):
     def setcostume(self, newcostume):
         if type(newcostume) is int:
             self.cosnumber = newcostume
-            self.image = self.costumes_by_number[self.cosnumber]
+            self.image = self.costumes_by_number[newcostume]['image']
+            self.costume = self.costumes_by_number[newcostume]['name']
         elif type(newcostume) is str:
             # for cos in self.costumes:
             #     if cos[0] == newcostume:
             #         self.cosnumber = self.costumes.index(cos)
-            print self.costumes_by_name
-            self.image = self.costumes_by_name[newcostume]
+            self.costume = newcostume
+            self.image = self.costumes_by_name[newcostume]['image']
+            self.cosnumber = self.costumes_by_name[newcostume]['number']
         # self.image = self.costumes[self.cosnumber][1]
         if self.need_to_rotate:
             self.transform_rotate_image()
@@ -806,7 +816,8 @@ class Actor(pygame.sprite.Sprite):
         self.need_to_rotate = True
         # If the image changed the transform roll functions apply
         # First, restore original image
-        self.image = self.costumes[self.cosnumber][1]
+        self.image = self.costumes_by_name[self.costume]['image']
+        # self.image = self.costumes[self.cosnumber][1]
         # Then roll it:
         # Full 360 rotation style
         if self.rotation == 360:
@@ -902,14 +913,20 @@ class Actor(pygame.sprite.Sprite):
     def flip(self, direction):
         if direction == 'horizontal':
             # self.image = pygame.transform.flip(self.image, True, False)
-            for cos in self.costumes:
-                cos[1] = pygame.transform.flip(cos[1], True, False)
+            for d in [self.costumes_by_name, self.costumes_by_number]:
+                for k in d:
+                    d[k]['image'] = pygame.transform.flip(d[k]['image'], True, False)
+            # for cos in self.costumes:
+            #     cos[1] = pygame.transform.flip(cos[1], True, False)
             # for cos in self.original_costumes:
             #     cos[1] = pygame.transform.flip(cos[1], True, False)
         if direction == 'vertical':
             # self.image = pygame.transform.flip(self.image, False, True)
-            for cos in self.costumes:
-                cos[1] = pygame.transform.flip(cos[1], False, True)
+            for d in [self.costumes_by_name, self.costumes_by_number]:
+                for k in d:
+                    d[k]['image'] = pygame.transform.flip(d[k]['image'], False, True)
+            # for cos in self.costumes:
+            #     cos[1] = pygame.transform.flip(cos[1], False, True)
             # for cos in self.original_costumes:
             #     cos[1] = pygame.transform.flip(cos[1], False, True)
         self.transform_rotate_image()
@@ -918,8 +935,11 @@ class Actor(pygame.sprite.Sprite):
         # self.need_to_scale = True
         if h is not None:
             self.image = pygame.transform.scale(self.image, (w, h))
-            for cos in self.costumes:
-                cos[1] = pygame.transform.scale(cos[1], (w, h))
+            for d in [self.costumes_by_name, self.costumes_by_number]:
+                for k in d:
+                    d[k]['image'] = pygame.transform.scale(d[k]['image'], (w, h))
+            # for cos in self.costumes:
+            #     cos[1] = pygame.transform.scale(cos[1], (w, h))
             self.update_rect()
             # for cos in self.original_costumes:
             #     cos[1] = pygame.transform.scale(cos[1], (w, h))
@@ -1074,15 +1094,25 @@ class Text(Actor):
                                         self.italic)
         self.image = self.font.render(self.string, True, self.color)
         # self.costumes[0] = ["text", self.image]
-        self.costumes[0][1] = self.image
+        # self.costumes[0][1] = self.image
+        # Update costumes name dictionary
+        self.costumes_by_name['text'] = {'image': self.image, 'number': 0}
+        # Update costumes number dictionary
+        self.costumes_by_number[0] = {'image': self.image, 'name': 'text'}
         # self.original_costumes[self.cosnumber][1] = img
         if self.need_to_rotate:
             self.transform_rotate_image()
         else:
             self.update_rect()
 
-    def load(self, path, cosname):
-        self.costumes.append(["text", None])
+    def load(self, path, cosname=None):
+        self.costume = 'text'
+        self.costumes.append([0, 'text'])
+        # self.costumes.append(["text", None])
+        # Update costumes name dictionary
+        self.costumes_by_name['text'] = {'image': None, 'number': 0}
+        # Update costumes number dictionary
+        self.costumes_by_number[0] = {'image': None, 'name': 'text'}
         # self.original_costumes.append([self.costume, None])
         self.update_text()
         # self.image = self.font.render(self.string, True, self.color)

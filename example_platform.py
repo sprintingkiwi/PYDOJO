@@ -68,7 +68,7 @@ while True:
         pyco.point(90)
         pyco.forward(pyco.speed)
         pyco.nextcostume(pause=7, costumes=[1, 4])
-        print pyco.cosnumber
+        # print pyco.cosnumber
     if keyup(RIGHT):
         pyco.setcostume('idle')
     if key(LEFT):
