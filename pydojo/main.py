@@ -395,7 +395,7 @@ def clone(target):
     cloned_actor.costumes_by_name = target.costumes_by_name.copy()
     cloned_actor.costumes_by_number = target.costumes_by_number.copy()
     cloned_actor.animations = target.animations.copy()
-    cloned_actor.current_anim = target.current_anim
+    cloned_actor.animation = target.animation.copy()
     # cloned_actor.original_costumes = target.original_costumes
     cloned_actor.coscount = 0
     # if path is not None:
@@ -537,7 +537,7 @@ class Actor(pygame.sprite.Sprite):
         self.gliding = False
         self.sliding_costumes = False
         self.animations = {}
-        self.current_anim = ''
+        self.animation = {'name': '', 'state': ''}
         self.rect = None
         self.size = None
         self.width = None
@@ -664,15 +664,23 @@ class Actor(pygame.sprite.Sprite):
     def play(self, animation, fps=15, loop=True, interval=1):
         anim = self.animations[animation]
         pause = 1000 / fps
-        if self.cosnumber < anim['begin'] or self.cosnumber > anim['end']:
+        if self.animation['name'] != animation:
+            self.animation['name'] = animation
+            self.animation['state'] = 'playing'
+            self.coscount = ticks()
+            # if self.cosnumber < anim['begin'] or self.cosnumber > anim['end']:
             self.setcostume(anim['begin'])
-        if (loop is False and self.current_anim != animation) or loop is True:
-            self.current_anim = animation
+        if self.animation['state'] != 'ended':
             if ticks() - self.coscount > pause:
-                if self.cosnumber < anim['end']:
+                if self.cosnumber + interval <= anim['end']:
                     self.setcostume(self.cosnumber + interval)
                 else:
-                    self.setcostume(anim['begin'])
+                    if loop:
+                        self.setcostume(anim['begin'])
+                        return 'ended'
+                    else:
+                        self.animation['state'] = 'ended'
+                        return 'ended'
                 self.coscount = ticks()
 
     def setx(self, x):
