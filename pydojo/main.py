@@ -467,20 +467,25 @@ class Camera:
         self.old_x = 0
         self.old_y = 0
         self.following = False
-        self.others = []
+        self.others = None
 
     def follow(self, target):
         self.target = target
+        self.others = ACTORS.copy()
+        self.others.remove(target)
         if not self.following:
             self.old_x = target.x
             self.old_y = target.y
             self.following = True
         else:
             if target.x != self.old_x:
-                pass
+                dx = self.old_x - target.x
+                target.setx(self.old_x)
+                for a in self.others:
+                    a.setx(a.x + dx)
 
 
-
+CAMERA = Camera()
 
 
 
