@@ -9,7 +9,7 @@ framerate(30)
 
 # PYCO INIT
 pyco = Actor('example_asset/characters/pyco1.png', 'idle')
-pyco.loadfolder('example_asset/characters/pyco_walk/')
+pyco.loadfolder('example_asset/characters/pyco_walk')
 # print pyco.costumes
 pyco.goto(100, 600)
 pyco.speed = 5
@@ -59,7 +59,7 @@ gravity = 10
 for a in ACTORS:
     print a.costumes
 
-print(ACTORS)
+print pyco.animations
 
 while True:
 
@@ -74,7 +74,7 @@ while True:
     if key(LEFT):
         pyco.point(-90)
         pyco.forward(pyco.speed)
-        pyco.nextcostume(pause=7, costumes=[1, 4])
+        pyco.play('pyco_walk')
     if keyup(LEFT):
         pyco.setcostume('idle')
 
