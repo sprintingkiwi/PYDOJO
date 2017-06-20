@@ -483,6 +483,11 @@ class Camera:
                 target.setx(self.old_x)
                 for a in self.others:
                     a.setx(a.x + dx)
+            if target.y != self.old_y:
+                dy = self.old_y - target.y
+                target.sety(self.old_y)
+                for a in self.others:
+                    a.setx(a.y + dy)
 
 
 CAMERA = Camera()
@@ -628,7 +633,7 @@ class Actor(pygame.sprite.Sprite):
     def loadfolder(self, path):
         files_list = os.listdir(path)
         for f in files_list:
-            if f[-3:] != 'png':
+            if f[-3:] not in SUPPORTED_IMAGE_FORMATS:
                 files_list.remove(f)
         files_list = sorted(files_list, key=str.lower)
         anim_name = path.split('/')[-1].split('.')[0]
