@@ -14,6 +14,11 @@ fish = Actor('example_asset/characters/fish1.png')
 fish.rotate('flip')
 fish.point(60)
 
+shark.setlayer(10)
+fish.setlayer(1)
+
+print ACTORS.get_layer_of_sprite(shark)
+
 # MAIN LOOP
 while True:
 

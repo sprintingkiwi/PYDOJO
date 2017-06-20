@@ -461,6 +461,39 @@ def write(string='Text',
         t.goto(position)
 
 
+class Camera:
+    def __init__(self):
+        self.target = None
+        self.old_x = 0
+        self.old_y = 0
+        self.following = False
+        self.others = None
+
+    def follow(self, target):
+        self.target = target
+        self.others = ACTORS.copy()
+        self.others.remove(target)
+        if not self.following:
+            self.old_x = target.x
+            self.old_y = target.y
+            self.following = True
+        else:
+            if target.x != self.old_x:
+                dx = self.old_x - target.x
+                target.setx(self.old_x)
+                for a in self.others:
+                    a.setx(a.x + dx)
+            if target.y != self.old_y:
+                dy = self.old_y - target.y
+                target.sety(self.old_y)
+                for a in self.others:
+                    a.sety(a.y + dy)
+
+
+CAMERA = Camera()
+
+
+
 # def randombetween(a, b, *args):
 #     if a is int and b is int:
 #         return random.randint(a, b)
@@ -599,6 +632,9 @@ class Actor(pygame.sprite.Sprite):
 
     def loadfolder(self, path):
         files_list = os.listdir(path)
+        for f in files_list:
+            if f[-3:] not in SUPPORTED_IMAGE_FORMATS:
+                files_list.remove(f)
         files_list = sorted(files_list, key=str.lower)
         anim_name = path.split('/')[-1].split('.')[0]
         anim_begin = len(self.costumes)
@@ -980,6 +1016,7 @@ class Actor(pygame.sprite.Sprite):
 
     def setlayer(self, layer):
         self.layer = layer
+        ACTORS.change_layer(self, layer)
 
     def tag(self, tag):
         if tag not in self.tags:
