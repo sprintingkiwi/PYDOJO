@@ -6,7 +6,7 @@ screen(800, 600)
 pyco = Actor('example_asset/characters/pyco1.png', 'idle')
 pyco.loadfolder('example_asset/characters/pyco_walk')
 # print pyco.costumes
-pyco.goto(100, 200)
+pyco.goto(CENTER)
 pyco.speed = 5
 # pyco.roll = False
 pyco.rotate('flip')
@@ -36,6 +36,19 @@ while True:
         pyco.forward(pyco.speed)
         pyco.play('pyco_walk')
     if keyup(LEFT):
+        pyco.setcostume('idle')
+    if key(UP):
+        pyco.point(0)
+        pyco.forward(pyco.speed)
+        pyco.play('pyco_walk')
+        # print pyco.cosnumber
+    if keyup(UP):
+        pyco.setcostume('idle')
+    if key(DOWN):
+        pyco.point(180)
+        pyco.forward(pyco.speed)
+        pyco.play('pyco_walk')
+    if keyup(DOWN):
         pyco.setcostume('idle')
 
     # UPDATE SCREEN

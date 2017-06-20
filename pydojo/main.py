@@ -487,7 +487,7 @@ class Camera:
                 dy = self.old_y - target.y
                 target.sety(self.old_y)
                 for a in self.others:
-                    a.setx(a.y + dy)
+                    a.sety(a.y + dy)
 
 
 CAMERA = Camera()
