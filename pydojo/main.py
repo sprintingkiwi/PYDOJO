@@ -229,6 +229,7 @@ def screen(w, h, fullscreen=False):
         pycname = name.split('.')[0]+'.pyc'
         print('Executing ' + pycname)
         subprocess.call(['python', pycname])
+        wait(100)
         quit()
     else:
         screen_info.resolution = [w, h]
@@ -331,10 +332,10 @@ def update():
     # Close pygame window when X icon clicked or ESCAPE pressed
     for e in events_storage.list:
         if e.type == pygame.QUIT:
-            quit()
+            terminate()
         if e.type == pygame.KEYDOWN:
             if e.key == pygame.K_ESCAPE:
-                quit()
+                terminate()
     # Refresh mouse position
     MOUSE.update_events()
 
@@ -528,10 +529,26 @@ def hideaway(func):
     return wrapper
 
 
+def execute(path):
+    name = path.split('/')[-1]
+    extension = name.split('.')[1]
+    if extension == 'py':
+        print('Compiling ' + name)
+        py_compile.compile(name)
+        pycname = name.split('.')[0] + '.pyc'
+        print('Executing ' + pycname)
+        subprocess.Popen(['python', pycname])
+        quit()
+    else:
+        print('DEBUG - Execute: Not a Python script. Aborting...')
+
+
 def terminate():
-    subprocess.Popen(['python', '/home/pi/PYGB/main.py'], cwd='/home/pi/')
+    if False:
+        subprocess.Popen(['python', '/home/pi/PYGB/main.py'], cwd='/home/pi/')
     pygame.quit()
     sys.exit()
+    quit()
 
 
 # ACTOR CLASS

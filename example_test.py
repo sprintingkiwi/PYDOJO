@@ -14,6 +14,9 @@ gobo.goto(800, 500)
 
 while True:
 
+    if keydown(N):
+        execute('example_test1.py')
+
     if gobo.collide('ostacolo'):
         print('collision')
         quit()
