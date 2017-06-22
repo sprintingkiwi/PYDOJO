@@ -1026,7 +1026,8 @@ class Actor(pygame.sprite.Sprite):
 
     def setlayer(self, layer):
         self.layer = layer
-        ACTORS.change_layer(self, layer)
+        if not self.hidden:
+            ACTORS.change_layer(self, layer)
 
     def tag(self, tag):
         if tag not in self.tags:
@@ -1085,14 +1086,15 @@ class Actor(pygame.sprite.Sprite):
                 if self.collide(a):
                     return True
         elif type(target) is str:
-            for a in game_info.tagged_actors[target]:
-                if self.collide(a):
-                    return True
-            # for obj in gc.get_objects():
-            #     if isinstance(obj, Actor):
-            #         if target in obj.tags:
-            #             if self.collide(obj):
-            #                 return True
+            if target in game_info.tagged_actors:
+                otherslist = list(game_info.tagged_actors[target])
+                if self in otherslist:
+                    otherslist.remove(self)
+                for a in otherslist:
+                    if self.collide(a):
+                        return True
+            else:
+                print('DEBUG: Tag does not exist')
 
     # Rect collision
     @hideaway
@@ -1144,6 +1146,7 @@ class Actor(pygame.sprite.Sprite):
                     print('errore strano')
                     print(actors_info.hidden_actors_list)
             ACTORS.add(self)
+            ACTORS.change_layer(self, self.layer)
         else:
             pass
 

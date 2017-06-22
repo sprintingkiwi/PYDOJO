@@ -61,6 +61,9 @@ for a in ACTORS:
 
 print pyco.animations
 
+for k in game_info.tagged_actors:
+    print k
+
 while True:
 
     # MOVEMENT
