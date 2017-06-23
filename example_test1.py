@@ -74,6 +74,9 @@ while True:
     if keydown(D):
         dyno.show()
 
+    if keydown(B):
+        terminate()
+
     fill(PINK)
 
     # update screen and events queue

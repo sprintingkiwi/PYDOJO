@@ -537,8 +537,8 @@ def execute(path):
         py_compile.compile(name)
         pycname = name.split('.')[0] + '.pyc'
         print('Executing ' + pycname)
-        subprocess.Popen(['python', pycname])
-        quit()
+        subprocess.call(['python', pycname])
+        # quit()
     else:
         print('DEBUG - Execute: Not a Python script. Aborting...')
 
@@ -602,7 +602,7 @@ class Actor(pygame.sprite.Sprite):
         self.size = None
         self.width = None
         self.height = None
-        self.raw_img = None
+        # self.raw_img = None
         self.path = path
         self.load(path, cosname)
         self.image = self.costumes_by_name[self.costume]['image']
@@ -636,16 +636,16 @@ class Actor(pygame.sprite.Sprite):
             else:
                 self.costume = cosname
             # Load Image
-            self.raw_img = pygame.image.load(path).convert_alpha()
+            raw_img = pygame.image.load(path).convert_alpha()
             # Update Actor costumes list
             self.costumes.append([self.cosnumber, self.costume])
             # self.costumes.append([self.costume, self.raw_img])
             # Find costume number ID
             cosnumber = len(self.costumes) - 1
             # Update costumes name dictionary
-            self.costumes_by_name[self.costume] = {'image': self.raw_img, 'number': cosnumber}
+            self.costumes_by_name[self.costume] = {'image': raw_img, 'number': cosnumber}
             # Update costumes number dictionary
-            self.costumes_by_number[cosnumber] = {'image': self.raw_img, 'name': self.costume}
+            self.costumes_by_number[cosnumber] = {'image': raw_img, 'name': self.costume}
         else:
             try:
                 self.loadfolder(path)
