@@ -584,8 +584,8 @@ class Actor(pygame.sprite.Sprite):
         self.costumes_by_name = {}
         self.costumes_by_number = {}
         self.original_costumes = {}
-        self.costume = ''
-        self.cosnumber = 0
+        # self.costume = ''
+        # self.cosnumber = 0
         self.coscount = 0
         self.rotation = 360
         self.hor_direction = 'right'
@@ -609,6 +609,8 @@ class Actor(pygame.sprite.Sprite):
         # self.raw_img = None
         self.path = path
         self.load(path, cosname)
+        self.costume = self.costumes_by_number[0]['name']
+        self.cosnumber = 0
         self.image = self.costumes_by_name[self.costume]['image']
         self.update_rect()
         self.actual_scale = [self.width, self.height]
@@ -636,21 +638,22 @@ class Actor(pygame.sprite.Sprite):
         if path[-3:] in SUPPORTED_IMAGE_FORMATS:
             # Find costume name
             if cosname is None:
-                self.costume = self.find_costume_name(path)
-            else:
-                self.costume = cosname
+                cosname = self.find_costume_name(path)
             # Update Actor costumes list
-            self.costumes.append([self.cosnumber, self.costume])
+            self.costumes.append(cosname)
             # Find costume number ID
             cosnumber = len(self.costumes) - 1
             # Load Image:
             raw_img = pygame.image.load(path).convert_alpha()
-            # Update Original Costumes
-            self.original_costumes[self.costume] = pygame.image.load(path).convert_alpha()
+            # Update Original Costumes (reloading)
+            self.original_costumes[cosname] = pygame.image.load(path).convert_alpha()
             # Update costumes name dictionary
-            self.costumes_by_name[self.costume] = {'image': raw_img, 'number': cosnumber}
+            self.costumes_by_name[cosname] = {'image': raw_img, 'number': cosnumber}
             # Update costumes number dictionary
-            self.costumes_by_number[cosnumber] = {'image': raw_img, 'name': self.costume}
+            self.costumes_by_number[cosnumber] = {'image': raw_img, 'name': cosname}
+            # Update attributes
+            # self.costume = cosname
+            # self.cosnumber = cosnumber
         else:
             try:
                 self.loadfolder(path)
@@ -913,12 +916,11 @@ class Actor(pygame.sprite.Sprite):
         self.need_to_rotate = True
         # If the image changed the transform roll functions apply
         # First, restore original image
-        self.image = self.costumes_by_name[self.costume]['image']
-        # self.image = self.costumes[self.cosnumber][1]
+        # self.image = self.costumes_by_name[self.costume]['image']
         # Then roll it:
         # Full 360 rotation style
         if self.rotation == 360:
-            self.image = pygame.transform.rotate(self.image, -self.heading)
+            self.image = pygame.transform.rotate(self.costumes_by_name[self.costume]['image'], -self.heading)
         # Horizontal Flip rotation style
         elif self.rotation == 'flip':
             if self.direction < 0 or self.direction > 180:
@@ -926,7 +928,9 @@ class Actor(pygame.sprite.Sprite):
             elif 0 < self.direction < 180:
                 self.hor_direction = 'right'
             if self.hor_direction == 'left':
-                self.image = pygame.transform.flip(self.image, True, False)
+                self.image = pygame.transform.flip(self.costumes_by_name[self.costume]['image'], True, False)
+            elif self.hor_direction == 'right':
+                self.image = self.costumes_by_name[self.costume]['image']
             # if self.direction < 0 or self.direction > 180:
             #     if self.need_to_flip == 'left':
             #         self.flip('horizontal')

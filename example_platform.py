@@ -9,11 +9,11 @@ framerate(30)
 
 # PYCO INIT
 pyco = Actor('example_asset/characters/pyco1.png', 'idle')
+print pyco.costume, pyco.cosnumber
 pyco.loadfolder('example_asset/characters/pyco_walk')
-# print pyco.costumes
+print pyco.costume, pyco.cosnumber
 pyco.goto(100, 600)
 pyco.speed = 5
-# pyco.roll = False
 pyco.rotate('flip')
 pyco.bullets = []
 pyco.jumping = False
@@ -55,6 +55,8 @@ terrain.tag('prova')
 terrain.untag('prova')
 
 gravity = 10
+
+print pyco.costumes_by_number
 
 while True:
 
