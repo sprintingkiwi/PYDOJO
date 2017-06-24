@@ -1,4 +1,24 @@
-import pygame, math, random, os, subprocess, sys, py_compile, gc, time
+import sys, os, py_compile, subprocess, time
+
+
+def compile_and_execute():
+    name = sys.argv[0].split('/')[-1]
+    extension = name.split('.')[1]
+    if extension == 'py':
+        print('Compiling ' + name)
+        py_compile.compile(name)
+        pycname = name.split('.')[0] + '.pyc'
+        print('Executing ' + pycname)
+        subprocess.call(['python', pycname])
+        time.sleep(0.1)
+        # print('Removing ' + pycname)
+        # os.remove(pycname)
+        quit()
+
+
+compile_and_execute()
+
+import pygame, math, random, gc
 
 pygame.init()
 
@@ -221,27 +241,16 @@ def colorscale(interval=1):
 
 # SCREEN
 def screen(w, h, fullscreen=False):
-    name = sys.argv[0].split('/')[-1]
-    extension = name.split('.')[1]
-    if extension == 'py':
-        print('Compiling ' + name)
-        py_compile.compile(name)
-        pycname = name.split('.')[0]+'.pyc'
-        print('Executing ' + pycname)
-        subprocess.call(['python', pycname])
-        wait(100)
-        quit()
+    screen_info.resolution = [w, h]
+    if fullscreen:
+        screen_info.screen = pygame.display.set_mode([w, h], pygame.FULLSCREEN)
     else:
-        screen_info.resolution = [w, h]
-        if fullscreen:
-            screen_info.screen = pygame.display.set_mode([w, h], pygame.FULLSCREEN)
-        else:
-            screen_info.screen = pygame.display.set_mode([w, h])
-        # Create surface for turtle drawings
-        create_pen_surface()
-        # Get screen center
-        CENTER.x = screen_info.resolution[0] / 2
-        CENTER.y = screen_info.resolution[1] / 2
+        screen_info.screen = pygame.display.set_mode([w, h])
+    # Create surface for turtle drawings
+    create_pen_surface()
+    # Get screen center
+    CENTER.x = screen_info.resolution[0] / 2
+    CENTER.y = screen_info.resolution[1] / 2
 
 
 def SCREEN(*args):

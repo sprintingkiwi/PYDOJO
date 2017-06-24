@@ -15,8 +15,8 @@ hero.speed = 0
 hero.x = 100
 
 # Clone scale bug?
-enemy = clone(hero)
-enemy.setx(600)
+# enemy = clone(hero)
+# enemy.setx(600)
 
 instructions = Text("press A or D to move, J-K-L to attack, U-I-O to defend!", color=CYAN)
 
