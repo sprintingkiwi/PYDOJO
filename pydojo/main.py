@@ -781,10 +781,6 @@ class Actor(pygame.sprite.Sprite):
     # @pausable
     def goto(self, x=None, y=None):
         if type(x) is int or type(x) is float:
-            # if x is None:
-            #     x = self.x
-            # if y is None:
-            #     y = self.y
             self.x = x
             self.y = y
         elif type(x) is list or type(x) is tuple:
@@ -797,6 +793,11 @@ class Actor(pygame.sprite.Sprite):
         else:
             self.x = x.x
             self.y = x.y
+        if self.penstate == 'down':
+            pygame.draw.circle(screen_info.pen_surface,
+                               self.pencolor,
+                               [int(self.x), int(self.y)],
+                               self.pensize)
         self.update_position()
 
     def setposition(self, *args):
@@ -822,10 +823,19 @@ class Actor(pygame.sprite.Sprite):
             rangey = [0, screen_info.resolution[1]]
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
+        if self.penstate == 'down':
+            pygame.draw.circle(screen_info.pen_surface,
+                               self.pencolor,
+                               [int(self.x), int(self.y)],
+                               self.pensize)
         self.update_position()
 
     def pendown(self):
         self.penstate = 'down'
+        pygame.draw.circle(screen_info.pen_surface,
+                           self.pencolor,
+                           [int(self.x), int(self.y)],
+                           self.pensize)
 
     def penup(self):
         self.penstate = 'up'

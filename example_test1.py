@@ -8,8 +8,8 @@ dyno.scale(0.8)
 dyno.goto(800, 0)
 dyno.rotation = 'flip'
 
-star = Actor('example_asset/characters/seastar2.png', 'triste')
-star.load('example_asset/characters/seastar1.png', 'felice')
+star = Actor('example_asset/characters/seastar1.png', 'felice')
+star.load('example_asset/characters/seastar2.png', 'triste')
 star.scale(180, 180)
 star.goto(600, 500)
 
@@ -60,7 +60,7 @@ while True:
 
     if dyno.collide(star):
         # print(dyno.collide(star))
-        star.setcostume(0)
+        star.setcostume(1)
         print('dyno ha toccato star')
         # hey.play()
         dyno.hide(2)
