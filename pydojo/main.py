@@ -405,6 +405,7 @@ def clone(target):
     cloned_actor.cosnumber = target.cosnumber
     cloned_actor.costumes_by_name = target.costumes_by_name.copy()
     cloned_actor.costumes_by_number = target.costumes_by_number.copy()
+    cloned_actor.original_costumes = target.original_costumes.copy()
     cloned_actor.animations = target.animations.copy()
     cloned_actor.animation = target.animation.copy()
     # cloned_actor.original_costumes = target.original_costumes
@@ -540,12 +541,14 @@ def execute(path):
         subprocess.call(['python', pycname])
         # quit()
     else:
-        print('DEBUG - Execute: Not a Python script. Aborting...')
+        print('DEBUG - execute: Not a Python script. Aborting...')
 
 
 def terminate():
+    # PYGB support (to do)
     if False:
         subprocess.Popen(['python', '/home/pi/PYGB/main.py'], cwd='/home/pi/')
+    # QUIT
     pygame.quit()
     sys.exit()
     quit()
@@ -580,6 +583,7 @@ class Actor(pygame.sprite.Sprite):
         self.costumes = []
         self.costumes_by_name = {}
         self.costumes_by_number = {}
+        self.original_costumes = {}
         self.costume = ''
         self.cosnumber = 0
         self.coscount = 0
@@ -635,13 +639,14 @@ class Actor(pygame.sprite.Sprite):
                 self.costume = self.find_costume_name(path)
             else:
                 self.costume = cosname
-            # Load Image
-            raw_img = pygame.image.load(path).convert_alpha()
             # Update Actor costumes list
             self.costumes.append([self.cosnumber, self.costume])
-            # self.costumes.append([self.costume, self.raw_img])
             # Find costume number ID
             cosnumber = len(self.costumes) - 1
+            # Load Image:
+            raw_img = pygame.image.load(path).convert_alpha()
+            # Update Original Costumes
+            self.original_costumes[self.costume] = pygame.image.load(path).convert_alpha()
             # Update costumes name dictionary
             self.costumes_by_name[self.costume] = {'image': raw_img, 'number': cosnumber}
             # Update costumes number dictionary
@@ -1004,37 +1009,33 @@ class Actor(pygame.sprite.Sprite):
 
     def flip(self, direction):
         if direction == 'horizontal':
-            # self.image = pygame.transform.flip(self.image, True, False)
+            # for name in self.costumes_by_name:
+            #     self.costumes_by_name[name]['image'] = pygame.transform.flip(self.original_costumes[name], True, False)
+            #     self.costumes_by_number[self.costumes_by_name[name]['number']]['image'] = pygame.transform.flip(self.original_costumes[name], True, False)
             for d in [self.costumes_by_name, self.costumes_by_number]:
                 for k in d:
                     d[k]['image'] = pygame.transform.flip(d[k]['image'], True, False)
-            # for cos in self.costumes:
-            #     cos[1] = pygame.transform.flip(cos[1], True, False)
-            # for cos in self.original_costumes:
-            #     cos[1] = pygame.transform.flip(cos[1], True, False)
+            for k in self.original_costumes:
+                self.original_costumes[k] = pygame.transform.flip(self.original_costumes[k], True, False)
         if direction == 'vertical':
-            # self.image = pygame.transform.flip(self.image, False, True)
+            # for name in self.costumes_by_name:
+            #     self.costumes_by_name[name]['image'] = pygame.transform.flip(self.original_costumes[name], False, True)
+            #     self.costumes_by_number[self.costumes_by_name[name]['number']]['image'] = pygame.transform.flip(self.original_costumes[name], False, True)
             for d in [self.costumes_by_name, self.costumes_by_number]:
                 for k in d:
                     d[k]['image'] = pygame.transform.flip(d[k]['image'], False, True)
-            # for cos in self.costumes:
-            #     cos[1] = pygame.transform.flip(cos[1], False, True)
-            # for cos in self.original_costumes:
-            #     cos[1] = pygame.transform.flip(cos[1], False, True)
+            for k in self.original_costumes:
+                self.original_costumes[k] = pygame.transform.flip(self.original_costumes[k], False, True)
         self.transform_rotate_image()
 
     def scale(self, w, h=None):
         # self.need_to_scale = True
         if h is not None:
-            self.image = pygame.transform.scale(self.image, (w, h))
-            for d in [self.costumes_by_name, self.costumes_by_number]:
-                for k in d:
-                    d[k]['image'] = pygame.transform.scale(d[k]['image'], (w, h))
-            # for cos in self.costumes:
-            #     cos[1] = pygame.transform.scale(cos[1], (w, h))
+            self.image = pygame.transform.scale(self.original_costumes[self.costume], (w, h))
+            for name in self.costumes_by_name:
+                self.costumes_by_name[name]['image'] = pygame.transform.scale(self.original_costumes[name], (w, h))
+                self.costumes_by_number[self.costumes_by_name[name]['number']]['image'] = pygame.transform.scale(self.original_costumes[name], (w, h))
             self.update_rect()
-            # for cos in self.original_costumes:
-            #     cos[1] = pygame.transform.scale(cos[1], (w, h))
             self.actual_scale = [w, h]
         else:
             width = int(self.width * w)

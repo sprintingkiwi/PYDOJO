@@ -56,14 +56,6 @@ terrain.untag('prova')
 
 gravity = 10
 
-for a in ACTORS:
-    print a.costumes
-
-print pyco.animations
-
-for k in game_info.tagged_actors:
-    print k
-
 while True:
 
     # MOVEMENT
