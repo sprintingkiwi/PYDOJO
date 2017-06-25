@@ -15,12 +15,22 @@ hero.speed = 0
 hero.x = 100
 
 # Clone scale bug?
-# enemy = clone(hero)
-# enemy.setx(600)
+# hero.scale(2)
+
+enemy = clone(hero)
+enemy.setx(600)
+enemy.scale(2)
+
+print hero.original_costumes
+print hero.original_costumes['age_uke\\age_uke_013'] is enemy.original_costumes['age_uke\\age_uke_013']
+# enemy2 = clone(hero)
+# enemy2.setx(800)
+# enemy2.scale(0.5)
 
 instructions = Text("press A or D to move, J-K-L to attack, U-I-O to defend!", color=CYAN)
 
-print hero.animations
+# print hero.animations
+# print hero.animation
 
 # MAIN LOOP
 while True:

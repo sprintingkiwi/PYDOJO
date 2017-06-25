@@ -18,7 +18,7 @@ def compile_and_execute():
 
 compile_and_execute()
 
-import pygame, math, random, gc
+import pygame, math, random, copy, gc
 
 pygame.init()
 
@@ -385,6 +385,13 @@ def ticks():
     return pygame.time.get_ticks()
 
 
+def copy_cos_dict(target):
+    newdict = target.copy()
+    for k in target:
+        newdict[k]['image'] = target[k]['image'].copy()
+    return newdict
+
+
 def clone(target):
     # clonedActor = copy.copy(target)
     # actors_info.actors_list.append(clonedActor)
@@ -409,14 +416,16 @@ def clone(target):
     cloned_actor.start_pause_time = 0.0
     cloned_actor.start_hide_time = 0.0
     # load actor image
-    cloned_actor.costumes = list(target.costumes)
+    cloned_actor.costumes = copy.deepcopy(target.costumes)
     cloned_actor.costume = target.costume
     cloned_actor.cosnumber = target.cosnumber
-    cloned_actor.costumes_by_name = target.costumes_by_name.copy()
-    cloned_actor.costumes_by_number = target.costumes_by_number.copy()
-    cloned_actor.original_costumes = target.original_costumes.copy()
-    cloned_actor.animations = target.animations.copy()
-    cloned_actor.animation = target.animation.copy()
+    cloned_actor.costumes_by_name = copy_cos_dict(target.costumes_by_name)
+    cloned_actor.costumes_by_number = copy_cos_dict(target.costumes_by_number)
+    cloned_actor.original_costumes = {}
+    for k in target.original_costumes:
+        cloned_actor.original_costumes[k] = target.original_costumes[k].copy()
+    cloned_actor.animations = copy.deepcopy(target.animations)
+    cloned_actor.animation = copy.deepcopy(target.animation)
     # cloned_actor.original_costumes = target.original_costumes
     cloned_actor.coscount = 0
     # if path is not None:
@@ -441,7 +450,7 @@ def clone(target):
     for tag in target.tags:
         cloned_actor.tag(tag)
     cloned_actor.gliding = False
-    cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
+    # cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
     cloned_actor.transform_rotate_image()
     return cloned_actor
 
@@ -1053,17 +1062,18 @@ class Actor(pygame.sprite.Sprite):
 
     def scale(self, w, h=None):
         # self.need_to_scale = True
-        if h is not None:
-            self.image = pygame.transform.scale(self.original_costumes[self.costume], (w, h))
-            for name in self.costumes_by_name:
-                self.costumes_by_name[name]['image'] = pygame.transform.scale(self.original_costumes[name], (w, h))
-                self.costumes_by_number[self.costumes_by_name[name]['number']]['image'] = pygame.transform.scale(self.original_costumes[name], (w, h))
-            self.update_rect()
-            self.actual_scale = [w, h]
-        else:
+        if h is None:
             width = int(self.width * w)
             height = int(self.height * w)
-            self.scale(width, height)
+        self.image = pygame.transform.scale(self.original_costumes[self.costume], (width, height))
+        for name in self.costumes_by_name:
+            if h is None:
+                width = int(self.costumes_by_name[name]['image'].get_rect().width * w)
+                height = int(self.costumes_by_name[name]['image'].get_rect().height * w)
+            self.costumes_by_name[name]['image'] = pygame.transform.scale(self.original_costumes[name], (width, height))
+            self.costumes_by_number[self.costumes_by_name[name]['number']]['image'] = pygame.transform.scale(self.original_costumes[name], (width, height))
+        self.update_rect()
+        self.actual_scale = [w, h]
 
     def setlayer(self, layer):
         self.layer = layer
