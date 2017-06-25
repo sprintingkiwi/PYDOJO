@@ -1065,6 +1065,9 @@ class Actor(pygame.sprite.Sprite):
         if h is None:
             width = int(self.width * w)
             height = int(self.height * w)
+        else:
+            width = w
+            height = h
         self.image = pygame.transform.scale(self.original_costumes[self.costume], (width, height))
         for name in self.costumes_by_name:
             if h is None:
