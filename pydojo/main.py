@@ -23,7 +23,7 @@ import pygame, math, random, copy, gc
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 2.3
+LIBRARY_VERSION = 2.4
 
 # Colors
 BLACK = [0, 0, 0]
@@ -1245,6 +1245,7 @@ class Text(Actor):
         self.bold = bold
         self.italic = italic
         self.color = color
+        self.need_to_scale_text = False
         Actor.__init__(self)
 
     def update_text(self):
@@ -1259,7 +1260,7 @@ class Text(Actor):
         self.costumes_by_name['text'] = {'image': self.image, 'number': 0}
         # Update costumes number dictionary
         self.costumes_by_number[0] = {'image': self.image, 'name': 'text'}
-        # self.original_costumes[self.cosnumber][1] = img
+        self.original_costumes = {'text': self.image}
         if self.need_to_rotate:
             self.transform_rotate_image()
         else:
@@ -1273,7 +1274,7 @@ class Text(Actor):
         self.costumes_by_name['text'] = {'image': None, 'number': 0}
         # Update costumes number dictionary
         self.costumes_by_number[0] = {'image': None, 'name': 'text'}
-        # self.original_costumes.append([self.costume, None])
+        self.original_costumes = {'text': None}
         self.update_text()
         # self.image = self.font.render(self.string, True, self.color)
         # self.costumes.append(["text", self.image])
@@ -1281,6 +1282,8 @@ class Text(Actor):
     def write(self, string):
         self.string = str(string)
         self.update_text()
+        if self.need_to_scale_text:
+            self.scale(self.need_to_scale_text[0], self.need_to_scale_text[1])
 
     def setfontsize(self, fontsize):
         self.fontsize = fontsize
@@ -1297,6 +1300,15 @@ class Text(Actor):
     def setcolor(self, color):
         self.color = color
         self.update_text()
+
+    def scale(self, w, h=None):
+        if h is None:
+            self.fontsize = int(self.fontsize * w)
+            self.write(self.string)
+        else:
+            Actor.scale(self, w, h)
+            self.need_to_scale_text = (w, h)
+
 
 
 # SUONI
