@@ -23,7 +23,7 @@ import pygame, math, random, copy, gc
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 2.2
+LIBRARY_VERSION = 2.3
 
 # Colors
 BLACK = [0, 0, 0]
@@ -1099,7 +1099,10 @@ class Actor(pygame.sprite.Sprite):
                 height = int(self.costumes_by_name[name]['image'].get_rect().height * w)
             self.costumes_by_name[name]['image'] = pygame.transform.scale(self.original_costumes[name], (width, height))
             self.costumes_by_number[self.costumes_by_name[name]['number']]['image'] = pygame.transform.scale(self.original_costumes[name], (width, height))
-        self.update_rect()
+        if self.need_to_rotate:
+            self.transform_rotate_image()
+        else:
+            self.update_rect()
         # self.actual_scale = [self.image.get_rect().width, self.image.get_rect().height]
 
     def setlayer(self, layer):
