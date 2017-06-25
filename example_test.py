@@ -14,12 +14,20 @@ gobo.goto(800, 500)
 
 while True:
 
-    if gobo.collide('ostacolo'):
-        print('collision')
-        quit()
+    # if keydown(N):
+    #     execute('example_test1.py')
+    # if gobo.collide('ostacolo'):
+    #     print('collision')
+    #     quit()
+    # if keydown(SPACE):
+    #     t.roll(30)
 
-    if keydown(SPACE):
-        t.roll(30)
+    for i in range(20):
+        gobo.scale(1.11)
+        update()
+    for i in range(20):
+        gobo.scale(0.9)
+        update()
 
     update()
 ######################################################

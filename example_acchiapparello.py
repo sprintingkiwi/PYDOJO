@@ -16,21 +16,16 @@ punti.goto(100, 100)
 # counter variable
 inizioconta = ticks()
 
+pyco.pendown()
+
+prova = Actor()
+
+# Point bug?
+print type(180 - pyco.direction)
+pyco.point(90 - prova.direction)
+
 # MAIN LOOP
 while True:
-
-    # MOUSE.hide()
-
-    # print "left: " + str(MOUSE.left)
-    # print "leftdown: " + str(MOUSE.leftdown)
-    # print "leftup: " + str(MOUSE.leftup)
-    # print "central: " + str(MOUSE.central)
-    # print "centraldown: " + str(MOUSE.centraldown)
-    # print "centralup: " + str(MOUSE.centralup)
-    # print "right: " + str(MOUSE.right)
-    # print "rightdown: " + str(MOUSE.rightdown)
-    # print "rightup: " + str(MOUSE.rightup)
-    # print ""
 
     # MOVE RANDOM
     if ticks() - inizioconta > 1000:

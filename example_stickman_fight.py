@@ -12,16 +12,37 @@ hero.loadfolder('example_asset/characters/stickman/hit_body')
 hero.action = 'kamae idle'
 hero.rotate('flip')
 hero.speed = 0
-hero.x = 100
+hero.setx(100)
+
+# Clone scale bug?
+# hero.scale(2)
+print hero.size, hero.rect
+enemy = clone(hero)
+enemy.setx(600)
+enemy.scale(2)
+
+print hero.size, hero.rect, enemy.rect, enemy.size
+
+print 'IN GAME DICT DEBUG'
+print hero.costumes_by_name['age_uke\\age_uke_013']['image'] is enemy.costumes_by_name['age_uke\\age_uke_013']['image']
+
+enemy2 = clone(hero)
+enemy2.setx(1000)
+enemy2.scale(0.5)
 
 instructions = Text("press A or D to move, J-K-L to attack, U-I-O to defend!", color=CYAN)
 
 print hero.animations
+print hero.animation
 
 # MAIN LOOP
 while True:
 
-    # print hero.costumes[hero.cosnumber][0]
+    # print hero.costumes_by_name['age_uke\\age_uke_013']['image'] is enemy.costumes_by_name['age_uke\\age_uke_013'][
+    #     'image']
+
+    enemy.play('kisami_tsuki')
+    enemy2.play('mae_geri')
 
     if anykeydown():
         instructions.hide()
