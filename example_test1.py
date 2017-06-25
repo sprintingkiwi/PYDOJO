@@ -18,12 +18,14 @@ print(testo.costumes)
 testo.setfontsize(48)
 testo.setbold(True)
 testo.goto(100, 100)
+testo.scale(2)
 
 # dyno.roll = False
 
 hey = Sound('example_asset/sounds/hey.wav')
 
 while True:
+    # testo.scale(0.9)
 
     # print(actorsInfo.drawList)
 
