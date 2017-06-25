@@ -18,9 +18,11 @@ inizioconta = ticks()
 
 pyco.pendown()
 
+prova = Actor()
+
 # Point bug?
 print type(180 - pyco.direction)
-pyco.point(180 - pyco.direction)
+pyco.point(90 - prova.direction)
 
 # MAIN LOOP
 while True:

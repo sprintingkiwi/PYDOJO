@@ -65,7 +65,7 @@ COLORS = [RED,
           BEIGE,
           LAVENDER]
 
-SUPPORTED_IMAGE_FORMATS = ['png', 'jpg', 'gif', 'bmp']
+SUPPORTED_IMAGE_FORMATS = ['png', 'jpg', 'jpeg', 'gif', 'bmp']
 
 
 # Class for Game Info
@@ -385,11 +385,13 @@ def ticks():
     return pygame.time.get_ticks()
 
 
-def copy_cos_dict(target):
-    newdict = target.copy()
-    for k in target:
-        newdict[k]['image'] = target[k]['image'].copy()
-    return newdict
+# def copy_cos_dict(target):
+#     newdict = target.copy()
+#     for k in newdict:
+#         newdict[k]['image'] = target[k]['image'].copy()
+#     print 'DEBUG CLONE DICT'
+#     # print newdict['age_uke\\age_uke_011']['image'] is target['age_uke\\age_uke_011']['image'].copy()
+#     return newdict
 
 
 def clone(target):
@@ -419,17 +421,39 @@ def clone(target):
     cloned_actor.costumes = copy.deepcopy(target.costumes)
     cloned_actor.costume = target.costume
     cloned_actor.cosnumber = target.cosnumber
-    cloned_actor.costumes_by_name = copy_cos_dict(target.costumes_by_name)
-    cloned_actor.costumes_by_number = copy_cos_dict(target.costumes_by_number)
+
+    # Cloning dict cos by name
+    # cloned_actor.costumes_by_name = copy_cos_dict(target.costumes_by_name)
+    cloned_actor.costumes_by_name = {}
+    for k in target.costumes_by_name:
+        img = target.costumes_by_name[k]['image'].copy()
+        num = target.costumes_by_name[k]['number']
+        cloned_actor.costumes_by_name[k] = {'image': img, 'number': num}
+
+    # Cloning dict cos by number
+    cloned_actor.costumes_by_number = {}
+    for k in target.costumes_by_number:
+        img = target.costumes_by_number[k]['image'].copy()
+        name = target.costumes_by_number[k]['name']
+        cloned_actor.costumes_by_number[k] = {'image': img, 'name': name}
+
+    # Cloning original costumes dict
+    # print 'DEBUG CLONING COS BY NAME'
+    # print cloned_actor.costumes_by_name['age_uke\\age_uke_013']['image'] is target.costumes_by_name['age_uke\\age_uke_013']['image']
+    # print 'DEBUG CLONING COS BY NNUMBER'
+    # print cloned_actor.costumes_by_number[3] is target.costumes_by_number[3]
     cloned_actor.original_costumes = {}
     for k in target.original_costumes:
         cloned_actor.original_costumes[k] = target.original_costumes[k].copy()
+    # print 'DEBUG CLONING ORIGINALS'
+    # print cloned_actor.original_costumes['age_uke\\age_uke_013'] is target.original_costumes['age_uke\\age_uke_013']
+
     cloned_actor.animations = copy.deepcopy(target.animations)
     cloned_actor.animation = copy.deepcopy(target.animation)
     # cloned_actor.original_costumes = target.original_costumes
     cloned_actor.coscount = 0
     # if path is not None:
-    cloned_actor.actual_scale = [cloned_actor.width, cloned_actor.height]
+    # cloned_actor.actual_scale = [cloned_actor.width, cloned_actor.height]
     # rotation style
     # cloned_actor.roll = target.roll
     cloned_actor.rotation = target.rotation
@@ -631,7 +655,7 @@ class Actor(pygame.sprite.Sprite):
         self.cosnumber = 0
         self.image = self.costumes_by_name[self.costume]['image']
         self.update_rect()
-        self.actual_scale = [self.width, self.height]
+        # self.actual_scale = [self.width, self.height]
 
     # find costume name from image path
     def find_costume_name(self, path):
@@ -1076,7 +1100,7 @@ class Actor(pygame.sprite.Sprite):
             self.costumes_by_name[name]['image'] = pygame.transform.scale(self.original_costumes[name], (width, height))
             self.costumes_by_number[self.costumes_by_name[name]['number']]['image'] = pygame.transform.scale(self.original_costumes[name], (width, height))
         self.update_rect()
-        self.actual_scale = [w, h]
+        # self.actual_scale = [self.image.get_rect().width, self.image.get_rect().height]
 
     def setlayer(self, layer):
         self.layer = layer
