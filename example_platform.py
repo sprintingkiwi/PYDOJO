@@ -133,5 +133,7 @@ while True:
     if bat.collide('bullet'):
         print('colpito')
         bat.hide(2)
+        print COLLISION.point
+        print COLLISION.object
 
     update()

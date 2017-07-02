@@ -67,6 +67,8 @@ COLORS = [RED,
 
 SUPPORTED_IMAGE_FORMATS = ['png', 'jpg', 'jpeg', 'gif', 'bmp']
 
+# Collisions results
+COLLISION = pygame.sprite.Sprite()
 
 # Class for Game Info
 class GameInfo:
@@ -1159,6 +1161,8 @@ class Actor(pygame.sprite.Sprite):
                 target.update_position()
                 result = pygame.sprite.collide_mask(self, target)
                 if result is not None:
+                    COLLISION.point = result
+                    COLLISION.object = target
                     return True
                 else:
                     return False
@@ -1332,7 +1336,7 @@ class Sound(pygame.mixer.Sound):
 
     def setvolume(self, volume):
         self.volume = volume
-        v = volume / 100
+        v = volume / 100.0
         self.set_volume(v)
 
     def volumeup(self, value):
