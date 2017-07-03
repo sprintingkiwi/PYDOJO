@@ -24,7 +24,6 @@ enemy.scale(2)
 print hero.size, hero.rect, enemy.rect, enemy.size
 
 print 'IN GAME DICT DEBUG'
-print hero.costumes_by_name['age_uke\\age_uke_013']['image'] is enemy.costumes_by_name['age_uke\\age_uke_013']['image']
 
 enemy2 = clone(hero)
 enemy2.setx(1000)
