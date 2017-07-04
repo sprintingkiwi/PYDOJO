@@ -31,7 +31,8 @@ while not gameover:
 
     if gatto.collide(topo):
         # print('preso')
-        quit()
+        topo.kill()
+        # quit()
 
     #update screen and events queue
     update()
