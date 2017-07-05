@@ -3,7 +3,7 @@ from pydojo import *
 # CREATE GAME DISPLAY
 screen(1280, 720)
 
-background('example_asset/backgrounds/citynight.png')
+background('example_asset/backgrounds/field.png')
 loadbackground('example_asset/backgrounds/bedroom.png')
 
 uga = Actor()

@@ -23,7 +23,7 @@ import pygame, math, random, copy, gc
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 2.5
+LIBRARY_VERSION = 2.6
 
 # Colors
 BLACK = [0, 0, 0]
@@ -276,7 +276,7 @@ def find_file_name(path):
 
 def background(path):
     screen_info.has_background = True
-    screen_info.background = pygame.image.load(path).convert_alpha()
+    screen_info.background = pygame.image.load(path).convert()
     screen_info.background = pygame.transform.scale(screen_info.background,
                                                     screen_info.resolution)
     screen_info.backgrounds[find_file_name(path)] = screen_info.background
@@ -284,7 +284,7 @@ def background(path):
 
 
 def loadbackground(path):
-    bg = pygame.image.load(path).convert_alpha()
+    bg = pygame.image.load(path).convert()
     bg = pygame.transform.scale(bg, screen_info.resolution)
     screen_info.backgrounds[find_file_name(path)] = bg
 
@@ -806,6 +806,14 @@ class Actor(pygame.sprite.Sprite):
         self.y = y
         self.update_position()
 
+    def changex(self, delta_x):
+        self.x = self.x + delta_x
+        self.update_position()
+
+    def changey(self, delta_y):
+        self.y = self.y + delta_y
+        self.update_position()
+
     def getposition(self):
         return [self.x, self.y]
 
@@ -1234,6 +1242,10 @@ class Actor(pygame.sprite.Sprite):
             ACTORS.change_layer(self, self.layer)
         else:
             pass
+
+    def kill(self):
+        super(Actor, self).kill()
+        self.hide()
 
 
 class Text(Actor):
