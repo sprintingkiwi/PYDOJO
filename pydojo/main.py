@@ -23,7 +23,7 @@ import pygame, math, random, copy, gc
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 2.5
+LIBRARY_VERSION = 2.6
 
 # Colors
 BLACK = [0, 0, 0]

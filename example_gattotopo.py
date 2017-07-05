@@ -2,7 +2,7 @@ from pydojo import *
 
 screen(800, 600)
 
-background('example_asset/backgrounds/carpet.png')
+background('example_asset/backgrounds/field.png')
 
 topo = Actor('example_asset/characters/mouse.png')
 topo.scale(0.3)
