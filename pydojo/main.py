@@ -524,8 +524,23 @@ class Camera:
         self.old_y = 0
         self.following = False
         self.others = None
+        self.on_the_edge = False
+        self.dx = 0
+        self.dy = 0
 
-    def follow(self, target):
+    def move_others(self, target):
+        if target.x != self.old_x:
+            self.dx = self.old_x - target.x
+            target.setx(self.old_x)
+            for a in self.others:
+                a.setx(a.x + self.dx)
+        if target.y != self.old_y:
+            self.dy = self.old_y - target.y
+            target.sety(self.old_y)
+            for a in self.others:
+                a.sety(a.y + self.dy)
+
+    def follow(self, target, ground=None):
         self.target = target
         self.others = ACTORS.copy()
         self.others.remove(target)
@@ -534,16 +549,34 @@ class Camera:
             self.old_y = target.y
             self.following = True
         else:
-            if target.x != self.old_x:
-                dx = self.old_x - target.x
-                target.setx(self.old_x)
-                for a in self.others:
-                    a.setx(a.x + dx)
-            if target.y != self.old_y:
-                dy = self.old_y - target.y
-                target.sety(self.old_y)
-                for a in self.others:
-                    a.sety(a.y + dy)
+            if ground is not None:
+                if self.on_the_edge:
+                    self.following = False
+
+                    # self.old_x = target.x
+                    # self.old_y = target.y
+                    if (self.target.x != self.old_x and target.x >= screen_info.resolution[0] / 2) or (self.target.y != self.old_y and target.y >= screen_info.resolution[1] / 2):
+                        self.on_the_edge = False
+                        # print "edge false"
+                        self.move_others(target)
+                else:
+                    if not (0 < ground.x < ground.width/2 and 0 < ground.y < ground.height/2):
+                        self.on_the_edge = True
+                        if target.x < screen_info.resolution[0]/2:
+                            self.hor_position = 'left'
+                        elif target.x > screen_info.resolution[0]/2:
+                            self.hor_position = 'right'
+                        if target.y < screen_info.resolution[1]/2:
+                            self.ver_position = 'up'
+                        elif target.y > screen_info.resolution[1]/2:
+                            self.ver_position = 'down'
+                    else:
+                        self.move_others(target)
+                        # print "moving other"
+
+            else:
+                self.move_others(target)
+
 
 
 CAMERA = Camera()
