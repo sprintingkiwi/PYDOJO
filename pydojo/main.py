@@ -527,13 +527,17 @@ class Camera:
         self.on_the_edge = False
         self.dx = 0
         self.dy = 0
+        self.hor_position = None
+        self.ver_position = None
 
-    def move_others(self, target):
+    def scroll_x(self, target):
         if target.x != self.old_x:
             self.dx = self.old_x - target.x
             target.setx(self.old_x)
             for a in self.others:
                 a.setx(a.x + self.dx)
+
+    def scroll_y(self, target):
         if target.y != self.old_y:
             self.dy = self.old_y - target.y
             target.sety(self.old_y)
@@ -555,27 +559,56 @@ class Camera:
 
                     # self.old_x = target.x
                     # self.old_y = target.y
-                    if (self.target.x != self.old_x and target.x >= screen_info.resolution[0] / 2) or (self.target.y != self.old_y and target.y >= screen_info.resolution[1] / 2):
-                        self.on_the_edge = False
-                        # print "edge false"
-                        self.move_others(target)
+                    if self.hor_position == 'left':
+                        if target.x >= screen_info.resolution[0]/2:
+                            self.on_the_edge = False
+                            dx = target.x - screen_info.resolution[0]/2
+                            target.setx(screen_info.resolution[0]/2)
+                            for a in self.others:
+                                a.setx(a.x - dx)
+                    elif self.hor_position == 'right':
+                        if target.x <= screen_info.resolution[0]/2:
+                            self.on_the_edge = False
+                            dx = target.x - screen_info.resolution[0]/2
+                            target.setx(screen_info.resolution[0]/2)
+                            for a in self.others:
+                                a.setx(a.x - dx)
+                    if self.ver_position == 'up':
+                        if target.y >= screen_info.resolution[1]/2:
+                            self.on_the_edge = False
+                            dy = target.y - screen_info.resolution[1]/2
+                            target.setx(screen_info.resolution[1]/2)
+                            for a in self.others:
+                                a.sety(a.y - dy)
+                    elif self.ver_position == 'down':
+                        if target.y <= screen_info.resolution[1]/2:
+                            self.on_the_edge = False
+                            dy = target.y - screen_info.resolution[1]/2
+                            target.setx(screen_info.resolution[1]/2)
+                            for a in self.others:
+                                a.sety(a.y - dy)
                 else:
-                    if not (0 < ground.x < ground.width/2 and 0 < ground.y < ground.height/2):
+                    if not 0 < ground.x < ground.width/2:
                         self.on_the_edge = True
-                        if target.x < screen_info.resolution[0]/2:
+                        if 225 < target.direction < 315:
                             self.hor_position = 'left'
-                        elif target.x > screen_info.resolution[0]/2:
+                        elif 45 < target.direction < 135:
                             self.hor_position = 'right'
-                        if target.y < screen_info.resolution[1]/2:
+                    else:
+                        self.hor_position = None
+                        self.scroll_x(target)
+                    if not 0 < ground.y < ground.height/2:
+                        if 315 < target.direction <= 360 or 0 <= target.direction < 45:
                             self.ver_position = 'up'
-                        elif target.y > screen_info.resolution[1]/2:
+                        elif 135 < target.direction < 225:
                             self.ver_position = 'down'
                     else:
-                        self.move_others(target)
-                        # print "moving other"
+                        self.ver_position = None
+                        self.scroll_y(target)
 
             else:
-                self.move_others(target)
+                self.scroll_x(target)
+                self.scroll_y(target)
 
 
 
