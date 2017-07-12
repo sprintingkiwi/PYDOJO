@@ -20,9 +20,13 @@ map1_ground = Actor('example_asset/backgrounds/map1/ground.png')
 
 # MAIN LOOP
 while True:
+    print pyco.direction
 
-    CAMERA.follow(pyco)
-
+    # if not map1_ground.x > map1_ground.width/2:
+    CAMERA.follow(pyco, map1_ground)
+    # print CAMERA.on_the_edge
+    print CAMERA.old_x, CAMERA.old_y
+    print CAMERA.hor_position, CAMERA.ver_position
     # MOVEMENT
     if key(RIGHT):
         pyco.point(90)

@@ -524,8 +524,27 @@ class Camera:
         self.old_y = 0
         self.following = False
         self.others = None
+        self.on_the_edge = False
+        self.dx = 0
+        self.dy = 0
+        self.hor_position = None
+        self.ver_position = None
 
-    def follow(self, target):
+    def scroll_x(self, target):
+        if target.x != self.old_x:
+            self.dx = self.old_x - target.x
+            target.setx(self.old_x)
+            for a in self.others:
+                a.setx(a.x + self.dx)
+
+    def scroll_y(self, target):
+        if target.y != self.old_y:
+            self.dy = self.old_y - target.y
+            target.sety(self.old_y)
+            for a in self.others:
+                a.sety(a.y + self.dy)
+
+    def follow(self, target, ground=None):
         self.target = target
         self.others = ACTORS.copy()
         self.others.remove(target)
@@ -534,16 +553,63 @@ class Camera:
             self.old_y = target.y
             self.following = True
         else:
-            if target.x != self.old_x:
-                dx = self.old_x - target.x
-                target.setx(self.old_x)
-                for a in self.others:
-                    a.setx(a.x + dx)
-            if target.y != self.old_y:
-                dy = self.old_y - target.y
-                target.sety(self.old_y)
-                for a in self.others:
-                    a.sety(a.y + dy)
+            if ground is not None:
+                if self.on_the_edge:
+                    self.following = False
+
+                    # self.old_x = target.x
+                    # self.old_y = target.y
+                    if self.hor_position == 'left':
+                        if target.x >= screen_info.resolution[0]/2:
+                            self.on_the_edge = False
+                            dx = target.x - screen_info.resolution[0]/2
+                            target.setx(screen_info.resolution[0]/2)
+                            for a in self.others:
+                                a.setx(a.x - dx)
+                    elif self.hor_position == 'right':
+                        if target.x <= screen_info.resolution[0]/2:
+                            self.on_the_edge = False
+                            dx = target.x - screen_info.resolution[0]/2
+                            target.setx(screen_info.resolution[0]/2)
+                            for a in self.others:
+                                a.setx(a.x - dx)
+                    if self.ver_position == 'up':
+                        if target.y >= screen_info.resolution[1]/2:
+                            self.on_the_edge = False
+                            dy = target.y - screen_info.resolution[1]/2
+                            target.setx(screen_info.resolution[1]/2)
+                            for a in self.others:
+                                a.sety(a.y - dy)
+                    elif self.ver_position == 'down':
+                        if target.y <= screen_info.resolution[1]/2:
+                            self.on_the_edge = False
+                            dy = target.y - screen_info.resolution[1]/2
+                            target.setx(screen_info.resolution[1]/2)
+                            for a in self.others:
+                                a.sety(a.y - dy)
+                else:
+                    if not 0 < ground.x < ground.width/2:
+                        self.on_the_edge = True
+                        if 225 < target.direction < 315:
+                            self.hor_position = 'left'
+                        elif 45 < target.direction < 135:
+                            self.hor_position = 'right'
+                    else:
+                        self.hor_position = None
+                        self.scroll_x(target)
+                    if not 0 < ground.y < ground.height/2:
+                        if 315 < target.direction <= 360 or 0 <= target.direction < 45:
+                            self.ver_position = 'up'
+                        elif 135 < target.direction < 225:
+                            self.ver_position = 'down'
+                    else:
+                        self.ver_position = None
+                        self.scroll_y(target)
+
+            else:
+                self.scroll_x(target)
+                self.scroll_y(target)
+
 
 
 CAMERA = Camera()
