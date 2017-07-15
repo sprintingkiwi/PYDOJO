@@ -58,6 +58,16 @@ gravity = 10
 
 print pyco.costumes_by_number
 
+def pybullet_setup(bullet):
+    bullet.tag('custom spawn setup behavior working')
+    print bullet.tags
+
+def pybullet_movement(bullet):
+    bullet.setdirection(random.randint(int(bullet.direction - 10), int (bullet.direction + 10)))
+    bullet.roll(5)
+    if distance(pyco, bullet) > 2000:
+        bullet.kill()
+
 while True:
 
     # MOVEMENT
@@ -87,18 +97,24 @@ while True:
 
     # SHOOT
     if keydown(SPACE):
-        bullet = clone(py)
-        print bullet.tags
-        bullet.rotate(False)
-        bullet.point(pyco.direction)
-        bullet.goto(pyco)
-        bullet.show()
-        # bullet.pendown()
-        print game_info.tagged_actors
-        bullet.untag('test')
-        print bullet.tags
-        print py.tags
-        pyco.bullets.append(bullet)
+        spawn(py,
+              direction=bat,
+              speed=10,
+              position=pyco,
+              setup_behavior=pybullet_setup,
+              update_behavior=pybullet_movement)
+        # bullet = clone(py)
+        # print bullet.tags
+        # bullet.rotate(False)
+        # bullet.point(pyco.direction)
+        # bullet.goto(pyco)
+        # bullet.show()
+        # # bullet.pendown()
+        # print game_info.tagged_actors
+        # bullet.untag('test')
+        # print bullet.tags
+        # print py.tags
+        # pyco.bullets.append(bullet)
 
     if pyco.collide(bat):
         print('preso')
@@ -108,12 +124,12 @@ while True:
     if keydown(O):
         pyco.hide()
 
-    for b in pyco.bullets:
-        b.forward(10)
-        b.setdirection(random.randint(b.direction - 10, b.direction + 10))
-        b.roll(5)
-        if distance(pyco, b) > 2000:
-            pyco.bullets.remove(b)
+    # for b in pyco.bullets:
+    #     b.forward(10)
+    #     b.setdirection(random.randint(b.direction - 10, b.direction + 10))
+    #     b.roll(5)
+    #     if distance(pyco, b) > 2000:
+    #         pyco.bullets.remove(b)
 
     if key(DOWN):
         pyco.point(180)

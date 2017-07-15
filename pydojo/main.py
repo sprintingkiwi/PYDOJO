@@ -568,7 +568,7 @@ class Timer:
 spawned_actors = pygame.sprite.Group()
 
 
-def spawn(actor, speed=None, direction=None, position=None, target=None, setup_behavior=None, update_behavior=None):
+def spawn(actor, speed=None, direction=None, position=None, target=None, setup_behavior=None, update_behavior=None, autoshow=True):
     spawned = clone(actor)
     spawned.spawn_speed = speed
     if direction is not None:
@@ -579,9 +579,15 @@ def spawn(actor, speed=None, direction=None, position=None, target=None, setup_b
         else:
             spawned.goto(position)
     spawned.spawn_target = target
-    spawned_actors.add(spawned)
     spawned.spawn_setup = setup_behavior
     spawned.spawn_update = update_behavior
+    if spawned.hidden and autoshow:
+        spawned.show()
+    if setup_behavior is not None:
+        setup_behavior(spawned)
+    spawned.spawn_update = update_behavior
+    spawned_actors.add(spawned)
+
 
 
 # def randombetween(a, b, *args):
@@ -622,6 +628,10 @@ def execute(path):
         print('DEBUG - execute: Not a Python script. Aborting...')
 
 
+def fullscreen():
+    pygame.display.toggle_fullscreen()
+
+
 def terminate():
     # PYGB support (to do)
     if False:
@@ -641,6 +651,8 @@ def update():
             spawned.point(spawned.spawn_target)
         if spawned.spawn_speed is not None:
             spawned.forward(spawned.spawn_speed)
+        if spawned.spawn_update is not None:
+            spawned.spawn_update(spawned)
 
     # DRAW
     # Transform Actor's images
