@@ -67,6 +67,8 @@ COLORS = [RED,
 
 SUPPORTED_IMAGE_FORMATS = ['png', 'jpg', 'jpeg', 'gif', 'bmp']
 
+# ADVANCED_MODE = False
+
 # Collisions results
 COLLISION = pygame.sprite.Sprite()
 
@@ -588,6 +590,15 @@ def spawn(actor, speed=None, direction=None, position=None, target=None, setup_b
     spawned.spawn_update = update_behavior
     spawned_actors.add(spawned)
 
+
+def check_collisions():
+    others = ACTORS.copy()
+    for a in ACTORS:
+        others.remove(a)
+        for o in others:
+            point = pygame.sprite.collide_mask(a, o)
+            if point is not None:
+                a.collision(o, point)
 
 
 # def randombetween(a, b, *args):
@@ -1135,6 +1146,9 @@ class Actor(pygame.sprite.Sprite):
         self.heading = self.direction - 90
         self.transform_rotate_image()
 
+    def jump(self, speed, height):
+        pass
+
     def roll(self, angle):
         self.heading += angle
         original_rotation_style = self.rotation
@@ -1360,6 +1374,10 @@ class Actor(pygame.sprite.Sprite):
     def kill(self):
         super(Actor, self).kill()
         self.hide()
+
+    @hideaway
+    def collision(self):
+        print(self.costume + ' collided')
 
 
 class Text(Actor):

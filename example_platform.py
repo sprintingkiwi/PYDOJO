@@ -63,7 +63,7 @@ def pybullet_setup(bullet):
     print bullet.tags
 
 def pybullet_movement(bullet):
-    bullet.setdirection(random.randint(int(bullet.direction - 10), int (bullet.direction + 10)))
+    bullet.setdirection(random.randint(int(bullet.direction - 10), int(bullet.direction + 10)))
     bullet.roll(5)
     if distance(pyco, bullet) > 2000:
         bullet.kill()
@@ -98,7 +98,7 @@ while True:
     # SHOOT
     if keydown(SPACE):
         spawn(py,
-              direction=bat,
+              direction=pyco.direction,
               speed=10,
               position=pyco,
               setup_behavior=pybullet_setup,
