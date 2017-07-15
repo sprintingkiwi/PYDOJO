@@ -599,6 +599,7 @@ def check_collisions():
             point = pygame.sprite.collide_mask(a, o)
             if point is not None:
                 a.collision(o, point)
+                o.collision(a, point)
 
 
 # def randombetween(a, b, *args):
@@ -783,6 +784,7 @@ class Actor(pygame.sprite.Sprite):
         self.image = self.costumes_by_name[self.costume]['image']
         self.update_rect()
         # self.actual_scale = [self.width, self.height]
+        self.setup()
 
     # find costume name from image path
     def find_costume_name(self, path):
@@ -1375,8 +1377,11 @@ class Actor(pygame.sprite.Sprite):
         super(Actor, self).kill()
         self.hide()
 
+    def setup(self):
+        print(self.costume + ' starting')
+
     @hideaway
-    def collision(self):
+    def collision(self, other, point):
         print(self.costume + ' collided')
 
 

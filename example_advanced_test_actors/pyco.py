@@ -2,8 +2,7 @@ from pydojo import *
 
 class Pyco(Actor):
 
-    def __init__(self):
-        super(Pyco, self).__init__()
+    def setup(self):
         self.touched_gobo = False
         self.setx(100)
 

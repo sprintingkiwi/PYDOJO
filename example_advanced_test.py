@@ -5,8 +5,8 @@ from example_advanced_test_actors.pyco import *
 # CREATE GAME DISPLAY
 screen(800, 600)
 
-pyco = Pyco()
-gobo = Gobo()
+pyco = Pyco('example_asset/characters/pyco1.png')
+gobo = Gobo('example_asset/characters/gobo.png')
 
 # MAIN LOOP
 gameover = False
