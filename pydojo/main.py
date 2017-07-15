@@ -615,6 +615,18 @@ class Camera:
 CAMERA = Camera()
 
 
+class Timer:
+    def __init__(self, ms):
+        self.start = ticks()
+        self.delta_time = ms
+    def get(self):
+        if ticks() - self.start > self.delta_time:
+            self.start = ticks()
+            return True
+
+
+def spawn(target, speed=10, position=None)
+
 
 # def randombetween(a, b, *args):
 #     if a is int and b is int:
