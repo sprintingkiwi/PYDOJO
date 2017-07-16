@@ -2,7 +2,7 @@ from pydojo import *
 
 screen(800, 600)
 
-background('example_asset/backgrounds/field.png')
+background('example_asset/backgrounds/carpet.png')
 
 topo = Actor('example_asset/characters/mouse.png')
 topo.scale(0.3)
@@ -30,7 +30,7 @@ while not gameover:
         topo.forward(4)
 
     if gatto.collide(topo):
-        # print('preso')
+        print('preso')
         topo.kill()
         # quit()
 

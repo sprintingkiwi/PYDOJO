@@ -7,4 +7,4 @@ class Gobo(Actor):
             self.forward(3)
 
     def collision(self, other, point):
-        write("Hello there!")
+        print("Hello there!")

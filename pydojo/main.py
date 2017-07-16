@@ -23,7 +23,7 @@ import pygame, math, random, copy, gc
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 2.6
+LIBRARY_VERSION = 2.7
 
 # Colors
 BLACK = [0, 0, 0]
@@ -1378,11 +1378,11 @@ class Actor(pygame.sprite.Sprite):
         self.hide()
 
     def setup(self):
-        print(self.costume + ' starting')
+        pass
 
     @hideaway
     def collision(self, other, point):
-        print(self.costume + ' collided')
+        pass
 
 
 class Text(Actor):
