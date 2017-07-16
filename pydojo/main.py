@@ -23,7 +23,7 @@ import pygame, math, random, copy, gc
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 2.6
+LIBRARY_VERSION = 2.7
 
 # Colors
 BLACK = [0, 0, 0]
@@ -66,6 +66,8 @@ COLORS = [RED,
           LAVENDER]
 
 SUPPORTED_IMAGE_FORMATS = ['png', 'jpg', 'jpeg', 'gif', 'bmp']
+
+# ADVANCED_MODE = False
 
 # Collisions results
 COLLISION = pygame.sprite.Sprite()
@@ -314,67 +316,6 @@ def process_gliding():
 ACTORS = pygame.sprite.LayeredUpdates()
 
 
-# One of the most important functions
-def update():
-
-    # DRAW
-    # Transform Actor's images
-    # for actor in ACTORS:
-    #     actor.transform_rotate_image()
-    # Draw screen base color if needed
-    if not screen_info.has_background:
-        screen_info.screen.fill(screen_info.bg_color)
-    # Draw background if needed
-    else:
-        ACTORS.clear(screen_info.screen, screen_info.background)
-    # Draw the visible-Actors group
-    ACTORS.draw(screen_info.screen)
-    # Draw the turtle drawings surface
-    screen_info.screen.blit(screen_info.pen_surface, [0, 0])
-    # Refresh the Pygame screen
-    pygame.display.update()
-
-    # framerate
-    default_clock.tick(game_info.framerate)
-
-    # EVENTS
-    # Refresh the event list
-    events_storage.list = pygame.event.get()
-    # Close pygame window when X icon clicked or ESCAPE pressed
-    for e in events_storage.list:
-        if e.type == pygame.QUIT:
-            terminate()
-        if e.type == pygame.KEYDOWN:
-            if e.key == pygame.K_ESCAPE:
-                terminate()
-    # Refresh mouse position
-    MOUSE.update_events()
-
-    # OTHER
-    # Manage the time for hide and pause methods
-    actual_time = pygame.time.get_ticks()
-    # Compute actors pauses
-    # for actor in actorsInfo.pausedActorsList:
-    #     delta_time = actual_time - actor.start_pause_time
-    #     if delta_time >= actor.pause_time:
-    #         actor.paused = False
-    #         actorsInfo.pausedActorsList.remove(actor)
-    # Compute actors hide time
-    for actor in actors_info.hidden_actors_list:
-        delta_time = actual_time - actor.start_hide_time
-        if delta_time >= actor.hide_time:
-            actor.hidden = False
-            actors_info.hidden_actors_list.remove(actor)
-            # actors_info.draw_list.append(actor)
-            ACTORS.add(actor)
-    # Gliding
-    process_gliding()
-
-
-def UPDATE():
-    update()
-
-
 def Clock():
     return pygame.time.Clock()
 
@@ -615,6 +556,51 @@ class Camera:
 CAMERA = Camera()
 
 
+class Timer:
+    def __init__(self, ms):
+        self.start = ticks()
+        self.delta_time = ms
+
+    def get(self):
+        if ticks() - self.start > self.delta_time:
+            self.start = ticks()
+            return True
+
+
+spawned_actors = pygame.sprite.Group()
+
+
+def spawn(actor, speed=None, direction=None, position=None, target=None, setup_behavior=None, update_behavior=None, autoshow=True):
+    spawned = clone(actor)
+    spawned.spawn_speed = speed
+    if direction is not None:
+        spawned.point(direction)
+    if position is not None:
+        if position == 'random':
+            spawned.gorand()
+        else:
+            spawned.goto(position)
+    spawned.spawn_target = target
+    spawned.spawn_setup = setup_behavior
+    spawned.spawn_update = update_behavior
+    if spawned.hidden and autoshow:
+        spawned.show()
+    if setup_behavior is not None:
+        setup_behavior(spawned)
+    spawned.spawn_update = update_behavior
+    spawned_actors.add(spawned)
+
+
+def check_collisions():
+    others = ACTORS.copy()
+    for a in ACTORS:
+        others.remove(a)
+        for o in others:
+            point = pygame.sprite.collide_mask(a, o)
+            if point is not None:
+                a.collision(o, point)
+                o.collision(a, point)
+
 
 # def randombetween(a, b, *args):
 #     if a is int and b is int:
@@ -654,6 +640,10 @@ def execute(path):
         print('DEBUG - execute: Not a Python script. Aborting...')
 
 
+def fullscreen():
+    pygame.display.toggle_fullscreen()
+
+
 def terminate():
     # PYGB support (to do)
     if False:
@@ -662,6 +652,76 @@ def terminate():
     pygame.quit()
     sys.exit()
     quit()
+
+
+# One of the most important functions
+def update():
+
+    # Manage spawned objects
+    for spawned in spawned_actors:
+        if spawned.spawn_target is not None:
+            spawned.point(spawned.spawn_target)
+        if spawned.spawn_speed is not None:
+            spawned.forward(spawned.spawn_speed)
+        if spawned.spawn_update is not None:
+            spawned.spawn_update(spawned)
+
+    # DRAW
+    # Transform Actor's images
+    # for actor in ACTORS:
+    #     actor.transform_rotate_image()
+    # Draw screen base color if needed
+    if not screen_info.has_background:
+        screen_info.screen.fill(screen_info.bg_color)
+    # Draw background if needed
+    else:
+        ACTORS.clear(screen_info.screen, screen_info.background)
+    # Draw the visible-Actors group
+    ACTORS.draw(screen_info.screen)
+    # Draw the turtle drawings surface
+    screen_info.screen.blit(screen_info.pen_surface, [0, 0])
+    # Refresh the Pygame screen
+    pygame.display.update()
+
+    # framerate
+    default_clock.tick(game_info.framerate)
+
+    # EVENTS
+    # Refresh the event list
+    events_storage.list = pygame.event.get()
+    # Close pygame window when X icon clicked or ESCAPE pressed
+    for e in events_storage.list:
+        if e.type == pygame.QUIT:
+            terminate()
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_ESCAPE:
+                terminate()
+    # Refresh mouse position
+    MOUSE.update_events()
+
+    # OTHER
+    # Manage the time for hide and pause methods
+    actual_time = pygame.time.get_ticks()
+    # Compute actors pauses
+    # for actor in actorsInfo.pausedActorsList:
+    #     delta_time = actual_time - actor.start_pause_time
+    #     if delta_time >= actor.pause_time:
+    #         actor.paused = False
+    #         actorsInfo.pausedActorsList.remove(actor)
+    # Compute actors hide time
+    for actor in actors_info.hidden_actors_list:
+        delta_time = actual_time - actor.start_hide_time
+        if delta_time >= actor.hide_time:
+            actor.hidden = False
+            actors_info.hidden_actors_list.remove(actor)
+            # actors_info.draw_list.append(actor)
+            ACTORS.add(actor)
+    # Gliding
+    process_gliding()
+
+
+def UPDATE():
+    update()
 
 
 # ACTOR CLASS
@@ -724,6 +784,7 @@ class Actor(pygame.sprite.Sprite):
         self.image = self.costumes_by_name[self.costume]['image']
         self.update_rect()
         # self.actual_scale = [self.width, self.height]
+        self.setup()
 
     # find costume name from image path
     def find_costume_name(self, path):
@@ -1087,6 +1148,9 @@ class Actor(pygame.sprite.Sprite):
         self.heading = self.direction - 90
         self.transform_rotate_image()
 
+    def jump(self, speed, height):
+        pass
+
     def roll(self, angle):
         self.heading += angle
         original_rotation_style = self.rotation
@@ -1312,6 +1376,13 @@ class Actor(pygame.sprite.Sprite):
     def kill(self):
         super(Actor, self).kill()
         self.hide()
+
+    def setup(self):
+        pass
+
+    @hideaway
+    def collision(self, other, point):
+        pass
 
 
 class Text(Actor):

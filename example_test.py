@@ -12,7 +12,13 @@ gobo = Actor('example_asset/characters/gobo.png')
 gobo.scale(0.5)
 gobo.goto(800, 500)
 
+spawntime = Timer(500)
+
 while True:
+
+    if spawntime.get():
+        spawn(gobo, speed=10, direction=MOUSE)
+
 
     # if keydown(N):
     #     execute('example_test1.py')
@@ -22,12 +28,12 @@ while True:
     # if keydown(SPACE):
     #     t.roll(30)
 
-    for i in range(20):
-        gobo.scale(1.11)
-        update()
-    for i in range(20):
-        gobo.scale(0.9)
-        update()
+    # for i in range(20):
+    #     gobo.scale(1.11)
+    #     update()
+    # for i in range(20):
+    #     gobo.scale(0.9)
+    #     update()
 
     update()
 ######################################################

@@ -17,7 +17,7 @@ fish.point(60)
 shark.setlayer(10)
 fish.setlayer(1)
 
-print ACTORS.get_layer_of_sprite(shark)
+scaletime = Timer(2000)
 
 # MAIN LOOP
 while True:
@@ -41,6 +41,8 @@ while True:
     # FISH MOVEMENT
     fish.forward(10)
     fish.bounce()
+    if scaletime.get():
+        fish.scale(0.9)
     # print(fish.direction, fish.heading)
     # update screen and events queue
     update()
