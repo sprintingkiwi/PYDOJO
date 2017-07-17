@@ -1,9 +1,11 @@
 from pydojo import *
-from example_advanced_test_actors.gobo import *
-from example_advanced_test_actors.pyco import *
+# from actors.gobo import *
+# from actors.pyco import *
 
 # CREATE GAME DISPLAY
 screen(800, 600)
+
+setup()
 
 pyco = Pyco('example_asset/characters/pyco1.png')
 gobo = Gobo('example_asset/characters/gobo.png')
@@ -12,8 +14,4 @@ gobo = Gobo('example_asset/characters/gobo.png')
 gameover = False
 while not gameover:
 
-    check_collisions()
-
-    ACTORS.update()
-
-    update()
+    mainloop()

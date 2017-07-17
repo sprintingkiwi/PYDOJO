@@ -1,4 +1,4 @@
-import sys, os, py_compile, subprocess, time
+import sys, os, py_compile, subprocess, time, imp
 
 
 def compile_and_execute():
@@ -721,6 +721,23 @@ def update():
 
 
 def UPDATE():
+    update()
+
+
+def setup():
+    # try:
+    items = os.listdir('actors')
+    print items
+    for item in items:
+        if item.split('.')[-1] == 'py':
+            imp.load_source('*', 'actors/' + str(item))
+    # except:
+    #     print('actors directory not found')
+
+
+def mainloop():
+    check_collisions()
+    ACTORS.update()
     update()
 
 
