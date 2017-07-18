@@ -644,6 +644,25 @@ def fullscreen():
     pygame.display.toggle_fullscreen()
 
 
+jumping_actors = pygame.sprite.Group()
+
+
+def process_jumps():
+    for a in jumping_actors:
+        if a.jump_phase == 'up':
+            if a.y > a.jump_starty - a.jump_height:
+                a.sety(a.y - a.jump_step)
+            else:
+                a.jump_phase = 'down'
+        elif a.jump_phase == 'down':
+            if a.y < a.jump_starty:
+                a.sety(a.y + a.jump_step)
+            else:
+                a.jumping = False
+                a.jump_count = 0
+                a.sety(a.jump_starty)
+
+
 def terminate():
     # PYGB support (to do)
     if False:
@@ -656,6 +675,9 @@ def terminate():
 
 # One of the most important functions
 def update():
+
+    # JUMPS
+    process_jumps()
 
     # Manage spawned objects
     for spawned in spawned_actors:
@@ -794,6 +816,9 @@ class Actor(pygame.sprite.Sprite):
         self.width = None
         self.height = None
         # self.raw_img = None
+        self.jump_step = 0
+        self.jumping = False
+        self.jump_count = 0
         self.path = path
         self.load(path, cosname)
         self.costume = self.costumes_by_number[0]['name']
@@ -1118,6 +1143,16 @@ class Actor(pygame.sprite.Sprite):
     def backward(self, steps):
         self.forward(-steps)
 
+    def jump(self, height=100, step=10, jumps=1):
+        if self.jump_count < jumps:
+            self.jump_count += 1
+            self.jump_height = height
+            self.jump_step = step
+            self.jumping = True
+            self.jump_starty = self.y
+            self.jump_phase = 'up'
+            jumping_actors.add(self)
+
     def transform_rotate_image(self):
         self.need_to_rotate = True
         # If the image changed the transform roll functions apply
@@ -1164,9 +1199,6 @@ class Actor(pygame.sprite.Sprite):
         self.direction = (self.direction - angle) % 360
         self.heading = self.direction - 90
         self.transform_rotate_image()
-
-    def jump(self, speed, height):
-        pass
 
     def roll(self, angle):
         self.heading += angle
