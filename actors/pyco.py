@@ -1,4 +1,5 @@
 from pydojo import *
+from gobo import Gobo
 
 class Pyco(Actor):
 
@@ -17,6 +18,6 @@ class Pyco(Actor):
             print("It is test time!")
 
     def collision(self, other, point):
-        if other.costume == "gobo":
+        if type(other) is Gobo:
             self.touched_gobo = True
             print("Hello Gobo!")

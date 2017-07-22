@@ -749,18 +749,27 @@ def UPDATE():
 def setup():
     # try:
     items = os.listdir('actors')
-    print items
-    for item in items:
-        if item.split('.')[-1] == 'py':
-            imp.load_source('*', 'actors/' + str(item))
+    gobo = imp.load_source('gobo', 'actors/gobo.py')
+    # for item in items:
+    #
+    #     if item.split('.')[-1] == 'py':
+    #         print item
+    #         imp.load_source(str(item), 'actors/' + str(item))
     # except:
     #     print('actors directory not found')
+    gobo.Gobo('example_asset/characters/gobo.png')
 
 
 def mainloop():
     check_collisions()
     ACTORS.update()
     update()
+
+
+def find(actor_class):
+    for a in ACTORS:
+        if type(a) is actor_class:
+            return a
 
 
 # ACTOR CLASS
