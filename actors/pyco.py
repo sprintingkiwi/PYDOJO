@@ -7,12 +7,19 @@ class Pyco(Actor):
         self.touched_gobo = False
         self.setx(100)
         self.testtimer = Timer(2000)
+        self.rotate('flip')
 
     def update(self):
 
-        if key(RIGHT) and not self.touched_gobo:
+        if key(RIGHT):
             self.point(90)
             self.forward(10)
+        if key(LEFT):
+            self.point(-90)
+            self.forward(10)
+
+        if keydown(SPACE):
+            self.jump()
 
         if self.testtimer.get():
             print("It is test time!")
