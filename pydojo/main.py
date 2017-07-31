@@ -23,7 +23,7 @@ import pygame, math, random, copy, gc
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 2.7
+LIBRARY_VERSION = 2.8
 
 # Colors
 BLACK = [0, 0, 0]
@@ -655,12 +655,12 @@ def process_jumps():
             else:
                 a.jump_phase = 'down'
         elif a.jump_phase == 'down':
-            if a.y < a.jump_starty:
+            if a.y < a.jump_originaly:
                 a.sety(a.y + a.jump_step)
             else:
                 a.jumping = False
                 a.jump_count = 0
-                a.sety(a.jump_starty)
+                a.sety(a.jump_originaly)
 
 
 def terminate():
@@ -832,6 +832,9 @@ class Actor(pygame.sprite.Sprite):
         self.jump_step = 0
         self.jumping = False
         self.jump_count = 0
+        self.jump_starty = 0
+        self.jump_originaly = 0
+        self.jump_phase = ""
         self.path = path
         self.load(path, cosname)
         self.costume = self.costumes_by_number[0]['name']
@@ -1163,6 +1166,8 @@ class Actor(pygame.sprite.Sprite):
             self.jump_step = step
             self.jumping = True
             self.jump_starty = self.y
+            if self.jump_count == 1:
+                self.jump_originaly = self.y
             self.jump_phase = 'up'
             jumping_actors.add(self)
 

@@ -25,7 +25,7 @@ while True:
         gobo.forward(10)
 
     if keydown(SPACE):
-        gobo.jump()
+        gobo.jump(jumps=2)
 
 
     # if spawntime.get():
