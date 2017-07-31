@@ -11,13 +11,25 @@ t.tag('ostacolo')
 gobo = Actor('example_asset/characters/gobo.png')
 gobo.scale(0.5)
 gobo.goto(800, 500)
+gobo.rotate('flip')
 
 spawntime = Timer(500)
 
 while True:
 
-    if spawntime.get():
-        spawn(gobo, speed=10, direction=MOUSE)
+    if key(RIGHT):
+        gobo.point(90)
+        gobo.forward(10)
+    if key(LEFT):
+        gobo.point(-90)
+        gobo.forward(10)
+
+    if keydown(SPACE):
+        gobo.jump(jumps=2)
+
+
+    # if spawntime.get():
+    #     spawn(gobo, speed=10, direction=MOUSE)
 
 
     # if keydown(N):
