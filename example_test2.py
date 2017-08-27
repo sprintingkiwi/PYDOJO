@@ -22,6 +22,8 @@ print(pyco.costumes)
 
 print(pyco.getposition())
 
+write(load("time_dyno"))
+
 # MAIN LOOP
 while True:
 
