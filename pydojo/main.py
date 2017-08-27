@@ -1,4 +1,4 @@
-import sys, os, py_compile, subprocess, time, imp
+import sys, os, py_compile, subprocess, time, pickle, imp
 
 
 def compile_and_execute():
@@ -23,7 +23,7 @@ import pygame, math, random, copy, gc
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 2.8
+LIBRARY_VERSION = 2.9
 
 # Colors
 BLACK = [0, 0, 0]
@@ -661,6 +661,23 @@ def process_jumps():
                 a.jumping = False
                 a.jump_count = 0
                 a.sety(a.jump_originaly)
+
+
+def save(data, tag):
+    datafile = open("savedata.p", "wrb")
+    if os.stat("savedata.p").st_size == 0:
+        datadict = {}
+    else:
+        datadict = pickle.load(datafile)
+    datadict[tag] = data
+    pickle.dump(datadict, datafile)
+    print(tag + " saved")
+
+
+def load(tag):
+    datafile = open("savedata.p", "rb")
+    data = pickle.load(datafile)[tag]
+    return data
 
 
 def terminate():
