@@ -23,7 +23,7 @@ import pygame, math, random, copy, gc
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 2.9
+LIBRARY_VERSION = 3.0
 
 # Colors
 BLACK = [0, 0, 0]
@@ -589,17 +589,16 @@ def spawn(actor, speed=None, direction=None, position=None, target=None, setup_b
         setup_behavior(spawned)
     spawned.spawn_update = update_behavior
     spawned_actors.add(spawned)
+    return spawned
 
 
-def check_collisions():
-    others = ACTORS.copy()
-    for a in ACTORS:
-        others.remove(a)
-        for o in others:
-            point = pygame.sprite.collide_mask(a, o)
-            if point is not None:
-                a.collision(o, point)
-                o.collision(a, point)
+def tagcollide(tag1, tag2):
+    for a in getactors(tag1):
+        for b in getactors(tag2):
+            if Actor.collide(a, b):
+                COLLISION.object1 = a
+                COLLISION.object2 = b
+                return True
 
 
 # def randombetween(a, b, *args):
@@ -779,6 +778,16 @@ def UPDATE():
 #
 #     # except:
 #     #     print('actors directory not found')
+
+def check_collisions():
+    others = ACTORS.copy()
+    for a in ACTORS:
+        others.remove(a)
+        for o in others:
+            point = pygame.sprite.collide_mask(a, o)
+            if point is not None:
+                a.collision(o, point)
+                o.collision(a, point)
 
 
 def mainloop():
