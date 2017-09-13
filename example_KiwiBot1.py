@@ -2,8 +2,7 @@ from pydojo import *
 from pyfirmata import *
 from time import sleep
 
-# inizializzo
-pygame.init()
+# initialize
 width = 800
 height = 600
 SCREEN(width, height)
@@ -87,13 +86,11 @@ while True:
 
     if keydown(RIGHT):
         power_right_motor()
-
     if keyup(RIGHT):
         shutdown_right_motor()
 
     if keydown(LEFT):
         power_left_motor()
-
     if keyup(LEFT):
         shutdown_left_motor()
 
@@ -107,13 +104,13 @@ while True:
     left_trigger = trigger('left')
     right_trigger = trigger('right')
 
-    # reverse gear
+    # Reverse gear
     if buttondown(0):
         direction = 'back'
     else:
         direction = 'forward'
 
-    # low-level motor control
+    # Low-level motor control
     if buttondown(4):
         power_left_motor()
     if buttondown(5):
@@ -122,21 +119,13 @@ while True:
         shutdown_left_motor()
     if not buttondown(5):
         shutdown_right_motor()
-    #if buttondown(1):
-        #if  left_trigger > 0.2:
-            #power_left_motor(left_trigger)
-            #print left_trigger
-        #if  right_trigger > 0.2:
-            #power_right_motor(right_trigger)
-            #print right_trigger
 
-    # button B pressed
+    # Enable high-level control pressing B button
     if buttondown(1):
         high_level_control = True
-        counter += 1
 
-    # high-level motor control
-    if high_level_control and (counter % 10 == 0):
+    # High-level motor control
+    if high_level_control:
         if  right_trigger > 0.2:
             right_power = right_trigger
             left_power = right_trigger
@@ -155,15 +144,18 @@ while True:
                 left_power = 0
 
             power_left_motor(left_power)
-            power_right_motor((right_power) * 0.8)
+            power_right_motor(right_power)
             print(left_power, right_power)
 
-    #clacson
+    # On-board LED
     if buttondown(2):
         honk(1)
     else:
         honk(0)
 
-    gobo.transform_rotate_image()
-    sleep(0.01)
-    UPDATE()
+    # More inter-frame delay (and input lag) when high-level control enabled
+    # because otherwise Arduino gets too many inputs
+    if high_level_control:
+        sleep(0.1)
+        
+    update()
