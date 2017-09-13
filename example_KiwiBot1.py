@@ -1,5 +1,6 @@
 from pydojo import *
 from pyfirmata import *
+from time import sleep
 
 # inizializzo
 pygame.init()
@@ -7,7 +8,7 @@ width = 800
 height = 600
 SCREEN(width, height)
 
-gobo = Actor('example_library/gobo.png')
+gobo = Actor('example_asset/characters/gobo.png')
 gobo.goto(width/2, height/2)
 
 os.system('sudo rfcomm bind /dev/rfcomm0  00:15:83:35:86:A2 1')
@@ -20,7 +21,7 @@ RF = uno.get_pin('d:7:o')
 RB = uno.get_pin('d:6:o')
 LF = uno.get_pin('d:9:o')
 LB = uno.get_pin('d:8:o')
-clacson = uno.get_pin('d:3:p')
+clacson = uno.get_pin('d:13:o')
 
 RF.write(True)
 RB.write(False)
