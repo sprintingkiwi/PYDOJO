@@ -3,11 +3,20 @@
 # LMB + move: rotate
 # RMB + move: pan
 # Scroll wheel: zoom in/out
+import sys, pygame
+from pygame.locals import *
+from pygame.constants import *
+from OpenGL.GL import *
+from OpenGL.GLU import *
 
 # IMPORT OBJECT LOADER
-from pydojo import *
+from obj_loader import *
 
-screen(800, 600, opengl=True)
+pygame.init()
+viewport = (800,600)
+hx = viewport[0]/2
+hy = viewport[1]/2
+srf = pygame.display.set_mode(viewport, OPENGL | DOUBLEBUF)
 
 glLightfv(GL_LIGHT0, GL_POSITION,  (-40, 200, 100, 0.0))
 glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2, 0.2, 0.2, 1.0))
@@ -19,13 +28,13 @@ glEnable(GL_DEPTH_TEST)
 glShadeModel(GL_SMOOTH)           # most obj files expect to be smooth-shaded
 
 # LOAD OBJECT AFTER PYGAME INIT
-obj = OBJ("cube.obj", swapyz=True)
+obj = OBJ(sys.argv[1], swapyz=True)
 
 clock = pygame.time.Clock()
 
 glMatrixMode(GL_PROJECTION)
 glLoadIdentity()
-width, height = screen_info.resolution
+width, height = viewport
 gluPerspective(90.0, width/float(height), 1, 100.0)
 glEnable(GL_DEPTH_TEST)
 glMatrixMode(GL_MODELVIEW)
@@ -34,12 +43,7 @@ rx, ry = (0,0)
 tx, ty = (0,0)
 zpos = 5
 rotate = move = False
-
-pyco = Actor('example_asset/characters/pyco1.png')
-pyco.goto(100, 100)
-
-gameover = False
-while not gameover:
+while 1:
     clock.tick(30)
     for e in pygame.event.get():
         if e.type == QUIT:
@@ -72,4 +76,4 @@ while not gameover:
     glRotate(rx, 0, 1, 0)
     glCallList(obj.gl_list)
 
-    update()
+    pygame.display.flip()
