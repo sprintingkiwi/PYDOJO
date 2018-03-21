@@ -4,28 +4,61 @@
 # COLLISIONS, ROTATION AND UPDATE
 from pydojo import *
 screen(1280, 720)
-t = Actor('example_asset/characters/terrain.png')
-t.right(90)
-t.tag('ostacolo')
 
+pyco = Actor('example_asset/characters/pyco1.png')
+pyco.hide()
+pyco.tag("a")
 gobo = Actor('example_asset/characters/gobo.png')
-gobo.scale(0.5)
-gobo.goto(800, 500)
-gobo.rotate('flip')
+gobo.hide()
+gobo.tag("b")
 
 spawntime = Timer(500)
 
+lista = []
+listb = []
+
 while True:
+    if spawntime.get():
+        a = spawn(pyco, speed=10, setup_behavior=Actor.gorand)
+        lista.append(a)
+        b = spawn(gobo, speed=10, direction=180, setup_behavior=Actor.gorand)
+        listb.append(b)
 
-    if key(RIGHT):
-        gobo.point(90)
-        gobo.forward(10)
-    if key(LEFT):
-        gobo.point(-90)
-        gobo.forward(10)
+    # for i in lista:
+    #     if a.collide("b"):
+    #         print("Adesso funziona")
 
-    if keydown(SPACE):
-        gobo.jump(jumps=2)
+    if tagcollide("a", "b"):
+        print("It works!")
+        COLLISION.object1.kill()
+        COLLISION.object2.kill()
+
+    update()
+
+
+
+# t = Actor('example_asset/characters/terrain.png')
+# t.right(90)
+# t.tag('ostacolo')
+#
+# gobo = Actor('example_asset/characters/gobo.png')
+# gobo.scale(0.5)
+# gobo.goto(800, 500)
+# gobo.rotate('flip')
+#
+# spawntime = Timer(500)
+#
+# while True:
+#
+#     if key(RIGHT):
+#         gobo.point(90)
+#         gobo.forward(10)
+#     if key(LEFT):
+#         gobo.point(-90)
+#         gobo.forward(10)
+#
+#     if keydown(SPACE):
+#         gobo.jump(jumps=2)
 
 
     # if spawntime.get():
@@ -47,7 +80,7 @@ while True:
     #     gobo.scale(0.9)
     #     update()
 
-    update()
+    # update()
 ######################################################
 
 ######################################################
