@@ -247,9 +247,9 @@ def colorscale(interval=1):
 def screen(w, h, fullscreen=False):
     screen_info.resolution = [w, h]
     if fullscreen:
-        screen_info.screen = pygame.display.set_mode([w, h], pygame.FULLSCREEN)
+        screen_info.screen = pygame.display.set_mode([w, h], pygame.FULLSCREEN|pygame.DOUBLEBUF)
     else:
-        screen_info.screen = pygame.display.set_mode([w, h])
+        screen_info.screen = pygame.display.set_mode([w, h], pygame.DOUBLEBUF)
     # Create surface for turtle drawings
     create_pen_surface()
     # Get screen center
@@ -296,7 +296,7 @@ def setbackground(name):
     screen_info.background = screen_info.backgrounds[name]
     screen_info.screen.blit(screen_info.background, (0, 0))
 
-
+default_font = pygame.font.Font(None, 30)
 default_clock = pygame.time.Clock()
 
 
@@ -327,6 +327,11 @@ def wait(ms):
 def ticks():
     return pygame.time.get_ticks()
 
+def print_fps():
+    #screen_info.screen.fill(pygame.Color('black'))
+    screen_info.screen.blit(screen_info.background, (0,0))
+    fps = default_font.render(str(int(default_clock.get_fps())), True, pygame.Color('white'))
+    screen_info.screen.blit(fps, (50,50))
 
 # def copy_cos_dict(target):
 #     newdict = target.copy()
@@ -1011,19 +1016,19 @@ class Actor(pygame.sprite.Sprite):
 
     def setx(self, x):
         self.x = x
-        self.update_position()
+        self.rect.centerx = self.x
 
     def sety(self, y):
         self.y = y
-        self.update_position()
+        self.rect.centery = self.y
 
     def changex(self, delta_x):
-        self.x = self.x + delta_x
-        self.update_position()
+        self.x += delta_x
+        self.rect.centerx = self.x
 
     def changey(self, delta_y):
-        self.y = self.y + delta_y
-        self.update_position()
+        self.y += delta_y
+        self.rect.centery = self.y
 
     def getposition(self):
         return [self.x, self.y]
@@ -1061,7 +1066,8 @@ class Actor(pygame.sprite.Sprite):
                                self.pencolor,
                                [int(self.x), int(self.y)],
                                self.pensize)
-        self.update_position()
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
 
     def setposition(self, *args):
         self.goto(*args)
@@ -1091,7 +1097,8 @@ class Actor(pygame.sprite.Sprite):
                                self.pencolor,
                                [int(self.x), int(self.y)],
                                self.pensize)
-        self.update_position()
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
 
     def pendown(self):
         self.penstate = 'down'
@@ -1162,6 +1169,7 @@ class Actor(pygame.sprite.Sprite):
 
     # @pausable
     def forward(self, steps):
+        direction_radians = math.radians(self.direction)
         if self.penstate == 'down':
             start_x = self.x
             start_y = self.y
@@ -1171,13 +1179,14 @@ class Actor(pygame.sprite.Sprite):
                                    [int(start_x), int(start_y)],
                                    self.pensize)
                 # pygame.display.update()
-                start_x = self.x + i * math.sin(math.radians(self.direction))
-                start_y = self.y + i * -math.cos(math.radians(self.direction))
-        self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
-        self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
+                start_x = self.x + i * math.sin(direction_radians)
+                start_y = self.y + i * -math.cos(direction_radians)
+        self.x += steps * math.sin(direction_radians)
+        self.y += steps * -math.cos(direction_radians)
         # if self.bounce:
         #     self.bounce_on_edge()
-        self.update_position()
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
 
     def back(self, steps):
         self.forward(-steps)
