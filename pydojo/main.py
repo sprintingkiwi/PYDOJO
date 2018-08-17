@@ -884,14 +884,24 @@ class Actor(pygame.sprite.Sprite):
     # update rect as the image changes
     def update_rect(self):
         self.rect = self.image.get_rect()
-        self.update_position()
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
         self.size = self.image.get_size()
         self.width = self.image.get_width()
         self.height = self.image.get_height()
+        # Crea la collision mask per diminuire il carico di controllo della collide_mask:
+        # https://www.pygame.org/docs/ref/sprite.html#pygame.sprite.collide_mask
+        self.mask = pygame.mask.from_surface(self.image)
 
     def update_position(self):
-        self.rect.centerx = int(self.x)
-        self.rect.centery = int(self.y)
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
+
+    # Metodo update_position originale
+    def old_update_position(self):
+        _int = int
+        self.rect.centerx = _int(self.x)
+        self.rect.centery = _int(self.y)
 
     # load Actor's image
     def load(self, path, cosname=None):
@@ -1395,20 +1405,24 @@ class Actor(pygame.sprite.Sprite):
     # Mask collision
     @hideaway
     def collide(self, target):
-        if isinstance(target, Actor):
+        if self.hidden:
+            return
+        if target.__class__ == Actor or isinstance(target, Actor):
             if not target.hidden:
-                self.update_position()
-                target.update_position()
-                result = pygame.sprite.collide_mask(self, target)
-                if result is not None:
+                self.rect.centerx = self.x
+                self.rect.centery = self.y
+                target.rect.centerx = target.x
+                target.rect.centery = target.y
+                result = pygame_sprite_collide_mask(self, target)
+                if result:
                     COLLISION.point = result
                     COLLISION.object = target
                     return True
                 else:
                     return False
         elif type(target) is list:
-            for a in target:
-                if self.collide(a):
+            for t in targets:
+                if t.hidden:
                     return True
         elif type(target) is str:
             if target in game_info.tagged_actors:
@@ -1424,14 +1438,21 @@ class Actor(pygame.sprite.Sprite):
     # Rect collision
     @hideaway
     def rectcollide(self, target):
-        self.update_position()
-        target.update_position()
+        if self.hidden:
+            return
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
+        target.rect.centerx = target.x
+        target.rect.centery = target.y
         if not target.hidden:
             return self.rect.colliderect(target.rect)
 
     @hideaway
     def collidepoint(self, x=0, y=0):
-        self.update_position()
+        if self.hidden:
+            return
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
         if type(x) is list or type(x) is tuple:
             return self.rect.collidepoint(x)
         else:
@@ -1451,15 +1472,14 @@ class Actor(pygame.sprite.Sprite):
 
     @hideaway
     def hide(self, t=-1):
-        if not self.hidden:
-            self.hidden = True
-            ACTORS.remove(self)
-            if t >= 0:
-                actors_info.hidden_actors_list.append(self)
-                self.hide_time = t * 1000
-                self.start_hide_time = pygame.time.get_ticks()
-        else:
-            pass
+        if self.hidden:
+            return
+        self.hidden = True
+        ACTORS.remove(self)
+        if t >= 0:
+            actors_info.hidden_actors_list.append(self)
+            self.hide_time = t * 1000
+            self.start_hide_time = pygame.time.get_ticks()
 
     def show(self):
         if self.hidden:
@@ -1484,6 +1504,8 @@ class Actor(pygame.sprite.Sprite):
 
     @hideaway
     def collision(self, other, point):
+        if self.hidden:
+            return
         pass
 
 
@@ -1805,3 +1827,5 @@ def trigger(hand, pad=0):
     elif not gamepad_manager.no_gamepad_found:
         print('no gamepad found...')
         gamepad_manager.no_gamepad_found = True
+
+__all__ = list(globals().keys())
