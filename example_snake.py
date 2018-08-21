@@ -1,30 +1,34 @@
-from pydojo import *
+from pydojo.main import *
 
 width = 1280
 height = 720
 screen(width, height)
 
 head = Actor('example_asset/characters/square.png')
-head.speed = 5
+head.speed = 10
 head.scale(0.5)
 head.tag('snake')
 head.setlayer(2)
 
 tail = []
 tailcoords = []
+for i in range(10):
+    tailcoords.insert(0, [head.x, head.y])
+
 food = []
 
 apple = Actor('example_asset/characters/apple.png')
 apple.setlayer(1)
 apple.scale(0.5)
+apple.tag('t')
 apple.hide()
 
-for i in range(10):
+for i in range(20):
     m = clone(apple)
     m.gorand()
-    while m.collide('t'):
-        m.gorand()
     m.show()
+    while m.collide('t') or m.collide('snake'):
+        m.gorand()
     m.tag('food')
     food.append(m)
 
