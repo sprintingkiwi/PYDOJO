@@ -1,4 +1,4 @@
-from pydojo import *
+from pydojo.main import *
 
 
 def terminate():
@@ -31,13 +31,13 @@ def events():
     if keydown(A):
         music.volumeup(10)
         print('music volume up')
-        print music.volume
-        print music.get_volume()
+        print(music.volume)
+        print(music.get_volume())
     if keydown(S):
         music.volumedown(10)
         print('music volume down')
-        print music.volume
-        print music.get_volume()
+        print(music.volume)
+        print(music.get_volume())
 
 
 title = Text("Pong", name="MV Boli", fontsize=96, color=[0, 255, 0])

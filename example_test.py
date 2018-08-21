@@ -2,7 +2,7 @@
 
 ######################################################
 # COLLISIONS, ROTATION AND UPDATE
-from pydojo import *
+from pydojo.main import *
 screen(1280, 720)
 
 pyco = Actor('example_asset/characters/pyco1.png')

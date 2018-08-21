@@ -1,4 +1,4 @@
-from pydojo import *
+from pydojo.main import *
 
 screen(800, 600)
 
