@@ -730,21 +730,60 @@ def process_jumps():
                 a.sety(a.jump_originaly)
 
 
+#= PERSISTENCE WITH PICKLE ========================================================================
+
+DB_FILENAME = "savedata.p"
+
+
 def save(data, tag):
-    datafile = open("savedata.p", "wrb")
-    if os.stat("savedata.p").st_size == 0:
+    datadict = _load_dict()
+    datadict[tag] = data
+    datafile = open(DB_FILENAME, "wb")
+    pickle.dump(datadict, datafile, protocol=2)
+    print(tag, "saved:", data)
+
+
+# Original save function
+def old_save(data, tag):
+    datafile = open(DB_FILENAME, "wb")
+    if os.stat(DB_FILENAME).st_size == 0:
         datadict = {}
     else:
         datadict = pickle.load(datafile)
     datadict[tag] = data
-    pickle.dump(datadict, datafile)
+    pickle.dump(datadict, datafile, protocol=2)
     print(tag + " saved")
 
 
+def _load_dict():
+    try:
+        datafile = open(DB_FILENAME, "rb")
+    except IOError:
+        return {}
+    except:
+        print("error opening:", DB_FILENAME)
+        return None
+    return pickle.load(datafile)
+
+
+
 def load(tag):
+    data = _load_dict()
+    if data is None:
+        print("data loaded is None")
+        return None
+    if tag not in data:
+        print("tag", tag, "non trovato in", DB_FILENAME)
+        return None
+    return data[tag]
+
+
+# Metodo di loading originale
+def old_load(tag):
     datafile = open("savedata.p", "rb")
     data = pickle.load(datafile)[tag]
     return data
+#==================================================================================================
 
 
 def terminate():
@@ -969,7 +1008,7 @@ class Actor(pygame.sprite.Sprite):
         # https://www.pygame.org/docs/ref/sprite.html#pygame.sprite.collide_mask
         self.mask = pygame.mask.from_surface(self.image)
 
-    # minor optimization
+    # Minor optimization
     def update_position(self):
         self.rect.centerx = self.x
         self.rect.centery = self.y
