@@ -1,27 +1,90 @@
-import sys, os, py_compile, subprocess, time, pickle, imp
 
+#from __future__ import print_function
+
+#= COMPILE AND EXECUTE ============================================================================
+import os, py_compile, shutil, subprocess, sys
+
+
+def execute(path):
+    name = path.split(os.sep)[-1]
+    extension = os.path.splitext(name)[1]
+    print("name", name, "extension", extension)
+    if extension != ".py":
+        print("DEBUG - execute: Not a Python script. Aborting...")
+
+    #print("Compiling", name)
+    #py_compile.compile(name)
+    #pycname = name.rsplit(".", 1)[0] + ".pyc"
+    pycname = name.rsplit(".", 1)[0] + ".py"
+    print("Executing", pycname)
+    subprocess.call(["python", pycname])
+    # quit()
+
+def old_execute(path):
+    name = path.split(os.sep)[-1]
+    extension = os.path.splitext(name)[1]
+    if extension != 'py':
+        print('DEBUG - execute: Not a Python script. Aborting...')
+
+    print('Compiling ' + name)
+    py_compile.compile(name)
+    #pycname = name.split('.')[0] + '.pyc'
+    pycname = name.split('.')[0] + '.py'
+    print('Executing ' + pycname)
+    subprocess.call(['python', pycname])
+    # quit()
 
 def compile_and_execute():
-    name = sys.argv[0].split('/')[-1]
-    extension = name.split('.')[1]
+    parts = sys.argv[0].split(os.sep)
+    if len(parts)==1:
+        name = os.getcwd()+os.sep+sys.argv[0]
+    else:
+        name = sys.argv[0]
+        
+    #name = sys.argv[0].split('/')[-1]
+    #name = os.getcwd()+os.sep+sys.argv[0]
+    print(name)
+    extension = name.rsplit('.')[-1]
     if extension == 'py':
-        print('Compiling ' + name)
-        py_compile.compile(name)
-        pycname = name.split('.')[0] + '.pyc'
-        print('Executing ' + pycname)
-        subprocess.call(['python', pycname])
+        print('* Compiling ' + name)
+        compile_path = py_compile.compile(name,doraise=True)
+        print("* Compiled at: " + compile_path)
+        #reverse split
+        pycname = name.rsplit('.',1)[0] + '.cpython-36.pyc'
+        shutil.move(compile_path, pycname)
+        print('* Executing ' + pycname)
+        #subprocess.call(['python3', pycname],stderr=True)
+        if sys.version_info[0] == 2:
+            subprocess.run(['python', pycname], check=True)
+        else:
+            subprocess.run(['python3', pycname], check=True) 
         time.sleep(0.1)
         # print('Removing ' + pycname)
         # os.remove(pycname)
         quit()
+    else:
+        print("else branch ", extension)
 
 
-compile_and_execute()
+#compile_and_execute()
 
-import pygame, math, random, copy, gc
 
+#= ROBE DI PYGAME =================================================================================
+
+import pygame
 pygame.init()
 
+#from pygame.sprite import collide_mask as pygame_sprite_collide_mask
+
+# This function come from Pygame's file sprite.py and it was edited dew to performance needs
+# If there is some strange behaviour decomment the import up here
+def pygame_sprite_collide_mask(left, right):
+    return left.mask.overlap(right.mask, (right.rect[0]-left.rect[0], right.rect[1]-left.rect[1]))
+
+
+#= DOJO LIBRARY ===================================================================================
+
+import math, random, copy, gc, time, pickle, imp
 # CONSTANTS
 LIBRARY_VERSION = 3.0
 
@@ -623,25 +686,25 @@ def tagcollide(tag1, tag2):
 #     return wrapper
 
 
-def hideaway(func):
-    def wrapper(self, *args):
-        if not self.hidden:
-            return func(self, *args)
-    return wrapper
-
-
-def execute(path):
-    name = path.split('/')[-1]
-    extension = name.split('.')[1]
-    if extension == 'py':
-        print('Compiling ' + name)
-        py_compile.compile(name)
-        pycname = name.split('.')[0] + '.pyc'
-        print('Executing ' + pycname)
-        subprocess.call(['python', pycname])
-        # quit()
-    else:
-        print('DEBUG - execute: Not a Python script. Aborting...')
+#def hideaway(func):
+#    def wrapper(self, *args):
+#        if not self.hidden:
+#            return func(self, *args)
+#    return wrapper
+#
+#
+#def execute(path):
+#    name = path.split('/')[-1]
+#    extension = name.split('.')[1]
+#    if extension == 'py':
+#        print('Compiling ' + name)
+#        py_compile.compile(name)
+#        pycname = name.split('.')[0] + '.pyc'
+#        print('Executing ' + pycname)
+#        subprocess.call(['python', pycname])
+#        # quit()
+#    else:
+#        print('DEBUG - execute: Not a Python script. Aborting...')
 
 
 def fullscreen():
@@ -785,6 +848,19 @@ def UPDATE():
 #     #     print('actors directory not found')
 
 def check_collisions():
+    len_of_actors = len(ACTORS)
+    for m in range(len_of_actors):
+        actor = ACTORS[m]
+        for n in range(m, len_of_actors):
+            other = ACTORS[n]
+            point = pygame_sprite_collide_mask(actor, other)
+            if point:
+                actor.collision(other, point)
+                other.collision(actor, point)
+
+
+# Funzione check_collisions originale
+def old_check_collisions():
     others = ACTORS.copy()
     for a in ACTORS:
         others.remove(a)
@@ -889,10 +965,11 @@ class Actor(pygame.sprite.Sprite):
         self.size = self.image.get_size()
         self.width = self.image.get_width()
         self.height = self.image.get_height()
-        # Crea la collision mask per diminuire il carico di controllo della collide_mask:
+        # Create mask collision to reduce the load chk of collide_mask:
         # https://www.pygame.org/docs/ref/sprite.html#pygame.sprite.collide_mask
         self.mask = pygame.mask.from_surface(self.image)
 
+    # minor optimization
     def update_position(self):
         self.rect.centerx = self.x
         self.rect.centery = self.y
@@ -1403,7 +1480,7 @@ class Actor(pygame.sprite.Sprite):
             return False
 
     # Mask collision
-    @hideaway
+    #@hideaway
     def collide(self, target):
         if self.hidden:
             return
@@ -1423,20 +1500,27 @@ class Actor(pygame.sprite.Sprite):
         elif type(target) is list:
             for t in targets:
                 if t.hidden:
+                    continue
+                if self.collide(t):
                     return True
-        elif type(target) is str:
-            if target in game_info.tagged_actors:
-                otherslist = list(game_info.tagged_actors[target])
-                if self in otherslist:
-                    otherslist.remove(self)
-                for a in otherslist:
-                    if self.collide(a):
-                        return True
-            else:
-                print('DEBUG: Tag does not exist')
+        else:
+            # Da' per scontato che sia una stringa per migliorare le prestazioni.
+            # Se si volesse ritornare come prima mettere al posto di else:
+            #elif type(target) is str:
+            # Attualmente in caso di non-stringa printera' il messaggio di DEBUG
+            if target not in game_info.tagged_actors:
+                print("DEBUG: Tag" , target, "does not exist")
+                return
+            for t in game_info.tagged_actors[target]:
+                if t == self:
+                    continue
+                if t.hidden:
+                    continue
+                if self.collide(t):
+                    return True
 
     # Rect collision
-    @hideaway
+    #@hideaway
     def rectcollide(self, target):
         if self.hidden:
             return
@@ -1447,7 +1531,7 @@ class Actor(pygame.sprite.Sprite):
         if not target.hidden:
             return self.rect.colliderect(target.rect)
 
-    @hideaway
+    #@hideaway
     def collidepoint(self, x=0, y=0):
         if self.hidden:
             return
@@ -1470,7 +1554,7 @@ class Actor(pygame.sprite.Sprite):
     #     self.paused = False
     #     actors_info.paused_actors_list.remove(self)
 
-    @hideaway
+    #@hideaway
     def hide(self, t=-1):
         if self.hidden:
             return
@@ -1502,7 +1586,7 @@ class Actor(pygame.sprite.Sprite):
     def setup(self):
         pass
 
-    @hideaway
+    #@hideaway
     def collision(self, other, point):
         if self.hidden:
             return
