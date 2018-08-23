@@ -16,14 +16,14 @@ hero.setx(100)
 
 # Clone scale bug?
 # hero.scale(2)
-print hero.size, hero.rect
+print (hero.size, hero.rect)
 enemy = clone(hero)
 enemy.setx(600)
 enemy.scale(2)
 
-print hero.size, hero.rect, enemy.rect, enemy.size
+print (hero.size, hero.rect, enemy.rect, enemy.size)
 
-print 'IN GAME DICT DEBUG'
+print ('IN GAME DICT DEBUG')
 
 enemy2 = clone(hero)
 enemy2.setx(1000)
@@ -31,8 +31,8 @@ enemy2.scale(0.5)
 
 instructions = Text("press A or D to move, J-K-L to attack, U-I-O to defend!", color=CYAN)
 
-print hero.animations
-print hero.animation
+print (hero.animations)
+print (hero.animation)
 
 # MAIN LOOP
 while True:
@@ -57,22 +57,22 @@ while True:
     # Action Control
     if keydown(J):
         hero.action = 'kisami tsuki'
-        print hero.action + '!'
+        print (hero.action + '!')
     if keydown(K):
         hero.action = 'mae geri'
-        print hero.action + '!'
+        print (hero.action + '!')
     if keydown(L):
         hero.action = 'yoko geri'
-        print hero.action + '!'
+        print (hero.action + '!')
     if keydown(U):
         hero.action = 'age uke'
-        print hero.action + '!'
+        print (hero.action + '!')
     if keydown(I):
         hero.action = 'gedan barai'
-        print hero.action + '!'
+        print (hero.action + '!')
     if keydown(O):
         hero.action = 'gedan barai'
-        print hero.action + '!'
+        print (hero.action + '!')
 
     if hero.action == 'kamae idle':
         hero.speed = 0
