@@ -16,13 +16,6 @@ punti.goto(100, 100)
 # counter variable
 inizioconta = ticks()
 
-pyco.pendown()
-
-# Point bug?
-# prova = Actor()
-# print type(180 - pyco.direction)
-# pyco.point(90 - prova.direction)
-
 # MAIN LOOP
 while True:
 

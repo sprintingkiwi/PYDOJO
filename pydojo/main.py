@@ -15,8 +15,8 @@ def compile_and_execute():
         # os.remove(pycname)
         quit()
 
-
-compile_and_execute()
+# Uncomment to enable compiled mode
+#compile_and_execute()
 
 import pygame, math, random, copy, gc
 
@@ -351,7 +351,8 @@ def clone(target):
     cloned_actor.direction = target.direction
     # image orientation
     cloned_actor.heading = target.heading
-    cloned_actor.layer = target.layer
+    # cloned_actor.layer = target.layer
+    ACTORS.change_layer(cloned_actor, target.layer)
     cloned_actor.count = 0
     cloned_actor.paused = False
     if target.hidden:
@@ -663,7 +664,7 @@ def process_jumps():
 
 
 def save(data, tag):
-    datafile = open("savedata.p", "wrb")
+    datafile = open("savedata.p", "w")
     if os.stat("savedata.p").st_size == 0:
         datadict = {}
     else:
@@ -820,7 +821,7 @@ class Actor(pygame.sprite.Sprite):
         self.direction = 90
         # image orientation
         self.heading = 0
-        self.layer = 0
+        #self.layer = 0
         self.count = 0
         self.paused = False
         self.hidden = False
@@ -1339,7 +1340,8 @@ class Actor(pygame.sprite.Sprite):
         # self.actual_scale = [self.image.get_rect().width, self.image.get_rect().height]
 
     def setlayer(self, layer):
-        self.layer = layer
+        #self.layer = layer
+        ACTORS.change_layer(self, layer)
         if not self.hidden:
             ACTORS.change_layer(self, layer)
 
