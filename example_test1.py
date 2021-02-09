@@ -33,7 +33,7 @@ while True:
         print('funziona')
         hey.play()
         print(dyno.getcostume())
-        save(ticks(), "time_dyno")
+        #save(ticks(), "time_dyno")
 
     if keydown(RIGHT):
         print('destra')

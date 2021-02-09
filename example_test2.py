@@ -22,8 +22,6 @@ print(pyco.costumes)
 
 print(pyco.getposition())
 
-write(load("time_dyno"))
-
 # MAIN LOOP
 while True:
 
@@ -40,7 +38,6 @@ while True:
     # Loop Pyco's costumes
     pyco.nextcostume(pause=1)
     pyco.right(10)
-    print pyco.direction
 
     if keydown(B):
         setbackground('bedroom')
@@ -49,13 +46,11 @@ while True:
         setbackground('citynight')
     if keydown(F):
         fill(TOMATO)
-        print screen_info.backgrounds
+        print(screen_info.backgrounds)
 
     if keydown(H):
-        print "flip!"
         pyco.flip('horizontal')
     if keydown(V):
-        print "flip!"
         pyco.flip('vertical')
 
     wait(100)

@@ -1,5 +1,5 @@
 from pydojo import *
-from gobo import Gobo
+from . gobo import Gobo
 
 class Pyco(Actor):
 

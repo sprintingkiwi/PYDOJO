@@ -52,7 +52,7 @@ while True:
             for i in range(10):
                 t = clone(head)
                 t.tag('snake')
-                t.layer = 2
+                t.setlayer(2)
                 tail.append(t)
             f.hide()
             food.remove(f)
