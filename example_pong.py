@@ -28,6 +28,13 @@ def events():
         playerL.forward(5)
     if key(ESCAPE):
         terminate()
+    if keydown(A):
+        music.volumeup(10)
+        print('music volume up')
+    if keydown(S):
+        music.volumedown(10)
+        print('music volume down')
+
 
 
 title = Text("Pong", name="MV Boli", fontsize=96, color=[0, 255, 0])
@@ -60,7 +67,8 @@ ball = Actor("example_asset/characters/seastar1.png")
 ball.scale(0.4)
 
 music = Sound("example_asset/sounds/littlesong.wav")
-
+# music.setvolume(50)
+# music.set_volume(0.5)
 music.play(-1)
 
 while True:
@@ -89,7 +97,7 @@ while True:
 
         # ball movement
         ball.forward(speed)
-        ball.heading += 1
+        ball.roll(1)
 
         # time management
         actualtime = ticks() - starttime

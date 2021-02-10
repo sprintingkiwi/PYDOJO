@@ -7,12 +7,10 @@ background('example_asset/backgrounds/carpet.png')
 topo = Actor('example_asset/characters/mouse.png')
 topo.scale(0.3)
 topo.goto(400, 300)
-# topo.rotation = 'flip'
 
 gatto = Actor('example_asset/characters/cat.png')
 gatto.scale(0.5)
 gatto.goto(200, 100)
-# gatto.rotation = 'flip'
 
 #MAIN LOOP
 gameover = False
@@ -28,7 +26,8 @@ while not gameover:
         topo.forward(4)
 
     if gatto.collide(topo):
-        # print('preso')
+        print('preso')
+        topo.kill()
         quit()
 
     #update screen and events queue

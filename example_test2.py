@@ -3,7 +3,7 @@ from pydojo import *
 # CREATE GAME DISPLAY
 screen(1280, 720)
 
-background('example_asset/backgrounds/citynight.png')
+background('example_asset/backgrounds/field.png')
 loadbackground('example_asset/backgrounds/bedroom.png')
 
 uga = Actor()
@@ -25,7 +25,7 @@ print(pyco.getposition())
 # MAIN LOOP
 while True:
 
-    print pyco.direction, pyco.heading
+    # print pyco.direction, pyco.heading
 
     # Move the Turtle
     for colore in COLORS:
@@ -46,12 +46,11 @@ while True:
         setbackground('citynight')
     if keydown(F):
         fill(TOMATO)
+        print(screen_info.backgrounds)
 
     if keydown(H):
-        print "flip!"
         pyco.flip('horizontal')
     if keydown(V):
-        print "flip!"
         pyco.flip('vertical')
 
     wait(100)

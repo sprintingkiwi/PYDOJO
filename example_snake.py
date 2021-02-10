@@ -6,18 +6,16 @@ screen(width, height)
 
 head = Actor('example_asset/characters/square.png')
 head.speed = 5
-head.size = 30
-head.pensize = 10
 head.scale(0.5)
-head.tag = 'snake'
-head.layer = 2
+head.tag('snake')
+head.setlayer(2)
 
 tail = []
 tailcoords = []
 food = []
 
 apple = Actor('example_asset/characters/apple.png')
-apple.layer = 1
+apple.setlayer(1)
 apple.scale(0.5)
 apple.hide()
 
@@ -27,7 +25,7 @@ for i in range(10):
     while m.collide('t'):
         m.gorand()
     m.show()
-    m.tag = 'food'
+    m.tag('food')
     food.append(m)
 
 while True:
@@ -53,8 +51,8 @@ while True:
         if f.collide(head):
             for i in range(10):
                 t = clone(head)
-                t.tag = 'snake'
-                t.layer = 2
+                t.tag('snake')
+                t.setlayer(2)
                 tail.append(t)
             f.hide()
             food.remove(f)

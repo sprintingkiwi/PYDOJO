@@ -5,12 +5,12 @@ screen(1280, 720)
 
 dyno = Actor('example_asset/characters/dinosaur1.png')
 dyno.scale(0.8)
-dyno.goto(500, 300)
+dyno.goto(800, 0)
 dyno.rotation = 'flip'
 
 star = Actor('example_asset/characters/seastar1.png', 'felice')
 star.load('example_asset/characters/seastar2.png', 'triste')
-star.scale(200, 200)
+star.scale(180, 180)
 star.goto(600, 500)
 
 testo = Text('ciao', color=GREEN, italic=True)
@@ -18,12 +18,14 @@ print(testo.costumes)
 testo.setfontsize(48)
 testo.setbold(True)
 testo.goto(100, 100)
+testo.scale(2)
 
-# dyno.rotate = False
+# dyno.roll = False
 
 hey = Sound('example_asset/sounds/hey.wav')
 
 while True:
+    # testo.scale(0.9)
 
     # print(actorsInfo.drawList)
 
@@ -31,6 +33,7 @@ while True:
         print('funziona')
         hey.play()
         print(dyno.getcostume())
+        #save(ticks(), "time_dyno")
 
     if keydown(RIGHT):
         print('destra')
@@ -47,10 +50,10 @@ while True:
     testo.right(1)
     dyno.point(MOUSE)
     dyno.forward(3)
-    # if keydown(G):
+    if keydown(G):
     #     dyno.pendown()
     #     dyno.gorand()
-    #     dyno.glide(testo)
+        dyno.glide(testo)
 
     if keydown(W):
         print(dyno.x, dyno.y)
@@ -73,6 +76,9 @@ while True:
 
     if keydown(D):
         dyno.show()
+
+    if keydown(B):
+        terminate()
 
     fill(PINK)
 

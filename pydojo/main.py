@@ -1,9 +1,29 @@
-import pygame, math, random, os, subprocess, sys, gc, time
+import sys, os, py_compile, subprocess, time, pickle, imp
+
+
+def compile_and_execute():
+    name = sys.argv[0].split('/')[-1]
+    extension = name.split('.')[1]
+    if extension == 'py':
+        print('Compiling ' + name)
+        py_compile.compile(name)
+        pycname = name.split('.')[0] + '.pyc'
+        print('Executing ' + pycname)
+        subprocess.call(['python', pycname])
+        time.sleep(0.1)
+        # print('Removing ' + pycname)
+        # os.remove(pycname)
+        quit()
+
+# Uncomment to enable compiled mode
+#compile_and_execute()
+
+import pygame, math, random, copy, gc
 
 pygame.init()
 
 # CONSTANTS
-LIBRARY_VERSION = 1.7
+LIBRARY_VERSION = 3.0
 
 # Colors
 BLACK = [0, 0, 0]
@@ -45,13 +65,18 @@ COLORS = [RED,
           BEIGE,
           LAVENDER]
 
-SUPPORTED_IMAGE_FORMATS = ['png', 'jpg', 'gif', 'bmp']
+SUPPORTED_IMAGE_FORMATS = ['png', 'jpg', 'jpeg', 'gif', 'bmp']
 
+# ADVANCED_MODE = False
+
+# Collisions results
+COLLISION = pygame.sprite.Sprite()
 
 # Class for Game Info
 class GameInfo:
     def __init__(self):
         self.framerate = 60
+        self.tagged_actors = {}
 
 
 game_info = GameInfo()
@@ -172,6 +197,52 @@ def create_pen_surface():
     screen_info.pen_surface = pygame.transform.scale(screen_info.pen_surface, screen_info.resolution)
 
 
+class ColorsInfo:
+    def __init__(self):
+        self.color_scale_phase = 'g_up'
+        self.r = 255
+        self.g = 0
+        self.b = 0
+
+
+colors_info = ColorsInfo()
+
+
+def colorscale(interval=1):
+    if colors_info.color_scale_phase == 'g_up':
+        if colors_info.g + interval <= 255:
+            colors_info.g += interval
+        else:
+            colors_info.color_scale_phase = 'r_down'
+    elif colors_info.color_scale_phase == 'r_down':
+        if colors_info.r - interval >= 0:
+            colors_info.r -= interval
+        else:
+            colors_info.color_scale_phase = 'b_up'
+    elif colors_info.color_scale_phase == 'b_up':
+        if colors_info.b + interval <= 255:
+            colors_info.b += interval
+        else:
+            colors_info.color_scale_phase = 'g_down'
+    elif colors_info.color_scale_phase == 'g_down':
+        if colors_info.g - interval >= 0:
+            colors_info.g -= interval
+        else:
+            colors_info.color_scale_phase = 'r_up'
+    elif colors_info.color_scale_phase == 'r_up':
+        if colors_info.r + interval <= 255:
+            colors_info.r += interval
+        else:
+            colors_info.color_scale_phase = 'b_down'
+    elif colors_info.color_scale_phase == 'b_down':
+        if colors_info.b - interval >= 0:
+            colors_info.b -= interval
+        else:
+            colors_info.color_scale_phase = 'g_up'
+    return [colors_info.r, colors_info.g, colors_info.b]
+
+
+
 # SCREEN
 def screen(w, h, fullscreen=False):
     screen_info.resolution = [w, h]
@@ -207,7 +278,7 @@ def find_file_name(path):
 
 def background(path):
     screen_info.has_background = True
-    screen_info.background = pygame.image.load(path).convert_alpha()
+    screen_info.background = pygame.image.load(path).convert()
     screen_info.background = pygame.transform.scale(screen_info.background,
                                                     screen_info.resolution)
     screen_info.backgrounds[find_file_name(path)] = screen_info.background
@@ -215,10 +286,13 @@ def background(path):
 
 
 def loadbackground(path):
-    background(path)
+    bg = pygame.image.load(path).convert()
+    bg = pygame.transform.scale(bg, screen_info.resolution)
+    screen_info.backgrounds[find_file_name(path)] = bg
 
 
 def setbackground(name):
+    screen_info.has_background = True
     screen_info.background = screen_info.backgrounds[name]
     screen_info.screen.blit(screen_info.background, (0, 0))
 
@@ -242,8 +316,394 @@ def process_gliding():
 ACTORS = pygame.sprite.LayeredUpdates()
 
 
+def Clock():
+    return pygame.time.Clock()
+
+
+def wait(ms):
+    pygame.time.wait(ms)
+
+
+def ticks():
+    return pygame.time.get_ticks()
+
+
+# def copy_cos_dict(target):
+#     newdict = target.copy()
+#     for k in newdict:
+#         newdict[k]['image'] = target[k]['image'].copy()
+#     print 'DEBUG CLONE DICT'
+#     # print newdict['age_uke\\age_uke_011']['image'] is target['age_uke\\age_uke_011']['image'].copy()
+#     return newdict
+
+
+def clone(target):
+    # clonedActor = copy.copy(target)
+    # actors_info.actors_list.append(clonedActor)
+    # clonedActor.update_rect()
+    # if not target.hidden:
+    #     ACTORS.add(clonedActor)
+    # return clonedActor
+    cloned_actor = Actor(target.path)
+    cloned_actor.x = target.x
+    cloned_actor.y = target.y
+    # Actor angle direction
+    cloned_actor.direction = target.direction
+    # image orientation
+    cloned_actor.heading = target.heading
+    # cloned_actor.layer = target.layer
+    ACTORS.change_layer(cloned_actor, target.layer)
+    cloned_actor.count = 0
+    cloned_actor.paused = False
+    if target.hidden:
+        cloned_actor.hide()
+    cloned_actor.pause_time = 0.0
+    cloned_actor.hide_time = 0.0
+    cloned_actor.start_pause_time = 0.0
+    cloned_actor.start_hide_time = 0.0
+    # load actor image
+    cloned_actor.costumes = copy.deepcopy(target.costumes)
+    cloned_actor.costume = target.costume
+    cloned_actor.cosnumber = target.cosnumber
+
+    # Cloning dict cos by name
+    # cloned_actor.costumes_by_name = copy_cos_dict(target.costumes_by_name)
+    cloned_actor.costumes_by_name = {}
+    for k in target.costumes_by_name:
+        img = target.costumes_by_name[k]['image'].copy()
+        num = target.costumes_by_name[k]['number']
+        cloned_actor.costumes_by_name[k] = {'image': img, 'number': num}
+
+    # Cloning dict cos by number
+    cloned_actor.costumes_by_number = {}
+    for k in target.costumes_by_number:
+        img = target.costumes_by_number[k]['image'].copy()
+        name = target.costumes_by_number[k]['name']
+        cloned_actor.costumes_by_number[k] = {'image': img, 'name': name}
+
+    # Cloning original costumes dict
+    # print 'DEBUG CLONING COS BY NAME'
+    # print cloned_actor.costumes_by_name['age_uke\\age_uke_013']['image'] is target.costumes_by_name['age_uke\\age_uke_013']['image']
+    # print 'DEBUG CLONING COS BY NNUMBER'
+    # print cloned_actor.costumes_by_number[3] is target.costumes_by_number[3]
+    cloned_actor.original_costumes = {}
+    for k in target.original_costumes:
+        cloned_actor.original_costumes[k] = target.original_costumes[k].copy()
+    # print 'DEBUG CLONING ORIGINALS'
+    # print cloned_actor.original_costumes['age_uke\\age_uke_013'] is target.original_costumes['age_uke\\age_uke_013']
+
+    cloned_actor.animations = copy.deepcopy(target.animations)
+    cloned_actor.animation = copy.deepcopy(target.animation)
+    # cloned_actor.original_costumes = target.original_costumes
+    cloned_actor.coscount = 0
+    # if path is not None:
+    # cloned_actor.actual_scale = [cloned_actor.width, cloned_actor.height]
+    # rotation style
+    # cloned_actor.roll = target.roll
+    cloned_actor.rotation = target.rotation
+    cloned_actor.hor_direction = target.hor_direction
+    # needs to need_to_transform image?
+    cloned_actor.need_to_rotate = target.need_to_rotate
+    # cloned_actor.need_to_scale = target.need_to_scale
+    cloned_actor.penstate = target.penstate
+    cloned_actor.pencolor = list(target.pencolor)
+    cloned_actor.pensize = target.pensize
+    cloned_actor.pencolor_scale_phase = target.pencolor_scale_phase
+    cloned_actor.pen_r = target.pen_r
+    cloned_actor.pen_g = target.pen_g
+    cloned_actor.pen_b = target.pen_b
+    # cloned_actor.need_to_stamp = target.need_to_stamp
+    # cloned_actor.bounce = target.bounce
+    # cloned_actor.tags = list(target.tags)
+    for tag in target.tags:
+        cloned_actor.tag(tag)
+    cloned_actor.gliding = False
+    # cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
+    cloned_actor.transform_rotate_image()
+    return cloned_actor
+
+
+def distance(a, b):
+    return math.hypot(b.x - a.x, b.y - a.y)
+
+
+def getactors(tag=None):
+    if tag is not None:
+        if tag in game_info.tagged_actors:
+            return game_info.tagged_actors[tag]
+        else:
+            print('DEBUG: tag not in dictionary')
+            return []
+    else:
+        return ACTORS
+    # tagged_actors_list = []
+    # for obj in gc.get_objects():
+    #     if isinstance(obj, Actor):
+    #         if tag is None:
+    #             tagged_actors_list.append(obj)
+    #         elif tag is str:
+    #             if tag in obj.tags:
+    #                 tagged_actors_list.append(obj)
+    # return tagged_actors_list
+
+
+def write(string='Text',
+          position=None,
+          name='Liberation Serif',
+          fontsize=32,
+          bold=False,
+          italic=False,
+          color=[255, 0, 0]):
+    t = Text(string, name, fontsize, bold, italic, color)
+    if position is not None:
+        t.goto(position)
+
+
+class Camera:
+    def __init__(self):
+        self.target = None
+        self.old_x = 0
+        self.old_y = 0
+        self.following = False
+        self.others = None
+        self.on_the_edge = False
+        self.dx = 0
+        self.dy = 0
+        self.hor_position = None
+        self.ver_position = None
+
+    def scroll_x(self, target):
+        if target.x != self.old_x:
+            self.dx = self.old_x - target.x
+            target.setx(self.old_x)
+            for a in self.others:
+                a.setx(a.x + self.dx)
+
+    def scroll_y(self, target):
+        if target.y != self.old_y:
+            self.dy = self.old_y - target.y
+            target.sety(self.old_y)
+            for a in self.others:
+                a.sety(a.y + self.dy)
+
+    def follow(self, target, ground=None):
+        self.target = target
+        self.others = ACTORS.copy()
+        self.others.remove(target)
+        if not self.following:
+            self.old_x = target.x
+            self.old_y = target.y
+            self.following = True
+        else:
+            if ground is not None:
+                if self.on_the_edge:
+                    self.following = False
+
+                    # self.old_x = target.x
+                    # self.old_y = target.y
+                    if self.hor_position == 'left':
+                        if target.x >= screen_info.resolution[0]/2:
+                            self.on_the_edge = False
+                            dx = target.x - screen_info.resolution[0]/2
+                            target.setx(screen_info.resolution[0]/2)
+                            for a in self.others:
+                                a.setx(a.x - dx)
+                    elif self.hor_position == 'right':
+                        if target.x <= screen_info.resolution[0]/2:
+                            self.on_the_edge = False
+                            dx = target.x - screen_info.resolution[0]/2
+                            target.setx(screen_info.resolution[0]/2)
+                            for a in self.others:
+                                a.setx(a.x - dx)
+                    if self.ver_position == 'up':
+                        if target.y >= screen_info.resolution[1]/2:
+                            self.on_the_edge = False
+                            dy = target.y - screen_info.resolution[1]/2
+                            target.setx(screen_info.resolution[1]/2)
+                            for a in self.others:
+                                a.sety(a.y - dy)
+                    elif self.ver_position == 'down':
+                        if target.y <= screen_info.resolution[1]/2:
+                            self.on_the_edge = False
+                            dy = target.y - screen_info.resolution[1]/2
+                            target.setx(screen_info.resolution[1]/2)
+                            for a in self.others:
+                                a.sety(a.y - dy)
+                else:
+                    if not 0 < ground.x < ground.width/2:
+                        self.on_the_edge = True
+                        if 225 < target.direction < 315:
+                            self.hor_position = 'left'
+                        elif 45 < target.direction < 135:
+                            self.hor_position = 'right'
+                    else:
+                        self.hor_position = None
+                        self.scroll_x(target)
+                    if not 0 < ground.y < ground.height/2:
+                        if 315 < target.direction <= 360 or 0 <= target.direction < 45:
+                            self.ver_position = 'up'
+                        elif 135 < target.direction < 225:
+                            self.ver_position = 'down'
+                    else:
+                        self.ver_position = None
+                        self.scroll_y(target)
+
+            else:
+                self.scroll_x(target)
+                self.scroll_y(target)
+
+
+
+CAMERA = Camera()
+
+
+class Timer:
+    def __init__(self, ms):
+        self.start = ticks()
+        self.delta_time = ms
+
+    def get(self):
+        if ticks() - self.start > self.delta_time:
+            self.start = ticks()
+            return True
+
+
+spawned_actors = pygame.sprite.Group()
+
+
+def spawn(actor, speed=None, direction=None, position=None, target=None, setup_behavior=None, update_behavior=None, autoshow=True):
+    spawned = clone(actor)
+    spawned.spawn_speed = speed
+    if direction is not None:
+        spawned.point(direction)
+    if position is not None:
+        if position == 'random':
+            spawned.gorand()
+        else:
+            spawned.goto(position)
+    spawned.spawn_target = target
+    spawned.spawn_setup = setup_behavior
+    spawned.spawn_update = update_behavior
+    if spawned.hidden and autoshow:
+        spawned.show()
+    if setup_behavior is not None:
+        setup_behavior(spawned)
+    spawned.spawn_update = update_behavior
+    spawned_actors.add(spawned)
+    return spawned
+
+
+def tagcollide(tag1, tag2):
+    for a in getactors(tag1):
+        for b in getactors(tag2):
+            if Actor.collide(a, b):
+                COLLISION.object1 = a
+                COLLISION.object2 = b
+                return True
+
+
+# def randombetween(a, b, *args):
+#     if a is int and b is int:
+#         return random.randint(a, b)
+#     else:
+#         for i in args:
+#
+#         roll = random.randint(0, 1)
+#         if
+
+
+# def pausable(func):
+#     def wrapper(self, *args):
+#         if not self.paused:
+#             return func(self, *args)
+#     return wrapper
+
+
+def hideaway(func):
+    def wrapper(self, *args):
+        if not self.hidden:
+            return func(self, *args)
+    return wrapper
+
+
+def execute(path):
+    name = path.split('/')[-1]
+    extension = name.split('.')[1]
+    if extension == 'py':
+        print('Compiling ' + name)
+        py_compile.compile(name)
+        pycname = name.split('.')[0] + '.pyc'
+        print('Executing ' + pycname)
+        subprocess.call(['python', pycname])
+        # quit()
+    else:
+        print('DEBUG - execute: Not a Python script. Aborting...')
+
+
+def fullscreen():
+    pygame.display.toggle_fullscreen()
+
+
+jumping_actors = pygame.sprite.Group()
+
+
+def process_jumps():
+    for a in jumping_actors:
+        if a.jump_phase == 'up':
+            if a.y > a.jump_starty - a.jump_height:
+                a.sety(a.y - a.jump_step)
+            else:
+                a.jump_phase = 'down'
+        elif a.jump_phase == 'down':
+            if a.y < a.jump_originaly:
+                a.sety(a.y + a.jump_step)
+            else:
+                a.jumping = False
+                a.jump_count = 0
+                a.sety(a.jump_originaly)
+
+
+def save(data, tag):
+    datafile = open("savedata.p", "w")
+    if os.stat("savedata.p").st_size == 0:
+        datadict = {}
+    else:
+        datadict = pickle.load(datafile)
+    datadict[tag] = data
+    pickle.dump(datadict, datafile)
+    print(tag + " saved")
+
+
+def load(tag):
+    datafile = open("savedata.p", "rb")
+    data = pickle.load(datafile)[tag]
+    return data
+
+
+def terminate():
+    # PYGB support (to do)
+    if False:
+        subprocess.Popen(['python', '/home/pi/PYGB/main.py'], cwd='/home/pi/')
+    # QUIT
+    pygame.quit()
+    sys.exit()
+    quit()
+
+
 # One of the most important functions
 def update():
+
+    # JUMPS
+    process_jumps()
+
+    # Manage spawned objects
+    for spawned in spawned_actors:
+        if spawned.spawn_target is not None:
+            spawned.point(spawned.spawn_target)
+        if spawned.spawn_speed is not None:
+            spawned.forward(spawned.spawn_speed)
+        if spawned.spawn_update is not None:
+            spawned.spawn_update(spawned)
 
     # DRAW
     # Transform Actor's images
@@ -253,7 +713,7 @@ def update():
     if not screen_info.has_background:
         screen_info.screen.fill(screen_info.bg_color)
     # Draw background if needed
-    if screen_info.has_background:
+    else:
         ACTORS.clear(screen_info.screen, screen_info.background)
     # Draw the visible-Actors group
     ACTORS.draw(screen_info.screen)
@@ -271,10 +731,10 @@ def update():
     # Close pygame window when X icon clicked or ESCAPE pressed
     for e in events_storage.list:
         if e.type == pygame.QUIT:
-            quit()
+            terminate()
         if e.type == pygame.KEYDOWN:
             if e.key == pygame.K_ESCAPE:
-                quit()
+                terminate()
     # Refresh mouse position
     MOUSE.update_events()
 
@@ -303,110 +763,44 @@ def UPDATE():
     update()
 
 
-def Clock():
-    return pygame.time.Clock()
-
-
-def wait(ms):
-    pygame.time.wait(ms)
-
-
-def ticks():
-    return pygame.time.get_ticks()
-
-
-def clone(target):
-    # clonedActor = copy.copy(target)
-    # actors_info.actors_list.append(clonedActor)
-    # clonedActor.update_rect()
-    # if not target.hidden:
-    #     ACTORS.add(clonedActor)
-    # return clonedActor
-    cloned_actor = Actor(target.path)
-    cloned_actor.x = target.x
-    cloned_actor.y = target.y
-    # Actor angle direction
-    cloned_actor.direction = target.direction
-    # image orientation
-    cloned_actor.heading = target.heading
-    cloned_actor.layer = target.layer
-    cloned_actor.count = 0
-    cloned_actor.paused = False
-    cloned_actor.hidden = target.hidden
-    cloned_actor.pause_time = 0.0
-    cloned_actor.hide_time = 0.0
-    cloned_actor.start_pause_time = 0.0
-    cloned_actor.start_hide_time = 0.0
-    # load actor image
-    cloned_actor.costumes = target.costumes
-    cloned_actor.costume = target.costume
-    cloned_actor.cosnumber = target.cosnumber
-    # cloned_actor.original_costumes = target.original_costumes
-    cloned_actor.coscount = 0
-    # if path is not None:
-    cloned_actor.actual_scale = [cloned_actor.width, cloned_actor.height]
-    # rotation style
-    # cloned_actor.rotate = target.rotate
-    cloned_actor.rotation = target.rotation
-    cloned_actor.need_to_flip = target.need_to_flip
-    # needs to need_to_transform image?
-    cloned_actor.need_to_rotate = target.need_to_rotate
-    # cloned_actor.need_to_scale = target.need_to_scale
-    cloned_actor.pen_state = target.pen_state
-    cloned_actor.pencolor = target.pencolor
-    cloned_actor.pensize = target.pensize
-    # cloned_actor.need_to_stamp = target.need_to_stamp
-    cloned_actor.bounce = target.bounce
-    cloned_actor.tag = target.tag
-    cloned_actor.gliding = False
-    cloned_actor.scale(target.actual_scale[0], target.actual_scale[1])
-    return cloned_actor
-
-
-def distance(a, b):
-    return math.hypot(b.x - a.x, b.y - a.y)
-
-
-def getactors(tag=None):
-    tagged_actors_list = []
-    for obj in gc.get_objects():
-        if isinstance(obj, Actor):
-            if tag is None:
-                tagged_actors_list.append(obj)
-            elif tag is str:
-                if obj.tag == tag:
-                    tagged_actors_list.append(obj)
-    return tagged_actors_list
-
-
-# def randombetween(a, b, *args):
-#     if a is int and b is int:
-#         return random.randint(a, b)
-#     else:
-#         for i in args:
+# def setup():
+#     # gobo = imp.load_source('gobo', 'actors/gobo.py')
+#     # gobo.Gobo('example_asset/characters/gobo.png')
+#     # try:
+#     items = os.listdir('actors')
 #
-#         roll = random.randint(0, 1)
-#         if
+#     actors_classes = {}
+#
+#     for item in items:
+#
+#         if item.split('.')[-1] == 'py':
+#             print item
+#             actors_classes[str(item)] = imp.load_source(str(item), 'actors/' + str(item))
+#
+#     # except:
+#     #     print('actors directory not found')
+
+def check_collisions():
+    others = ACTORS.copy()
+    for a in ACTORS:
+        others.remove(a)
+        for o in others:
+            point = pygame.sprite.collide_mask(a, o)
+            if point is not None:
+                a.collision(o, point)
+                o.collision(a, point)
 
 
-# def pausable(func):
-#     def wrapper(self, *args):
-#         if not self.paused:
-#             return func(self, *args)
-#     return wrapper
+def mainloop():
+    check_collisions()
+    ACTORS.update()
+    update()
 
 
-def hideaway(func):
-    def wrapper(self, *args):
-        if not self.hidden:
-            return func(self, *args)
-    return wrapper
-
-
-def terminate():
-    subprocess.Popen(['python', '/home/pi/PYGB/main.py'], cwd='/home/pi/')
-    pygame.quit()
-    sys.exit()
+def find(actor_class):
+    for a in ACTORS:
+        if type(a) is actor_class:
+            return a
 
 
 # ACTOR CLASS
@@ -417,9 +811,7 @@ class Actor(pygame.sprite.Sprite):
             path = (os.path.dirname(sys.modules[__name__].__file__))
             path = os.path.join(path, 'turtle.png')
         actors_info.actors_list.append(self)
-        # actors_info.draw_list.append(self)
         ACTORS.add(self)
-        # pygame.sprite.Sprite.__init__(self)
         # Actor coordinates
         self.x = 0.0
         self.x = screen_info.resolution[0] / 2
@@ -429,8 +821,7 @@ class Actor(pygame.sprite.Sprite):
         self.direction = 90
         # image orientation
         self.heading = 0
-        self.layer = 0
-        # self.actual_scale = [100, 100]
+        #self.layer = 0
         self.count = 0
         self.paused = False
         self.hidden = False
@@ -438,39 +829,47 @@ class Actor(pygame.sprite.Sprite):
         self.hide_time = 0.0
         self.start_pause_time = 0.0
         self.start_hide_time = 0.0
-        # load actor image
         self.costumes = []
-        self.costume = ''
-        self.cosnumber = 0
-        # self.original_costumes = []
+        self.costumes_by_name = {}
+        self.costumes_by_number = {}
+        self.original_costumes = {}
+        # self.costume = ''
+        # self.cosnumber = 0
         self.coscount = 0
         self.rotation = 360
-        self.need_to_flip = 'left'
-        # needs to need_to_transform image?
+        self.hor_direction = 'right'
         self.need_to_rotate = False
-        # self.need_to_scale = False
-        self.pen_state = 'up'
+        self.penstate = 'up'
         self.pencolor = RED
-        self.pensize = 1
-        # self.need_to_stamp = False
-        self.bounce = False
-        self.tag = "untagged"
+        self.pensize = 10
+        self.pencolor_scale_phase = 'g_up'
+        self.pen_r = 255
+        self.pen_g = 0
+        self.pen_b = 0
+        self.tags = []
         self.gliding = False
         self.sliding_costumes = False
-        # self.animations = {}
+        self.animations = {}
+        self.animation = {'name': '', 'state': ''}
         self.rect = None
         self.size = None
         self.width = None
         self.height = None
-        self.raw_img = None
-        # self.image = None
+        # self.raw_img = None
+        self.jump_step = 0
+        self.jumping = False
+        self.jump_count = 0
+        self.jump_starty = 0
+        self.jump_originaly = 0
+        self.jump_phase = ""
         self.path = path
         self.load(path, cosname)
-        self.image = self.costumes[self.cosnumber][1]
+        self.costume = self.costumes_by_number[0]['name']
+        self.cosnumber = 0
+        self.image = self.costumes_by_name[self.costume]['image']
         self.update_rect()
-        self.actual_scale = [self.width, self.height]
-        # rotation style
-        # self.rotate = True
+        # self.actual_scale = [self.width, self.height]
+        self.setup()
 
     # find costume name from image path
     def find_costume_name(self, path):
@@ -485,8 +884,6 @@ class Actor(pygame.sprite.Sprite):
         self.size = self.image.get_size()
         self.width = self.image.get_width()
         self.height = self.image.get_height()
-        # self.image = self.costumes[self.cosnumber][1]
-        # self.mask = pygame.mask.from_surface(self.image)
 
     def update_position(self):
         self.rect.centerx = int(self.x)
@@ -495,23 +892,24 @@ class Actor(pygame.sprite.Sprite):
     # load Actor's image
     def load(self, path, cosname=None):
         if path[-3:] in SUPPORTED_IMAGE_FORMATS:
+            # Find costume name
             if cosname is None:
-                self.costume = self.find_costume_name(path)
-            else:
-                self.costume = cosname
-            self.raw_img = pygame.image.load(path).convert_alpha()
-            # if len(self.costumes) > 0:
-            #     self.raw_img = pygame.need_to_transform.scale(self.raw_img, self.actual_scale)
-            self.costumes.append([self.costume, self.raw_img])
-            # self.original_costumes.append([self.costume, self.raw_img])
-            # Generate Rect and other stuff
-            # self.rect = self.costumes[self.cosnumber][1].get_rect()
-            # self.rect.centerx = int(self.x)
-            # self.rect.centery = int(self.y)
-            # self.size = self.costumes[self.cosnumber][1].get_size()
-            # self.width = self.costumes[self.cosnumber][1].get_width()
-            # self.height = self.costumes[self.cosnumber][1].get_height()
-            # image attribute for pygame sprite/group methods
+                cosname = self.find_costume_name(path)
+            # Update Actor costumes list
+            self.costumes.append(cosname)
+            # Find costume number ID
+            cosnumber = len(self.costumes) - 1
+            # Load Image:
+            raw_img = pygame.image.load(path).convert_alpha()
+            # Update Original Costumes (reloading)
+            self.original_costumes[cosname] = pygame.image.load(path).convert_alpha()
+            # Update costumes name dictionary
+            self.costumes_by_name[cosname] = {'image': raw_img, 'number': cosnumber}
+            # Update costumes number dictionary
+            self.costumes_by_number[cosnumber] = {'image': raw_img, 'name': cosname}
+            # Update attributes
+            # self.costume = cosname
+            # self.cosnumber = cosnumber
         else:
             try:
                 self.loadfolder(path)
@@ -524,17 +922,32 @@ class Actor(pygame.sprite.Sprite):
         self.load(path, cosname)
 
     def loadfolder(self, path):
-        for f in os.listdir(path):
+        files_list = os.listdir(path)
+        for f in files_list:
+            if f[-3:] not in SUPPORTED_IMAGE_FORMATS:
+                files_list.remove(f)
+        files_list = sorted(files_list, key=str.lower)
+        anim_name = path.split('/')[-1].split('.')[0]
+        anim_begin = len(self.costumes)
+        anim_end = anim_begin + len(files_list) - 1
+        self.animations[anim_name] = {'begin': anim_begin, 'end': anim_end}
+        for f in files_list:
             if f.split('.')[1] in SUPPORTED_IMAGE_FORMATS:
                 self.load(os.path.join(path, f))
 
     def setcostume(self, newcostume):
         if type(newcostume) is int:
             self.cosnumber = newcostume
+            self.image = self.costumes_by_number[newcostume]['image']
+            self.costume = self.costumes_by_number[newcostume]['name']
         elif type(newcostume) is str:
-            for cos in self.costumes:
-                if cos[0] == newcostume:
-                    self.cosnumber = self.costumes.index(cos)
+            # for cos in self.costumes:
+            #     if cos[0] == newcostume:
+            #         self.cosnumber = self.costumes.index(cos)
+            self.costume = newcostume
+            self.image = self.costumes_by_name[newcostume]['image']
+            self.cosnumber = self.costumes_by_name[newcostume]['number']
+        # self.image = self.costumes[self.cosnumber][1]
         if self.need_to_rotate:
             self.transform_rotate_image()
         else:
@@ -575,12 +988,42 @@ class Actor(pygame.sprite.Sprite):
             self.coscount = 0
         self.coscount += 1
 
+    def play(self, animation, fps=15, loop=True, interval=1):
+        anim = self.animations[animation]
+        pause = 1000 / fps
+        if self.animation['name'] != animation:
+            self.animation['name'] = animation
+            self.animation['state'] = 'playing'
+            self.coscount = ticks()
+            # if self.cosnumber < anim['begin'] or self.cosnumber > anim['end']:
+            self.setcostume(anim['begin'])
+        if self.animation['state'] != 'ended':
+            if ticks() - self.coscount > pause:
+                if self.cosnumber + interval <= anim['end']:
+                    self.setcostume(self.cosnumber + interval)
+                else:
+                    if loop:
+                        self.setcostume(anim['begin'])
+                        return 'ended'
+                    else:
+                        self.animation['state'] = 'ended'
+                        return 'ended'
+                self.coscount = ticks()
+
     def setx(self, x):
         self.x = x
         self.update_position()
 
     def sety(self, y):
         self.y = y
+        self.update_position()
+
+    def changex(self, delta_x):
+        self.x = self.x + delta_x
+        self.update_position()
+
+    def changey(self, delta_y):
+        self.y = self.y + delta_y
         self.update_position()
 
     def getposition(self):
@@ -594,6 +1037,7 @@ class Actor(pygame.sprite.Sprite):
 
     def setdirection(self, angle):
         self.direction = angle
+        self.transform_rotate_image()
 
     def getdirection(self):
         return self.direction
@@ -601,10 +1045,6 @@ class Actor(pygame.sprite.Sprite):
     # @pausable
     def goto(self, x=None, y=None):
         if type(x) is int or type(x) is float:
-            # if x is None:
-            #     x = self.x
-            # if y is None:
-            #     y = self.y
             self.x = x
             self.y = y
         elif type(x) is list or type(x) is tuple:
@@ -617,6 +1057,11 @@ class Actor(pygame.sprite.Sprite):
         else:
             self.x = x.x
             self.y = x.y
+        if self.penstate == 'down':
+            pygame.draw.circle(screen_info.pen_surface,
+                               self.pencolor,
+                               [int(self.x), int(self.y)],
+                               self.pensize)
         self.update_position()
 
     def setposition(self, *args):
@@ -642,15 +1087,69 @@ class Actor(pygame.sprite.Sprite):
             rangey = [0, screen_info.resolution[1]]
         self.x = random.randint(rangex[0], rangex[1])
         self.y = random.randint(rangey[0], rangey[1])
+        if self.penstate == 'down':
+            pygame.draw.circle(screen_info.pen_surface,
+                               self.pencolor,
+                               [int(self.x), int(self.y)],
+                               self.pensize)
         self.update_position()
 
     def pendown(self):
-        self.pen_state = 'down'
+        self.penstate = 'down'
+        pygame.draw.circle(screen_info.pen_surface,
+                           self.pencolor,
+                           [int(self.x), int(self.y)],
+                           self.pensize)
 
     def penup(self):
-        self.pen_state = 'up'
+        self.penstate = 'up'
 
-    def bounce_on_edge(self):
+    def setpensize(self, size):
+        self.pensize = size
+
+    def setpencolor(self, r=0, g=0, b=0):
+        if type(r) is list or type(r) is tuple:
+            self.pencolor = r
+        else:
+            self.pencolor = [r, g, b]
+
+    def colorscale(self, interval=1):
+        if self.pencolor_scale_phase == 'g_up':
+            if self.pen_g + interval <= 255:
+                self.pen_g += interval
+            else:
+                self.pencolor_scale_phase = 'r_down'
+        elif self.pencolor_scale_phase == 'r_down':
+            if self.pen_r - interval >= 0:
+                self.pen_r -= interval
+            else:
+                self.pencolor_scale_phase = 'b_up'
+        elif self.pencolor_scale_phase == 'b_up':
+            if self.pen_b + interval <= 255:
+                self.pen_b += interval
+            else:
+                self.pencolor_scale_phase = 'g_down'
+        elif self.pencolor_scale_phase == 'g_down':
+            if self.pen_g - interval >= 0:
+                self.pen_g -= interval
+            else:
+                self.pencolor_scale_phase = 'r_up'
+        elif self.pencolor_scale_phase == 'r_up':
+            if self.pen_r + interval <= 255:
+                self.pen_r += interval
+            else:
+                self.pencolor_scale_phase = 'b_down'
+        elif self.pencolor_scale_phase == 'b_down':
+            if self.pen_b - interval >= 0:
+                self.pen_b -= interval
+            else:
+                self.pencolor_scale_phase = 'g_up'
+        return [self.pen_r, self.pen_g, self.pen_b]
+
+    def changepencolor(self, interval=1):
+        self.setpencolor(self.colorscale(interval))
+
+    def bounce(self):
         if self.y > screen_info.resolution[1] or self.y < 0:
             self.direction = (180 - self.direction) % 360
             self.heading = self.direction - 90
@@ -664,7 +1163,7 @@ class Actor(pygame.sprite.Sprite):
 
     # @pausable
     def forward(self, steps):
-        if self.pen_state == 'down':
+        if self.penstate == 'down':
             start_x = self.x
             start_y = self.y
             for i in range(abs(steps)):
@@ -677,32 +1176,55 @@ class Actor(pygame.sprite.Sprite):
                 start_y = self.y + i * -math.cos(math.radians(self.direction))
         self.x = round(self.x + steps * math.sin(math.radians(self.direction)))
         self.y = round(self.y + steps * -math.cos(math.radians(self.direction)))
-        if self.bounce:
-            self.bounce_on_edge()
+        # if self.bounce:
+        #     self.bounce_on_edge()
         self.update_position()
 
     def back(self, steps):
         self.forward(-steps)
 
+    def backward(self, steps):
+        self.forward(-steps)
+
+    def jump(self, height=100, step=10, jumps=1):
+        if self.jump_count < jumps:
+            self.jump_count += 1
+            self.jump_height = height
+            self.jump_step = step
+            self.jumping = True
+            self.jump_starty = self.y
+            if self.jump_count == 1:
+                self.jump_originaly = self.y
+            self.jump_phase = 'up'
+            jumping_actors.add(self)
+
     def transform_rotate_image(self):
         self.need_to_rotate = True
-        # If the image changed the transform rotate functions apply
+        # If the image changed the transform roll functions apply
         # First, restore original image
-        self.image = self.costumes[self.cosnumber][1]
-        # Then rotate it:
+        # self.image = self.costumes_by_name[self.costume]['image']
+        # Then roll it:
         # Full 360 rotation style
         if self.rotation == 360:
-            self.image = pygame.transform.rotate(self.image, -self.heading)
+            self.image = pygame.transform.rotate(self.costumes_by_name[self.costume]['image'], -self.heading)
         # Horizontal Flip rotation style
         elif self.rotation == 'flip':
             if self.direction < 0 or self.direction > 180:
-                if self.need_to_flip == 'left':
-                    self.flip('horizontal')
-                    self.need_to_flip = 'right'
-            if 0 < self.direction < 180:
-                if self.need_to_flip == 'right':
-                    self.flip('horizontal')
-                    self.need_to_flip = 'left'
+                self.hor_direction = 'left'
+            elif 0 < self.direction < 180:
+                self.hor_direction = 'right'
+            if self.hor_direction == 'left':
+                self.image = pygame.transform.flip(self.costumes_by_name[self.costume]['image'], True, False)
+            elif self.hor_direction == 'right':
+                self.image = self.costumes_by_name[self.costume]['image']
+            # if self.direction < 0 or self.direction > 180:
+            #     if self.need_to_flip == 'left':
+            #         self.flip('horizontal')
+            #         self.need_to_flip = 'right'
+            # if 0 < self.direction < 180:
+            #     if self.need_to_flip == 'right':
+            #         self.flip('horizontal')
+            #         self.need_to_flip = 'left'
         # In the end update the rect
         self.update_rect()
         # Stamp in the turtle drawing surface
@@ -723,9 +1245,15 @@ class Actor(pygame.sprite.Sprite):
         self.heading = self.direction - 90
         self.transform_rotate_image()
 
-    def rotate(self, angle):
+    def roll(self, angle):
         self.heading += angle
+        original_rotation_style = self.rotation
+        self.rotate(360)
         self.transform_rotate_image()
+        self.rotate(original_rotation_style)
+
+    def rotate(self, style):
+        self.rotation = style
 
     # @pausable
     def stamp(self):
@@ -771,33 +1299,68 @@ class Actor(pygame.sprite.Sprite):
 
     def flip(self, direction):
         if direction == 'horizontal':
-            # self.image = pygame.transform.flip(self.image, True, False)
-            for cos in self.costumes:
-                cos[1] = pygame.transform.flip(cos[1], True, False)
-            # for cos in self.original_costumes:
-            #     cos[1] = pygame.transform.flip(cos[1], True, False)
+            # for name in self.costumes_by_name:
+            #     self.costumes_by_name[name]['image'] = pygame.transform.flip(self.original_costumes[name], True, False)
+            #     self.costumes_by_number[self.costumes_by_name[name]['number']]['image'] = pygame.transform.flip(self.original_costumes[name], True, False)
+            for d in [self.costumes_by_name, self.costumes_by_number]:
+                for k in d:
+                    d[k]['image'] = pygame.transform.flip(d[k]['image'], True, False)
+            for k in self.original_costumes:
+                self.original_costumes[k] = pygame.transform.flip(self.original_costumes[k], True, False)
         if direction == 'vertical':
-            # self.image = pygame.transform.flip(self.image, False, True)
-            for cos in self.costumes:
-                cos[1] = pygame.transform.flip(cos[1], False, True)
-            # for cos in self.original_costumes:
-            #     cos[1] = pygame.transform.flip(cos[1], False, True)
+            # for name in self.costumes_by_name:
+            #     self.costumes_by_name[name]['image'] = pygame.transform.flip(self.original_costumes[name], False, True)
+            #     self.costumes_by_number[self.costumes_by_name[name]['number']]['image'] = pygame.transform.flip(self.original_costumes[name], False, True)
+            for d in [self.costumes_by_name, self.costumes_by_number]:
+                for k in d:
+                    d[k]['image'] = pygame.transform.flip(d[k]['image'], False, True)
+            for k in self.original_costumes:
+                self.original_costumes[k] = pygame.transform.flip(self.original_costumes[k], False, True)
         self.transform_rotate_image()
 
     def scale(self, w, h=None):
         # self.need_to_scale = True
-        if h is not None:
-            self.image = pygame.transform.scale(self.image, (w, h))
-            for cos in self.costumes:
-                cos[1] = pygame.transform.scale(cos[1], (w, h))
-            # for cos in self.original_costumes:
-            #     cos[1] = pygame.transform.scale(cos[1], (w, h))
-            self.actual_scale = [w, h]
-            self.update_rect()
-        else:
+        if h is None:
             width = int(self.width * w)
             height = int(self.height * w)
-            self.scale(width, height)
+        else:
+            width = w
+            height = h
+        self.image = pygame.transform.scale(self.original_costumes[self.costume], (width, height))
+        for name in self.costumes_by_name:
+            if h is None:
+                width = int(self.costumes_by_name[name]['image'].get_rect().width * w)
+                height = int(self.costumes_by_name[name]['image'].get_rect().height * w)
+            self.costumes_by_name[name]['image'] = pygame.transform.scale(self.original_costumes[name], (width, height))
+            self.costumes_by_number[self.costumes_by_name[name]['number']]['image'] = pygame.transform.scale(self.original_costumes[name], (width, height))
+        if self.need_to_rotate:
+            self.transform_rotate_image()
+        else:
+            self.update_rect()
+        # self.actual_scale = [self.image.get_rect().width, self.image.get_rect().height]
+
+    def setlayer(self, layer):
+        #self.layer = layer
+        ACTORS.change_layer(self, layer)
+        if not self.hidden:
+            ACTORS.change_layer(self, layer)
+
+    def tag(self, tag):
+        if tag not in self.tags:
+            self.tags.append(tag)
+            if tag not in game_info.tagged_actors:
+                game_info.tagged_actors[tag] = []
+            game_info.tagged_actors[tag].append(self)
+
+    def untag(self, tag):
+        if tag in self.tags:
+            self.tags.remove(tag)
+            if tag in game_info.tagged_actors:
+                game_info.tagged_actors[tag].remove(self)
+                if not game_info.tagged_actors[tag]:
+                    del game_info.tagged_actors[tag]
+        else:
+            print('DEBUG: The actor was not tagged that way')
 
     # check if the mouse has clicked the Actor
     def click(self):
@@ -831,17 +1394,25 @@ class Actor(pygame.sprite.Sprite):
                 target.update_position()
                 result = pygame.sprite.collide_mask(self, target)
                 if result is not None:
+                    COLLISION.point = result
+                    COLLISION.object = target
                     return True
+                else:
+                    return False
         elif type(target) is list:
             for a in target:
                 if self.collide(a):
                     return True
         elif type(target) is str:
-            for obj in gc.get_objects():
-                if isinstance(obj, Actor):
-                    if obj.tag == target:
-                        if self.collide(obj):
-                            return True
+            if target in game_info.tagged_actors:
+                otherslist = list(game_info.tagged_actors[target])
+                if self in otherslist:
+                    otherslist.remove(self)
+                for a in otherslist:
+                    if self.collide(a):
+                        return True
+            else:
+                print('DEBUG: Tag does not exist')
 
     # Rect collision
     @hideaway
@@ -893,8 +1464,20 @@ class Actor(pygame.sprite.Sprite):
                     print('errore strano')
                     print(actors_info.hidden_actors_list)
             ACTORS.add(self)
+            ACTORS.change_layer(self, self.layer)
         else:
             pass
+
+    def kill(self):
+        super(Actor, self).kill()
+        self.hide()
+
+    def setup(self):
+        pass
+
+    @hideaway
+    def collision(self, other, point):
+        pass
 
 
 class Text(Actor):
@@ -903,13 +1486,14 @@ class Text(Actor):
                  name='Liberation Serif',
                  fontsize=32, bold=False,
                  italic=False,
-                 color=[0, 0, 0]):
+                 color=[255, 0, 0]):
         self.string = str(string)
         self.name = name
         self.fontsize = fontsize
         self.bold = bold
         self.italic = italic
         self.color = color
+        self.need_to_scale_text = False
         Actor.__init__(self)
 
     def update_text(self):
@@ -919,16 +1503,26 @@ class Text(Actor):
                                         self.italic)
         self.image = self.font.render(self.string, True, self.color)
         # self.costumes[0] = ["text", self.image]
-        self.costumes[0][1] = self.image
-        # self.original_costumes[self.cosnumber][1] = img
+        # self.costumes[0][1] = self.image
+        # Update costumes name dictionary
+        self.costumes_by_name['text'] = {'image': self.image, 'number': 0}
+        # Update costumes number dictionary
+        self.costumes_by_number[0] = {'image': self.image, 'name': 'text'}
+        self.original_costumes = {'text': self.image}
         if self.need_to_rotate:
             self.transform_rotate_image()
         else:
             self.update_rect()
 
-    def load(self, path, cosname):
-        self.costumes.append(["text", None])
-        # self.original_costumes.append([self.costume, None])
+    def load(self, path, cosname=None):
+        self.costume = 'text'
+        self.costumes.append([0, 'text'])
+        # self.costumes.append(["text", None])
+        # Update costumes name dictionary
+        self.costumes_by_name['text'] = {'image': None, 'number': 0}
+        # Update costumes number dictionary
+        self.costumes_by_number[0] = {'image': None, 'name': 'text'}
+        self.original_costumes = {'text': None}
         self.update_text()
         # self.image = self.font.render(self.string, True, self.color)
         # self.costumes.append(["text", self.image])
@@ -936,6 +1530,8 @@ class Text(Actor):
     def write(self, string):
         self.string = str(string)
         self.update_text()
+        if self.need_to_scale_text:
+            self.scale(self.need_to_scale_text[0], self.need_to_scale_text[1])
 
     def setfontsize(self, fontsize):
         self.fontsize = fontsize
@@ -952,6 +1548,15 @@ class Text(Actor):
     def setcolor(self, color):
         self.color = color
         self.update_text()
+
+    def scale(self, w, h=None):
+        if h is None:
+            self.fontsize = int(self.fontsize * w)
+            self.write(self.string)
+        else:
+            Actor.scale(self, w, h)
+            self.need_to_scale_text = (w, h)
+
 
 
 # SUONI
@@ -970,7 +1575,21 @@ def musicplay(loops=0, start=0.0):
 class Sound(pygame.mixer.Sound):
     def __init__(self, path):
         super(Sound, self).__init__(path)
+        self.volume = self.get_volume() * 100
+        self.lenght = self.get_length()
 
+    def setvolume(self, volume):
+        self.volume = volume
+        v = volume / 100.0
+        self.set_volume(v)
+
+    def volumeup(self, value):
+        if 0 <= self.volume + value <= 100:
+            self.setvolume(self.volume + value)
+
+    def volumedown(self, value):
+        if 0 <= self.volume - value <= 100:
+            self.setvolume(self.volume - value)
 
 
 # EVENTS:
@@ -1128,6 +1747,7 @@ class GamePadManager:
             self.gamepads.append(pygame.joystick.Joystick(gamepadID))
             # initialize gamepad
             self.gamepads[gamepadID].init()
+        self.no_gamepad_found = False
 
 gamepad_manager = GamePadManager()
 
@@ -1143,8 +1763,9 @@ gamepad_manager = GamePadManager()
 def buttondown(btn, pad=0):
     if gamepad_manager.gamepad_count > 0:
         return gamepad_manager.gamepads[pad].get_button(btn)
-    else:
+    elif not gamepad_manager.no_gamepad_found:
         print('no gamepad found...')
+        gamepad_manager.no_gamepad_found = True
 
 
 def axis(hand, direction, pad=0):
@@ -1159,8 +1780,9 @@ def axis(hand, direction, pad=0):
                 return gamepad_manager.gamepads[pad].get_axis(3)
             elif direction == 'vertical':
                 return gamepad_manager.gamepads[pad].get_axis(4)
-    else:
+    elif not gamepad_manager.no_gamepad_found:
         print('no gamepad found...')
+        gamepad_manager.no_gamepad_found = True
 
 
 def trigger(hand, pad=0):
@@ -1173,5 +1795,6 @@ def trigger(hand, pad=0):
             raw = gamepad_manager.gamepads[pad].get_axis(5)
             value = (raw + 1) / 2
             return value
-    else:
+    elif not gamepad_manager.no_gamepad_found:
         print('no gamepad found...')
+        gamepad_manager.no_gamepad_found = True

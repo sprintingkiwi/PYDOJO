@@ -10,16 +10,38 @@ hero.loadfolder('example_asset/characters/stickman/age_uke')
 hero.loadfolder('example_asset/characters/stickman/gedan_barai')
 hero.loadfolder('example_asset/characters/stickman/hit_body')
 hero.action = 'kamae idle'
-hero.rotation = 'flip'
+hero.rotate('flip')
 hero.speed = 0
-hero.x = 100
+hero.setx(100)
+
+# Clone scale bug?
+# hero.scale(2)
+print(hero.size, hero.rect)
+enemy = clone(hero)
+enemy.setx(600)
+enemy.scale(2)
+
+print(hero.size, hero.rect, enemy.rect, enemy.size)
+
+print('IN GAME DICT DEBUG')
+
+enemy2 = clone(hero)
+enemy2.setx(1000)
+enemy2.scale(0.5)
 
 instructions = Text("press A or D to move, J-K-L to attack, U-I-O to defend!", color=CYAN)
+
+print(hero.animations)
+print(hero.animation)
 
 # MAIN LOOP
 while True:
 
-    # print hero.costumes[hero.cosnumber][0]
+    # print hero.costumes_by_name['age_uke\\age_uke_013']['image'] is enemy.costumes_by_name['age_uke\\age_uke_013'][
+    #     'image']
+
+    enemy.play('kisami_tsuki')
+    enemy2.play('mae_geri')
 
     if anykeydown():
         instructions.hide()
@@ -35,55 +57,55 @@ while True:
     # Action Control
     if keydown(J):
         hero.action = 'kisami tsuki'
-        print hero.action + '!'
+        print(hero.action + '!')
     if keydown(K):
         hero.action = 'mae geri'
-        print hero.action + '!'
+        print(hero.action + '!')
     if keydown(L):
         hero.action = 'yoko geri'
-        print hero.action + '!'
+        print(hero.action + '!')
     if keydown(U):
         hero.action = 'age uke'
-        print hero.action + '!'
+        print(hero.action + '!')
     if keydown(I):
         hero.action = 'gedan barai'
-        print hero.action + '!'
+        print(hero.action + '!')
     if keydown(O):
         hero.action = 'gedan barai'
-        print hero.action + '!'
+        print(hero.action + '!')
 
     if hero.action == 'kamae idle':
         hero.speed = 0
-        hero.slidecostumes(0, 23, pause=2)
+        hero.play('kamae_idle')
     elif hero.action == 'kisami tsuki':
         hero.speed = 5
-        hero.slidecostumes(24, 47, pause=0.5)
-        if hero.cosnumber > 46:
+        hero.play('kisami_tsuki', fps=80, loop=False)
+        if hero.animation['state'] == 'ended':
             hero.action = 'kamae idle'
     elif hero.action == 'mae geri':
         hero.speed = 7
-        hero.slidecostumes(48, 71, pause=1)
-        if hero.cosnumber > 70:
+        hero.play('mae_geri', fps=80, loop=False)
+        if hero.animation['state'] == 'ended':
             hero.action = 'kamae idle'
     elif hero.action == 'yoko geri':
         hero.speed = 5
-        hero.slidecostumes(72, 103, pause=1)
-        if hero.cosnumber > 92:
+        hero.play('yoko_geri', fps=80, loop=False)
+        if hero.animation['state'] == 'ended':
             hero.action = 'kamae idle'
     elif hero.action == 'age uke':
         hero.speed = -3
-        hero.slidecostumes(104, 127, pause=0.5)
-        if hero.cosnumber > 126:
+        hero.play('age_uke', fps=80, loop=False)
+        if hero.animation['state'] == 'ended':
             hero.action = 'kamae idle'
     elif hero.action == 'gedan barai':
         hero.speed = -5
-        hero.slidecostumes(128, 151, pause=0.5)
-        if hero.cosnumber > 150:
+        hero.play('gedan_barai', fps=80, loop=False)
+        if hero.animation['state'] == 'ended':
             hero.action = 'kamae idle'
     elif hero.action == 'hit body':
         hero.speed = -1
-        hero.slidecostumes(152, 175, pause=1)
-        if hero.cosnumber > 174:
+        hero.play('hit_body', fps=80, loop=False)
+        if hero.animation['state'] == 'ended':
             hero.action = 'kamae idle'
 
     # UPDATE SCREEN

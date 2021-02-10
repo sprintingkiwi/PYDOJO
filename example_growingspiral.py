@@ -5,12 +5,13 @@ fill(WHITE)
 
 uga = Actor()
 uga.pendown()
+# uga.setpencolor(CYAN)
 
 dimensione = 1
 passi = 1
 
 while True:
-    uga.pensize = dimensione
+    uga.setpensize(dimensione)
     uga.forward(passi)
     uga.right(10)
 

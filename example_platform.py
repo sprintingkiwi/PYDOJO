@@ -9,33 +9,39 @@ framerate(30)
 
 # PYCO INIT
 pyco = Actor('example_asset/characters/pyco1.png', 'idle')
-pyco.loadfolder('example_asset/characters/pyco_walk/')
-# print pyco.costumes
+print(pyco.costume, pyco.cosnumber)
+
+pyco.loadfolder('example_asset/characters/pyco_walk')
+print(pyco.costume, pyco.cosnumber)
+
 pyco.goto(100, 600)
 pyco.speed = 5
-# pyco.rotate = False
-pyco.rotation = 'flip'
+pyco.rotate('flip')
 pyco.bullets = []
 pyco.jumping = False
+pyco.scale(0.9)
 
 # BAT INIT
 bat = Actor('example_asset/characters/bat1.png')
 bat.load('example_asset/characters/bat2.png')
-bat.rotation = 'flip'
+bat.rotate('flip')
 bat.point(random.randint(0, 360))
-bat.bounce = True
-bat.tag = 'enemy'
+bat.tag('enemy')
+bat.scale(0.9)
 
 # PY BULLET INIT
 py = Actor('example_asset/characters/python.png')
 py.scale(50, 50)
 py.hide()
+py.tag('bullet')
+py.tag('test')
+py.setpencolor(RED)
 
 # PLATFORMS INIT
 platforms = []
 for i in range(6):
     a = Actor('example_asset/characters/platform.png', str(i))
-    a.tag = 'support'
+    a.tag('support')
     a.scale(200, 50)
     platforms.append(a)
 for p in platforms:
@@ -46,14 +52,23 @@ for p in platforms:
 terrain = Actor('example_asset/characters/terrain.png')
 terrain.goto(CENTER.x, 700)
 terrain.scale(1280, 50)
-terrain.tag = 'support'
+terrain.tag('support')
+terrain.tag('prova')
+terrain.untag('prova')
 
 gravity = 10
 
-for a in getactors():
-    print a.costume
+print(pyco.costumes_by_number)
 
-print(ACTORS)
+def pybullet_setup(bullet):
+    bullet.tag('custom spawn setup behavior working')
+    print(bullet.tags)
+
+def pybullet_movement(bullet):
+    bullet.setdirection(random.randint(int(bullet.direction - 10), int(bullet.direction + 10)))
+    bullet.roll(5)
+    if distance(pyco, bullet) > 2000:
+        bullet.kill()
 
 while True:
 
@@ -62,12 +77,13 @@ while True:
         pyco.point(90)
         pyco.forward(pyco.speed)
         pyco.nextcostume(pause=7, costumes=[1, 4])
+        # print pyco.cosnumber
     if keyup(RIGHT):
         pyco.setcostume('idle')
     if key(LEFT):
         pyco.point(-90)
         pyco.forward(pyco.speed)
-        pyco.nextcostume(pause=7, costumes=[1, 4])
+        pyco.play('pyco_walk')
     if keyup(LEFT):
         pyco.setcostume('idle')
 
@@ -83,12 +99,24 @@ while True:
 
     # SHOOT
     if keydown(SPACE):
-        bullet = clone(py)
-        bullet.tag = 'bullet'
-        bullet.point(pyco.direction)
-        bullet.goto(pyco)
-        bullet.show()
-        pyco.bullets.append(bullet)
+        spawn(py,
+              direction=pyco.direction,
+              speed=10,
+              position=pyco,
+              setup_behavior=pybullet_setup,
+              update_behavior=pybullet_movement)
+        # bullet = clone(py)
+        # print bullet.tags
+        # bullet.rotate(False)
+        # bullet.point(pyco.direction)
+        # bullet.goto(pyco)
+        # bullet.show()
+        # # bullet.pendown()
+        # print game_info.tagged_actors
+        # bullet.untag('test')
+        # print bullet.tags
+        # print py.tags
+        # pyco.bullets.append(bullet)
 
     if pyco.collide(bat):
         print('preso')
@@ -98,11 +126,12 @@ while True:
     if keydown(O):
         pyco.hide()
 
-    for b in pyco.bullets:
-        b.forward(10)
-        if distance(pyco, b) > 2000:
-            pyco.bullets.remove(b)
-        b.rotate(5)
+    # for b in pyco.bullets:
+    #     b.forward(10)
+    #     b.setdirection(random.randint(b.direction - 10, b.direction + 10))
+    #     b.roll(5)
+    #     if distance(pyco, b) > 2000:
+    #         pyco.bullets.remove(b)
 
     if key(DOWN):
         pyco.point(180)
@@ -118,8 +147,11 @@ while True:
     # BAT
     bat.nextcostume()
     bat.forward(10)
+    bat.bounce()
     if bat.collide('bullet'):
         print('colpito')
         bat.hide(2)
+        print(COLLISION.point)
+        print(COLLISION.object)
 
     update()
