@@ -9,9 +9,11 @@ framerate(30)
 
 # PYCO INIT
 pyco = Actor('example_asset/characters/pyco1.png', 'idle')
-print pyco.costume, pyco.cosnumber
+print(pyco.costume, pyco.cosnumber)
+
 pyco.loadfolder('example_asset/characters/pyco_walk')
-print pyco.costume, pyco.cosnumber
+print(pyco.costume, pyco.cosnumber)
+
 pyco.goto(100, 600)
 pyco.speed = 5
 pyco.rotate('flip')
@@ -56,11 +58,11 @@ terrain.untag('prova')
 
 gravity = 10
 
-print pyco.costumes_by_number
+print(pyco.costumes_by_number)
 
 def pybullet_setup(bullet):
     bullet.tag('custom spawn setup behavior working')
-    print bullet.tags
+    print(bullet.tags)
 
 def pybullet_movement(bullet):
     bullet.setdirection(random.randint(int(bullet.direction - 10), int(bullet.direction + 10)))
@@ -149,7 +151,7 @@ while True:
     if bat.collide('bullet'):
         print('colpito')
         bat.hide(2)
-        print COLLISION.point
-        print COLLISION.object
+        print(COLLISION.point)
+        print(COLLISION.object)
 
     update()
